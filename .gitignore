@@ -59,3 +59,14 @@ temp_*.mp4
 # Large media files
 downloads/
 outputs/evidence_videos/
+
+# Runtime-generated report artifacts
+outputs/reports/DUMA_BOKO_DIVERGENCE_REPORT_*.docx
+
+# Runtime-generated divergence outputs are restored after tests,
+# but keep future ad-hoc generated copies out of commits.
+outputs/reports/*_generated*.docx
+outputs/reports/*_generated*.pdf
+
+# Local run backups
+duma-boko-run-backups/
