@@ -1,0 +1,16 @@
+{
+  "metadata": {
+    "created_at": "2026-04-29T08:11:12.664006",
+    "pipeline_stage": "topic_clustering",
+    "version": "1.0",
+    "test_mode": true,
+    "topics_config": "config\\topics.yaml"
+  },
+  "statistics": {
+    "total_claims": 0,
+    "clustered_claims": 0,
+    "uncategorized_claims": 0,
+    "claims_by_topic": {}
+  },
+  "claims": []
+}

@@ -1,0 +1,82 @@
+{
+  "metadata": {
+    "created_at": "2026-04-28T16:37:24.380443",
+    "pipeline_stage": "translation",
+    "version": "1.0",
+    "test_mode": true,
+    "skip_translation": true,
+    "model_used": null
+  },
+  "statistics": {
+    "total_segments": 4,
+    "not_required": 0,
+    "translated": 0,
+    "failed": 4
+  },
+  "segments": [
+    {
+      "segment_id": "02WcWvdkst0_0",
+      "source_video_id": "02WcWvdkst0",
+      "source_transcript_file": "02WcWvdkst0.transcript.json",
+      "start": 30.0,
+      "end": 36.0,
+      "language": "sw",
+      "original_text": "Yano, besu, namola e toa me moba suanenki.",
+      "translated_text": "Yano, besu, namola e toa me moba suanenki.",
+      "translation_status": "failed",
+      "translation_model": null,
+      "metadata": {
+        "confidence": -0.9353940751817491,
+        "transcript_language": "sw"
+      }
+    },
+    {
+      "segment_id": "02WcWvdkst0_1",
+      "source_video_id": "02WcWvdkst0",
+      "source_transcript_file": "02WcWvdkst0.transcript.json",
+      "start": 36.0,
+      "end": 43.0,
+      "language": "sw",
+      "original_text": "Rona harekapuwa raikago lagara e boka, raipama e na mafa azua.",
+      "translated_text": "Rona harekapuwa raikago lagara e boka, raipama e na mafa azua.",
+      "translation_status": "failed",
+      "translation_model": null,
+      "metadata": {
+        "confidence": -0.9353940751817491,
+        "transcript_language": "sw"
+      }
+    },
+    {
+      "segment_id": "02WcWvdkst0_2",
+      "source_video_id": "02WcWvdkst0",
+      "source_transcript_file": "02WcWvdkst0.transcript.json",
+      "start": 43.0,
+      "end": 46.0,
+      "language": "sw",
+      "original_text": "Boa maa ruki waruwa na buiselo ja haku buha kaa.",
+      "translated_text": "Boa maa ruki waruwa na buiselo ja haku buha kaa.",
+      "translation_status": "failed",
+      "translation_model": null,
+      "metadata": {
+        "confidence": -0.9353940751817491,
+        "transcript_language": "sw"
+      }
+    },
+    {
+      "segment_id": "02WcWvdkst0_3",
+      "source_video_id": "02WcWvdkst0",
+      "source_transcript_file": "02WcWvdkst0.transcript.json",
+      "start": 46.0,
+      "end": 54.0,
+      "language": "sw",
+      "original_text": "Osela la mo lihumi, osela la moji kuruto, osela la mozu te hu likumaneo.",
+      "translated_text": "Osela la mo lihumi, osela la moji kuruto, osela la mozu te hu likumaneo.",
+      "translation_status": "failed",
+      "translation_model": null,
+      "metadata": {
+        "confidence": -0.9353940751817491,
+        "transcript_language": "sw"
+      }
+    }
+  ]
+}

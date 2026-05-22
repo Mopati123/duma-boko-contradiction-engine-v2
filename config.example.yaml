@@ -1,0 +1,66 @@
+# Video Evidence Analysis System Configuration Template
+# Copy this file to config.yaml and fill in your API keys
+
+# API Keys
+youtube_api_key: "YOUR_YOUTUBE_API_KEY_HERE"
+openai_api_key: ""  # Optional - for Whisper API (faster transcription)
+
+# Paths
+downloads_path: "./downloads"
+evidence_csv: "./evidence_template.csv"
+output_csv: "./evidence_auto_filled.csv"
+
+# Target phrases for YouTube search
+search_phrases:
+  - "A promise to voters is not a legal contract"
+  - "election promises are not legal or social contracts"
+  - "election promises are not legally binding contracts"
+  - "Votes aren't contracts"
+  - "government will fulfil promises"
+  - "no backing down from our promises"
+  - "President Duma Boko"
+  - "Duma Boko kgotla"
+  - "Duma Boko 2024 election promises"
+
+# Case definitions for analysis
+cases:
+  CASE_1:
+    description: "Promise fulfillment vs contract denial"
+    event_name: "Kgotla statements"
+    claim_a:
+      type: "Claim_A"
+      phrases:
+        - "government will fulfil promises"
+        - "fulfil promises"
+        - "deliver promises"
+        - "no backing down"
+        - "promises made to Batswana"
+      quote_type: "promise_fulfil"
+    claim_b:
+      type: "Claim_B"
+      phrases:
+        - "promise to voters is not a legal contract"
+        - "not a legal contract"
+        - "not legally binding"
+        - "not binding contracts"
+        - "votes aren't contracts"
+        - "not a social contract"
+      quote_type: "not_legal_contract"
+    contradiction_type: "Framing inversion"
+
+# Analysis settings
+analysis:
+  context_window_seconds: 30
+  confidence_threshold: 0.7
+  fuzzy_match_threshold: 0.8
+  transcription_model: "base"
+  use_whisper_api: false
+  language: "auto"
+
+# Download settings
+download:
+  video_format: "mp4"
+  video_quality: "720p"
+  extract_audio: true
+  audio_format: "mp3"
+  audio_quality: "128k"

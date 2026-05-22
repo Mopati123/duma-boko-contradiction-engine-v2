@@ -1,0 +1,234 @@
+{
+  "metadata": {
+    "created_at": "2026-05-08T09:14:52.436557",
+    "engine": "divergence_reconstruction_v3.0",
+    "targets_processed": 5
+  },
+  "cases": [
+    {
+      "case_id": "CASE_002",
+      "topic": "jobs_creation",
+      "promise": {
+        "quote": "We will deliver jobs creation for all Batswana.",
+        "source": "Campaign Speech / Manifesto",
+        "url": "https://www.youtube.com/watch?v=example1",
+        "date": "2024-09-15",
+        "evidence_type": "manifesto",
+        "platform": "youtube",
+        "confidence": 0.9,
+        "matched_terms": [
+          "work opportunities within five years",
+          "economic transformation commitments",
+          "500000 economic transformation"
+        ]
+      },
+      "outcome_or_position": {
+        "quote": "Current conditions like the diamond downturn affect jobs creation implementation.",
+        "source": "Post-Election Interview",
+        "url": "https://www.youtube.com/watch?v=example2",
+        "date": "2024-11-20",
+        "evidence_type": "interview",
+        "platform": "youtube",
+        "confidence": 0.85,
+        "matched_terms": [
+          "fiscal constraints",
+          "slow implementation",
+          "not possible"
+        ]
+      },
+      "divergence_type": "promise_vs_outcome",
+      "analysis": "Speaker: Speaker attribution unclear. Topic: Topic alignment: jobs_creation. Divergence: Low semantic divergence detected.",
+      "evidence_strength": "low",
+      "verification_status": "verified",
+      "description": "Duma Boko repeatedly promised 450,000–500,000 jobs within five years and  the transformation of Botswana into an ICT/infrastructure hub, vs  economic constraint justifications citing diamond downturn and inherited economy.\n",
+      "all_promise_sources": [],
+      "all_outcome_sources": [],
+      "raw_urls": [
+        "https://www.youtube.com/watch?v=example1",
+        "https://www.youtube.com/watch?v=example2"
+      ],
+      "created_at": "2026-05-08T09:14:52.436218",
+      "pipeline_version": "divergence_engine_v3.0"
+    },
+    {
+      "case_id": "CASE_006",
+      "topic": "healthcare_reform",
+      "promise": {
+        "quote": "We will deliver healthcare reform for all Batswana.",
+        "source": "Campaign Speech / Manifesto",
+        "url": "https://www.youtube.com/watch?v=example1",
+        "date": "2024-09-15",
+        "evidence_type": "manifesto",
+        "platform": "youtube",
+        "confidence": 0.9,
+        "matched_terms": [
+          "clinics reform",
+          "medical services reform",
+          "medical supplies"
+        ]
+      },
+      "outcome_or_position": {
+        "quote": "Current conditions like the diamond downturn affect healthcare reform implementation.",
+        "source": "Post-Election Interview",
+        "url": "https://www.youtube.com/watch?v=example2",
+        "date": "2024-11-20",
+        "evidence_type": "interview",
+        "platform": "youtube",
+        "confidence": 0.85,
+        "matched_terms": [
+          "Central Medical Stores procurement failures",
+          "delayed reforms",
+          "collapse in medical supply chain"
+        ]
+      },
+      "divergence_type": "promise_vs_outcome",
+      "analysis": "Speaker: Speaker attribution unclear. Topic: Topic alignment: healthcare_reform. Divergence: Low semantic divergence detected.",
+      "evidence_strength": "low",
+      "verification_status": "verified",
+      "description": "Campaign promises on fixing failing health systems and better access to medicines vs post-election declaration of national public health emergency and  severe medicine shortages.\n",
+      "all_promise_sources": [],
+      "all_outcome_sources": [],
+      "raw_urls": [
+        "https://www.youtube.com/watch?v=example1",
+        "https://www.youtube.com/watch?v=example2"
+      ],
+      "created_at": "2026-05-08T09:14:52.436355",
+      "pipeline_version": "divergence_engine_v3.0"
+    },
+    {
+      "case_id": "CASE_001",
+      "topic": "manifesto_contract",
+      "promise": {
+        "quote": "We will deliver manifesto contract for all Batswana.",
+        "source": "Campaign Speech / Manifesto",
+        "url": "https://www.youtube.com/watch?v=example1",
+        "date": "2024-09-15",
+        "evidence_type": "manifesto",
+        "platform": "youtube",
+        "confidence": 0.9,
+        "matched_terms": [
+          "binding commitment",
+          "binding agreement between the udc leadership and their people",
+          "social contract between the udc leadership and their people"
+        ]
+      },
+      "outcome_or_position": {
+        "quote": "Current conditions like the diamond downturn affect manifesto contract implementation.",
+        "source": "Post-Election Interview",
+        "url": "https://www.youtube.com/watch?v=example2",
+        "date": "2024-11-20",
+        "evidence_type": "interview",
+        "platform": "youtube",
+        "confidence": 0.85,
+        "matched_terms": [
+          "political promises not social contracts",
+          "votes are not election promises",
+          "election promises are not legal binding agreements"
+        ]
+      },
+      "divergence_type": "obligation_denial",
+      "analysis": "Speaker: Speaker attribution unclear. Topic: Topic alignment: manifesto_contract. Divergence: Low semantic divergence detected.",
+      "evidence_strength": "low",
+      "verification_status": "verified",
+      "description": "Manifesto framed as a binding \"contract with citizens\" vs later public  statements that election promises are not legal or social contracts.\n",
+      "all_promise_sources": [],
+      "all_outcome_sources": [],
+      "raw_urls": [
+        "https://www.youtube.com/watch?v=example1",
+        "https://www.youtube.com/watch?v=example2"
+      ],
+      "created_at": "2026-05-08T09:14:52.436433",
+      "pipeline_version": "divergence_engine_v3.0"
+    },
+    {
+      "case_id": "CASE_004",
+      "topic": "economic_diversification",
+      "promise": {
+        "quote": "We will deliver economic diversification for all Batswana.",
+        "source": "Campaign Speech / Manifesto",
+        "url": "https://www.youtube.com/watch?v=example1",
+        "date": "2024-09-15",
+        "evidence_type": "manifesto",
+        "platform": "youtube",
+        "confidence": 0.9,
+        "matched_terms": [
+          "improve livelihoods",
+          "prosperity coming",
+          "diversification economy"
+        ]
+      },
+      "outcome_or_position": {
+        "quote": "Current conditions like the diamond downturn affect economic diversification implementation.",
+        "source": "Post-Election Interview",
+        "url": "https://www.youtube.com/watch?v=example2",
+        "date": "2024-11-20",
+        "evidence_type": "interview",
+        "platform": "youtube",
+        "confidence": 0.85,
+        "matched_terms": [
+          "fiscal limitations",
+          "inherited structural problems",
+          "revenue shortfalls"
+        ]
+      },
+      "divergence_type": "economic_constraint_justification",
+      "analysis": "Speaker: Speaker attribution unclear. Topic: Topic alignment: economic_diversification. Divergence: Low semantic divergence detected.",
+      "evidence_strength": "low",
+      "verification_status": "verified",
+      "description": "Campaign promises to diversify and transform the economy to improve  livelihoods vs post-election explanations citing diamond market  collapse and fiscal limitations.\n",
+      "all_promise_sources": [],
+      "all_outcome_sources": [],
+      "raw_urls": [
+        "https://www.youtube.com/watch?v=example1",
+        "https://www.youtube.com/watch?v=example2"
+      ],
+      "created_at": "2026-05-08T09:14:52.436486",
+      "pipeline_version": "divergence_engine_v3.0"
+    },
+    {
+      "case_id": "CASE_003",
+      "topic": "anti_corruption",
+      "promise": {
+        "quote": "We will deliver anti corruption for all Batswana.",
+        "source": "Campaign Speech / Manifesto",
+        "url": "https://www.youtube.com/watch?v=example1",
+        "date": "2024-09-15",
+        "evidence_type": "manifesto",
+        "platform": "youtube",
+        "confidence": 0.9,
+        "matched_terms": [
+          "anti-corruption",
+          "accountable government",
+          "anti-accountability"
+        ]
+      },
+      "outcome_or_position": {
+        "quote": "Current conditions like the diamond downturn affect anti corruption implementation.",
+        "source": "Post-Election Interview",
+        "url": "https://www.youtube.com/watch?v=example2",
+        "date": "2024-11-20",
+        "evidence_type": "interview",
+        "platform": "youtube",
+        "confidence": 0.85,
+        "matched_terms": [
+          "transparency allegations",
+          "accountability allegations",
+          "ministry handled that"
+        ]
+      },
+      "divergence_type": "governance_distancing",
+      "analysis": "Speaker: Speaker attribution unclear. Topic: Topic alignment: anti_corruption. Divergence: Low semantic divergence detected.",
+      "evidence_strength": "low",
+      "verification_status": "verified",
+      "description": "Campaign rhetoric emphasizing accountable government and governance reform vs procurement failures and distancing from responsibility.\n",
+      "all_promise_sources": [],
+      "all_outcome_sources": [],
+      "raw_urls": [
+        "https://www.youtube.com/watch?v=example1",
+        "https://www.youtube.com/watch?v=example2"
+      ],
+      "created_at": "2026-05-08T09:14:52.436540",
+      "pipeline_version": "divergence_engine_v3.0"
+    }
+  ]
+}

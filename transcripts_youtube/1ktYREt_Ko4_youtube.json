@@ -1,0 +1,9 @@
+{
+  "video_id": "1ktYREt_Ko4",
+  "success": false,
+  "language": "",
+  "is_generated": false,
+  "full_text": "",
+  "transcript": [],
+  "error": "Error: type object 'YouTubeTranscriptApi' has no attribute 'list_transcripts'"
+}

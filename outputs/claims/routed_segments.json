@@ -1,0 +1,76 @@
+{
+  "metadata": {
+    "created_at": "2026-04-28T16:35:19.350106",
+    "pipeline_stage": "language_routing",
+    "version": "1.0",
+    "test_mode": true
+  },
+  "statistics": {
+    "total_transcripts": 18,
+    "processed_transcripts": 1,
+    "total_segments": 4,
+    "english_segments": 0,
+    "non_english_segments": 4,
+    "languages_found": [
+      "sw"
+    ]
+  },
+  "segments": [
+    {
+      "segment_id": "02WcWvdkst0_0",
+      "source_video_id": "02WcWvdkst0",
+      "source_transcript_file": "02WcWvdkst0.transcript.json",
+      "start": 30.0,
+      "end": 36.0,
+      "language": "sw",
+      "original_text": "Yano, besu, namola e toa me moba suanenki.",
+      "requires_translation": true,
+      "metadata": {
+        "confidence": -0.9353940751817491,
+        "transcript_language": "sw"
+      }
+    },
+    {
+      "segment_id": "02WcWvdkst0_1",
+      "source_video_id": "02WcWvdkst0",
+      "source_transcript_file": "02WcWvdkst0.transcript.json",
+      "start": 36.0,
+      "end": 43.0,
+      "language": "sw",
+      "original_text": "Rona harekapuwa raikago lagara e boka, raipama e na mafa azua.",
+      "requires_translation": true,
+      "metadata": {
+        "confidence": -0.9353940751817491,
+        "transcript_language": "sw"
+      }
+    },
+    {
+      "segment_id": "02WcWvdkst0_2",
+      "source_video_id": "02WcWvdkst0",
+      "source_transcript_file": "02WcWvdkst0.transcript.json",
+      "start": 43.0,
+      "end": 46.0,
+      "language": "sw",
+      "original_text": "Boa maa ruki waruwa na buiselo ja haku buha kaa.",
+      "requires_translation": true,
+      "metadata": {
+        "confidence": -0.9353940751817491,
+        "transcript_language": "sw"
+      }
+    },
+    {
+      "segment_id": "02WcWvdkst0_3",
+      "source_video_id": "02WcWvdkst0",
+      "source_transcript_file": "02WcWvdkst0.transcript.json",
+      "start": 46.0,
+      "end": 54.0,
+      "language": "sw",
+      "original_text": "Osela la mo lihumi, osela la moji kuruto, osela la mozu te hu likumaneo.",
+      "requires_translation": true,
+      "metadata": {
+        "confidence": -0.9353940751817491,
+        "transcript_language": "sw"
+      }
+    }
+  ]
+}

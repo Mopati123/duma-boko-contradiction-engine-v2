@@ -1,0 +1,156 @@
+# ============================================
+# GOVERNANCE INVESTIGATION THEMES — v3.0
+# ============================================
+# GOVERNING INTELLIGENCE for the Governance
+# Promise-Delivery Divergence Reconstruction Engine.
+# ============================================
+
+version: "3.0"
+
+# New Divergence Taxonomy
+divergence_types:
+  - promise_vs_outcome                  # promised delivery vs measurable failure
+  - obligation_denial                   # manifesto framed as contract vs denial
+  - economic_constraint_justification    # promises later constrained by explanations
+  - governance_distancing               # distancing from earlier accountability
+  - pre_power_critique_vs_post_power_explanation # criticism before power vs explanations after power
+
+# Investigation Themes
+targets:
+
+  # ─────────────────────────────────────────
+  # THEME 1 — JOB CREATION PROMISES
+  # ─────────────────────────────────────────
+  - case_id: CASE_002
+    topic: jobs_creation
+    divergence_type: promise_vs_outcome
+    description: >
+      Duma Boko repeatedly promised 450,000–500,000 jobs within five years and 
+      the transformation of Botswana into an ICT/infrastructure hub, vs 
+      economic constraint justifications citing diamond downturn and inherited economy.
+
+    promise_indicators:
+      - 500000 jobs
+      - 450000 jobs
+      - jobs within five years
+      - ICT hub
+      - infrastructure hub
+      - transport hub
+      - diversified economy
+      - 500 000 jobs would be created
+      - economic transformation commitments
+
+    failure_indicators:
+      - unemployment statistics
+      - slow implementation
+      - diamond downturn
+      - fiscal constraints
+      - inherited economy
+      - global conditions
+      - not possible
+      - implementation delays
+
+  # ─────────────────────────────────────────
+  # THEME 2 — HEALTHCARE REFORM PROMISES
+  # ─────────────────────────────────────────
+  - case_id: CASE_006
+    topic: healthcare_reform
+    divergence_type: promise_vs_outcome
+    description: >
+      Campaign promises on fixing failing health systems and better access to medicines
+      vs post-election declaration of national public health emergency and 
+      severe medicine shortages.
+
+    promise_indicators:
+      - healthcare reform
+      - fixing failing health systems
+      - better access to medicines
+      - modernization
+      - health system is failing
+      - medical supplies
+
+    failure_indicators:
+      - national public health emergency
+      - collapse in medical supply chain
+      - severe medicine shortages
+      - Central Medical Stores procurement failures
+      - inflated medicine prices
+      - delayed reforms
+
+  # ─────────────────────────────────────────
+  # THEME 3 — MANIFESTO AS CONTRACT VS NOT CONTRACT
+  # ─────────────────────────────────────────
+  - case_id: CASE_001
+    topic: manifesto_contract
+    divergence_type: obligation_denial
+    description: >
+      Manifesto framed as a binding "contract with citizens" vs later public 
+      statements that election promises are not legal or social contracts.
+
+    promise_indicators:
+      - practical solutions
+      - contract with citizens
+      - governance obligations
+      - contract between the UDC leadership and their people
+      - binding commitment
+      - manifesto is a contract
+
+    failure_indicators:
+      - election promises are not legal contracts
+      - promises are not legal or social contracts
+      - not legally binding
+      - political promises not contracts
+      - votes are not contracts
+
+  # ─────────────────────────────────────────
+  # THEME 4 — ECONOMIC TRANSFORMATION VS CONSTRAINTS
+  # ─────────────────────────────────────────
+  - case_id: CASE_004
+    topic: economic_diversification
+    divergence_type: economic_constraint_justification
+    description: >
+      Campaign promises to diversify and transform the economy to improve 
+      livelihoods vs post-election explanations citing diamond market 
+      collapse and fiscal limitations.
+
+    promise_indicators:
+      - diversify economy
+      - improve livelihoods
+      - transform economy
+      - improve employment
+      - rapid development
+      - prosperity coming
+
+    failure_indicators:
+      - diamond market collapse
+      - fiscal limitations
+      - aid cuts
+      - inherited structural problems
+      - budget constraints
+      - revenue shortfalls
+
+  # ─────────────────────────────────────────
+  # THEME 5 — ACCOUNTABILITY / ANTI-CORRUPTION
+  # ─────────────────────────────────────────
+  - case_id: CASE_003
+    topic: anti_corruption
+    divergence_type: governance_distancing
+    description: >
+      Campaign rhetoric emphasizing accountable government and governance reform
+      vs procurement failures and distancing from responsibility.
+
+    promise_indicators:
+      - accountable government
+      - anti-corruption
+      - governance reform
+      - i take responsibility
+      - the buck stops with me
+
+    failure_indicators:
+      - corruption allegations
+      - procurement failures
+      - governance delays
+      - public criticism
+      - distancing from responsibility
+      - not my decision
+      - ministry handled that

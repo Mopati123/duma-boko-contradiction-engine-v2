@@ -1,0 +1,33 @@
+# Manual Facebook and TikTok URLs for Duma Boko videos
+# Add one URL per line
+# Lines starting with # are comments
+
+# FACEBOOK URLs
+# Format: https://www.facebook.com/watch/?v=VIDEO_ID
+# Example: https://www.facebook.com/watch/?v=123456789012345
+
+# TIKTOK URLs
+# Format: https://www.tiktok.com/@USERNAME/video/VIDEO_ID
+# Example: https://www.tiktok.com/@dumaboko/video/1234567890123456789
+
+# Instructions:
+# 1. Find Duma Boko videos on Facebook/TikTok
+# 2. Copy the video URLs
+# 3. Paste them below (one per line)
+# 4. Save this file
+# 5. Run: python search_download_social.py
+# 6. Then run: python remove_watermarks.py
+
+# FACEBOOK VIDEOS - Found via web search
+https://www.facebook.com/watch/?v=1160426212363397
+https://www.facebook.com/watch/?v=1125632998771770
+https://www.facebook.com/watch/?v=28451848505137270
+https://www.facebook.com/watch/?v=1837132806910014
+
+# TIKTOK VIDEOS - Found via web search
+https://www.tiktok.com/@advocateduma_boko/video/7511276187633601800
+https://www.tiktok.com/@sizwegonations/video/7584206574630030610
+https://www.tiktok.com/@trtafrika/video/7436050552443669776
+https://www.tiktok.com/@africa.is.powerful/video/7554120484728606008
+https://www.tiktok.com/@advocateduma_boko/video/7445662446645300486
+

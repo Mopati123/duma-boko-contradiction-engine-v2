@@ -1,0 +1,342 @@
+# topics.yaml - Topic definitions for deterministic claim clustering
+# 
+# Each topic has a list of keywords used for matching.
+# A claim is assigned to the topic with the most keyword matches.
+# If no keywords match, the claim is assigned to "uncategorized".
+
+version: "1.0"
+
+topics:
+  governance:
+    description: "Government administration, public service, civil service operations"
+    keywords:
+      - "government"
+      - "administration"
+      - "public service"
+      - "civil service"
+      - "bureaucracy"
+      - "ministry"
+      - "cabinet"
+      - "official"
+      - "policy"
+      - "governance"
+      - "state"
+      - "nation"
+      - "country"
+    priority: 1
+
+  campaign_promises:
+    description: "Election promises, commitments, pledges made during campaigns"
+    keywords:
+      - "promise"
+      - "commit"
+      - "pledge"
+      - "will deliver"
+      - "guarantee"
+      - "assure"
+      - "vow"
+      - "swear"
+      - "undertake"
+      - "commitment"
+      - "my word"
+      - "i promise"
+      - "we will"
+      - "guaranteed"
+      - "assured"
+      - "election"
+      - "campaign"
+      - "vote"
+      - "mandate"
+    priority: 2
+
+  economy:
+    description: "Economic policy, financial matters, GDP, revenue, budget"
+    keywords:
+      - "economy"
+      - "economic"
+      - "growth"
+      - "gdp"
+      - "revenue"
+      - "finance"
+      - "budget"
+      - "fiscal"
+      - "monetary"
+      - "investment"
+      - "investor"
+      - "business"
+      - "trade"
+      - "market"
+      - "financial"
+      - "money"
+      - "funds"
+      - "funding"
+      - "capital"
+      - "wealth"
+      - "prosperity"
+      - "economic development"
+    priority: 3
+
+  jobs:
+    description: "Employment, job creation, unemployment, labor"
+    keywords:
+      - "job"
+      - "employment"
+      - "unemployment"
+      - "worker"
+      - "labor"
+      - "work"
+      - "career"
+      - "profession"
+      - "livelihood"
+      - "income"
+      - "wage"
+      - "salary"
+      - "hire"
+      - "hiring"
+      - "create jobs"
+      - "job creation"
+      - "employ"
+      - "workforce"
+      - "labour"
+    priority: 4
+
+  healthcare:
+    description: "Health services, medical care, hospitals, clinics"
+    keywords:
+      - "health"
+      - "healthcare"
+      - "medical"
+      - "hospital"
+      - "clinic"
+      - "doctor"
+      - "nurse"
+      - "medicine"
+      - "treatment"
+      - "patient"
+      - "disease"
+      - "pandemic"
+      - "covid"
+      - "vaccine"
+      - "health service"
+      - "public health"
+      - "wellness"
+      - "care"
+    priority: 5
+
+  corruption:
+    description: "Anti-corruption, graft, fraud, misconduct"
+    keywords:
+      - "corruption"
+      - "corrupt"
+      - "graft"
+      - "fraud"
+      - "bribe"
+      - "bribery"
+      - "kickback"
+      - "embezzle"
+      - "misconduct"
+      - "abuse"
+      - "misuse"
+      - "steal"
+      - "theft"
+      - "anti-corruption"
+      - "fight corruption"
+      - "clean government"
+      - "transparency"
+      - "accountable"
+      - "accountability"
+    priority: 6
+
+  constitution:
+    description: "Constitutional matters, fundamental law, rights"
+    keywords:
+      - "constitution"
+      - "constitutional"
+      - "fundamental law"
+      - "rights"
+      - "human rights"
+      - "democracy"
+      - "democratic"
+      - "rule of law"
+      - "legal framework"
+      - "supreme law"
+      - "charter"
+      - "bill of rights"
+      - "amendment"
+    priority: 7
+
+  law:
+    description: "Legal system, legislation, courts, justice"
+    keywords:
+      - "law"
+      - "legal"
+      - "legislation"
+      - "legislative"
+      - "court"
+      - "judicial"
+      - "justice"
+      - "judge"
+      - "lawyer"
+      - "prosecution"
+      - "statute"
+      - "act"
+      - "bill"
+      - "regulation"
+      - "regulatory"
+      - "enforce"
+      - "enforcement"
+      - "crime"
+      - "criminal"
+      - "illegal"
+      - "lawful"
+      - "unlawful"
+    priority: 8
+
+  public_services:
+    description: "Public utilities, infrastructure, water, electricity, transport"
+    keywords:
+      - "public service"
+      - "utility"
+      - "utilities"
+      - "infrastructure"
+      - "water"
+      - "electricity"
+      - "power"
+      - "transport"
+      - "transportation"
+      - "road"
+      - "bridge"
+      - "network"
+      - "service delivery"
+      - "amenity"
+      - "facility"
+      - "public works"
+    priority: 9
+
+  education:
+    description: "Education system, schools, universities, training"
+    keywords:
+      - "education"
+      - "educational"
+      - "school"
+      - "university"
+      - "college"
+      - "student"
+      - "teacher"
+      - "learn"
+      - "learning"
+      - "teach"
+      - "training"
+      - "curriculum"
+      - "academic"
+      - "scholarship"
+      - "literacy"
+      - "educated"
+      - "knowledge"
+      - "skill"
+      - "skilled"
+    priority: 10
+
+  cost_of_living:
+    description: "Prices, inflation, affordability, living expenses"
+    keywords:
+      - "cost of living"
+      - "expensive"
+      - "affordable"
+      - "price"
+      - "pricing"
+      - "inflation"
+      - "cheap"
+      - "costly"
+      - "expense"
+      - "expenditure"
+      - "budget"
+      - "household"
+      - "poverty"
+      - "poor"
+      - "living standard"
+      - "quality of life"
+    priority: 11
+
+  mining:
+    description: "Mining industry, minerals, extractive resources"
+    keywords:
+      - "mining"
+      - "mine"
+      - "mineral"
+      - "extractive"
+      - "diamond"
+      - "coal"
+      - "copper"
+      - "gold"
+      - "resource"
+      - "extraction"
+      - "miner"
+      - "quarry"
+      - "debswana"
+      - "ore"
+      - "gem"
+      - "natural resource"
+    priority: 12
+
+  youth:
+    description: "Youth issues, young people, future generations"
+    keywords:
+      - "youth"
+      - "young"
+      - "young people"
+      - "youngster"
+      - "teenager"
+      - "student"
+      - "future generation"
+      - "next generation"
+      - "child"
+      - "children"
+      - "adolescent"
+      - "juvenile"
+      - "millennial"
+      - "gen z"
+    priority: 13
+
+  national_development:
+    description: "Overall development, vision, national priorities"
+    keywords:
+      - "development"
+      - "develop"
+      - "progress"
+      - "vision"
+      - "vision 2036"
+      - "transform"
+      - "transformation"
+      - "modernize"
+      - "modernization"
+      - "advance"
+      - "advancement"
+      - "prosperity"
+      - "thrive"
+      - "grow"
+      - "growth"
+      - "nation building"
+      - "build the nation"
+      - "future"
+      - "forward"
+    priority: 14
+
+# Special topic for unmatched claims
+uncategorized:
+  description: "Claims that do not match any topic keywords"
+  keywords: []
+  priority: 99
+
+# Topic matching settings
+matching:
+  # Minimum keyword matches to assign a topic (vs uncategorized)
+  min_matches: 1
+  
+  # If multiple topics match, pick the one with:
+  # - "highest_count" = most keyword matches
+  # - "highest_priority" = lowest priority number
+  tiebreaker: "highest_count"
+  
+  # Case insensitive matching
+  case_sensitive: false

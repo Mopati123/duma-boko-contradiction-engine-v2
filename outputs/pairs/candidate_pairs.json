@@ -1,0 +1,17 @@
+{
+  "metadata": {
+    "created_at": "2026-04-29T08:54:34.697278",
+    "pipeline_stage": "temporal_pairing",
+    "version": "1.0",
+    "test_mode": true,
+    "min_confidence": 0.5
+  },
+  "statistics": {
+    "total_claims": 0,
+    "pairs_evaluated": 0,
+    "pairs_created": 0,
+    "pairs_by_topic": {},
+    "rejection_reasons": {}
+  },
+  "pairs": []
+}

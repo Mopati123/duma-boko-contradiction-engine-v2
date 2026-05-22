@@ -1,0 +1,110 @@
+# ============================================
+# DETECTION CONFIG — Scoring & Model Settings
+# ============================================
+# Preserved from original contradiction_targets.yaml
+# for backward compatibility with the semantic pipeline.
+# ============================================
+
+version: "1.0"
+
+# Contradiction type definitions (for rule-based detection)
+contradiction_types:
+  promise_vs_denial:
+    description: "A promise or commitment is later denied or rejected"
+    severity: "high"
+    claim_a_types: ["promise", "commitment", "pledge"]
+    claim_b_types: ["denial", "rejection", "refusal"]
+    lexical_indicators_a: ["will", "shall", "commit", "promise", "pledge", "guarantee", "assure", "undertake"]
+    lexical_indicators_b: ["not", "never", "deny", "reject", "refuse", "cannot", "impossible", "won't"]
+    topic_match_required: true
+    temporal_order: "a_before_b"
+
+  promise_vs_non_delivery:
+    description: "A promise was made but not fulfilled or delivered"
+    severity: "high"
+    claim_a_types: ["promise", "commitment"]
+    claim_b_types: ["outcome_claim", "justification"]
+    lexical_indicators_a: ["will deliver", "will provide", "will build", "will create", "will implement"]
+    lexical_indicators_b: ["not yet", "still waiting", "delayed", "postponed", "failed", "not delivered", "not completed", "incomplete"]
+    topic_match_required: true
+    temporal_order: "a_before_b"
+
+  policy_reversal:
+    description: "A policy position is reversed or inverted"
+    severity: "high"
+    claim_a_types: ["policy_position"]
+    claim_b_types: ["policy_position", "reversal"]
+    lexical_indicators_a: ["support", "favor", "endorse", "approve", "agree", "accept", "yes"]
+    lexical_indicators_b: ["oppose", "against", "reject", "disagree", "no longer", "changed", "reversed", "flip"]
+    topic_match_required: true
+    temporal_order: "a_before_b"
+
+  manifesto_reinterpretation:
+    description: "Campaign manifesto promises are reinterpreted or watered down"
+    severity: "medium"
+    claim_a_types: ["promise", "commitment"]
+    claim_b_types: ["justification", "policy_position"]
+    lexical_indicators_a: ["manifesto", "campaign", "election", "vote", "pledge"]
+    lexical_indicators_b: ["reinterpret", "reframe", "context", "practical", "realistic", "pragmatic", "modify", "adjust", "adapt"]
+    topic_match_required: true
+    temporal_order: "a_before_b"
+
+  legal_obligation_denial:
+    description: "A legal or constitutional obligation is denied or dismissed"
+    severity: "high"
+    claim_a_types: ["promise", "policy_position"]
+    claim_b_types: ["denial"]
+    lexical_indicators_a: ["constitutional", "legal", "mandate", "obligation", "duty", "requirement", "must", "compelled"]
+    lexical_indicators_b: ["not required", "not obligated", "not compelled", "optional", "discretionary", "not a legal", "not constitutional"]
+    topic_match_required: true
+    temporal_order: "a_before_b"
+
+  blame_shift:
+    description: "Responsibility is shifted from one party to another"
+    severity: "medium"
+    claim_a_types: ["justification", "accusation"]
+    claim_b_types: ["justification", "accusation"]
+    lexical_indicators_a: ["i take responsibility", "my fault", "our fault", "we caused", "we failed"]
+    lexical_indicators_b: ["they failed", "previous government", "opposition", "not my fault", "inherited", "legacy"]
+    topic_match_required: true
+    temporal_order: "a_before_b"
+
+  framing_shift:
+    description: "The same outcome is framed positively then negatively (or vice versa)"
+    severity: "medium"
+    claim_a_types: ["outcome_claim", "justification"]
+    claim_b_types: ["outcome_claim", "justification"]
+    lexical_indicators_a: ["success", "achievement", "progress", "improvement", "good", "positive", "excellent"]
+    lexical_indicators_b: ["failure", "problem", "challenge", "difficult"]
+
+# Scoring weights for hybrid contradiction detection
+scoring_weights:
+  lexical_opposition: 0.30
+  topic_agreement: 0.20
+  type_opposition: 0.20
+  nli_score: 0.30
+
+# Scoring thresholds
+thresholds:
+  min_contradiction_score: 0.3
+  low_threshold: 0.3
+  medium_threshold: 0.5
+  high_threshold: 0.7
+
+# NLI model settings (optional)
+nli_model:
+  model_name: "facebook/bart-large-mnli"
+  contradiction_label: "contradiction"
+  fallback_to_rules: true
+
+# Temporal pairing requirements
+temporal:
+  require_temporal_order: true
+  min_time_gap: 0
+  max_time_gap_days: 365
+
+# Claim quality requirements
+claim_quality:
+  min_confidence_a: 0.5
+  min_confidence_b: 0.5
+  require_speaker_match: false
