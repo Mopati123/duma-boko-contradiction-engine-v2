@@ -122,3 +122,15 @@ The script searches for:
 - Each phrase uses 1 search = 100 units
 - 9 phrases = 900 units per full run
 - Results are sorted by date (most recent first)
+
+## Testing & Validation
+
+- **Current Canonical Validation**: `test_v3_divergence_pipeline.py` is the canonical validation for the active v3.0 Governance Promise-Delivery Divergence Engine.
+- **Legacy Validation**: `test_semantic_pipeline.py` belongs to the legacy semantic transcript pipeline. It may fail in fresh clones because it depends on raw transcript assets under `downloads/TRANSCRIPTS/`, which are omitted from version control.
+- **Verification Command (WSL)**:
+  To run the active validation suite within WSL, execute:
+  ```bash
+  cd /home/mopati_ramaologa/dev/duma-boko-contradiction-engine-v2
+  source .venv/bin/activate
+  python3 test_v3_divergence_pipeline.py
+  ```
