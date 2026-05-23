@@ -44,6 +44,13 @@ from evidence.case_evidence_linking import (
     validate_case_evidence_link,
     validate_report_sections_resolve,
 )
+from evidence.report_section_assembly import (
+    DEFAULT_REPORT_SECTION_OUTPUT,
+    AssembledReportSection,
+    assemble_report_sections_fixture_only,
+    validate_assembled_report_section,
+    validate_assembled_section_resolves,
+)
 from evidence.evidence_loader import DEFAULT_INDEX_PATH, build_evidence_index, load_seed_evidence
 from evidence.evidence_gate import validate_case_evidence_links
 from evidence.evidence_schema import (
@@ -925,6 +932,158 @@ def validate_case_evidence_linking_lane() -> None:
     print("✓ Case Evidence Linking v1 lane validation OK")
 
 
+def validate_report_section_assembly_lane() -> None:
+    section = AssembledReportSection(
+        section_id="SECTION_CASE_002_JOBS",
+        case_id="CASE_002",
+        claim_ids=["CLAIM_JOBS_001"],
+        evidence_ids=["VID_JOBS_001"],
+        heading="Jobs Creation Promise Evidence",
+        body="TEST FIXTURE ONLY. Unit test assembled section.",
+        raw_quotes=["500 000 new jobs"],
+        timestamp_refs=[
+            {
+                "evidence_id": "VID_JOBS_001",
+                "timestamp_start": "00:00:10",
+                "timestamp_end": "00:00:18",
+            }
+        ],
+        assembly_status="assembly_verified",
+        assembly_notes="TEST FIXTURE ONLY. Report readiness pending.",
+    )
+    validate_assembled_report_section(section)
+
+    for field_name in ("section_id", "case_id", "heading", "body"):
+        assert_value_error(
+            lambda field_name=field_name: validate_assembled_report_section(
+                {**section.to_dict(), field_name: ""}
+            ),
+            f"{field_name} must be a non-empty string",
+        )
+
+    for field_name in ("claim_ids", "evidence_ids"):
+        assert_value_error(
+            lambda field_name=field_name: validate_assembled_report_section(
+                {**section.to_dict(), field_name: []}
+            ),
+            f"{field_name} must be a non-empty list",
+        )
+
+    assert_value_error(
+        lambda: validate_assembled_report_section(
+            {**section.to_dict(), "raw_quotes": []}
+        ),
+        "raw_quotes must be a non-empty list",
+    )
+
+    assert_value_error(
+        lambda: validate_assembled_report_section(
+            {**section.to_dict(), "timestamp_refs": []}
+        ),
+        "timestamp_refs must be a non-empty list",
+    )
+
+    assert_value_error(
+        lambda: validate_assembled_report_section(
+            {
+                **section.to_dict(),
+                "assembly_status": "assembly_rejected",
+                "raw_quotes": [],
+                "timestamp_refs": [],
+                "assembly_notes": "",
+            }
+        ),
+        "assembly_notes must be a non-empty string",
+    )
+
+    assert_value_error(
+        lambda: validate_assembled_report_section(
+            {
+                **section.to_dict(),
+                "assembly_status": "assembly_unavailable",
+                "raw_quotes": [],
+                "timestamp_refs": [],
+                "assembly_notes": "",
+            }
+        ),
+        "assembly_notes must be a non-empty string",
+    )
+
+    assert_value_error(
+        lambda: validate_assembled_report_section(
+            {**section.to_dict(), "evidence_verification_status": "report_ready"}
+        ),
+        "cannot mark evidence as report_ready",
+    )
+
+    seed_evidence = load_seed_evidence()[0]
+    claim = ClaimObject(
+        claim_id="CLAIM_RESOLVED",
+        case_id=seed_evidence.case_id,
+        claim_type="unit_test",
+        text="Unit test resolved evidence claim.",
+        evidence_ids=[seed_evidence.evidence_id],
+        verification_status="quote_linked_fixture",
+    )
+    case = CaseObject(
+        case_id=seed_evidence.case_id,
+        title="Unit test resolved evidence case",
+        domain="unit_test",
+        divergence_type="unit_test",
+        claims=[claim],
+        evidence=[seed_evidence],
+        evidence_strength=seed_evidence.evidence_strength,
+        verification_status="quote_linked_fixture",
+    )
+    validate_case_object(case)
+    unresolved_section = AssembledReportSection(
+        section_id="SECTION_UNRESOLVED",
+        case_id=seed_evidence.case_id,
+        claim_ids=[claim.claim_id],
+        evidence_ids=["MISSING_EVIDENCE"],
+        heading="Unit test unresolved assembled section",
+        body="TEST FIXTURE ONLY. Unit test assembled section.",
+        raw_quotes=["500 000 new jobs"],
+        timestamp_refs=[
+            {
+                "evidence_id": "MISSING_EVIDENCE",
+                "timestamp_start": "00:00:10",
+                "timestamp_end": "00:00:18",
+            }
+        ],
+        assembly_status="assembly_verified",
+        assembly_notes="TEST FIXTURE ONLY. Report readiness pending.",
+    )
+    assert_value_error(
+        lambda: validate_assembled_section_resolves(unresolved_section, case),
+        "references unknown evidence_id: MISSING_EVIDENCE",
+    )
+
+    summary = assemble_report_sections_fixture_only()
+    if summary["processed"] != 4:
+        raise AssertionError("Report section assembly must process 4 case links")
+    if summary["sections_verified"] != 2:
+        raise AssertionError("Report section fixtures must verify 2 sections")
+    if summary["sections_unavailable"] != 2:
+        raise AssertionError("Report section fixtures must leave 2 sections unavailable")
+    if summary["sections_candidate"] != 0 or summary["sections_rejected"] != 0:
+        raise AssertionError("Report section fixtures should not be pending or rejected")
+    if summary["cases_represented"] != 2:
+        raise AssertionError("Report section fixtures must represent 2 cases")
+    if summary["evidence_ids_represented"] != 2:
+        raise AssertionError("Report section fixtures must represent 2 evidence IDs")
+
+    for produced in summary["sections"]:
+        produced_data = produced.to_dict()
+        if produced_data.get("evidence_verification_status") == "report_ready":
+            raise AssertionError("Report section assembly must not imply report_ready")
+        if "TEST FIXTURE ONLY" not in produced.assembly_notes:
+            raise AssertionError("Fixture report sections must be clearly labeled")
+
+    assert_nonempty_file(str(DEFAULT_REPORT_SECTION_OUTPUT))
+    print("✓ Report Section Assembly v1 lane validation OK")
+
+
 def validate_seed_evidence_index() -> None:
     seed_evidence = load_seed_evidence()
     if len(seed_evidence) != 2:
@@ -958,6 +1117,7 @@ def main() -> int:
     validate_timestamp_verification_lane()
     validate_quote_verification_lane()
     validate_case_evidence_linking_lane()
+    validate_report_section_assembly_lane()
     validate_gate_rejections()
     validate_seed_evidence_index()
     validate_report_source_text()

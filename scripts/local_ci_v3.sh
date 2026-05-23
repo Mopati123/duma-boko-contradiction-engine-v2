@@ -54,6 +54,10 @@ echo "== Validating case evidence linking fixtures =="
 python scripts/link_case_evidence.py --fixtures-only
 
 echo
+echo "== Validating report section assembly fixtures =="
+python scripts/assemble_report_sections.py --fixtures-only
+
+echo
 echo "== Running canonical v3 test =="
 python test_v3_divergence_pipeline.py
 
@@ -92,6 +96,12 @@ echo
 echo "== Removing ignored case evidence linking artifacts =="
 if [ -d outputs/case_links ]; then
   git clean -fX outputs/case_links/
+fi
+
+echo
+echo "== Removing ignored report section assembly artifacts =="
+if [ -d outputs/report_sections ]; then
+  git clean -fX outputs/report_sections/
 fi
 
 echo
