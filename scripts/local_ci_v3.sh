@@ -3,6 +3,16 @@ set -euo pipefail
 
 cd "$(dirname "$0")/.."
 
+if [ -f ".venv/bin/activate" ]; then
+  source ".venv/bin/activate"
+else
+  echo "ERROR: .venv not found. Create it with:"
+  echo "python3 -m venv .venv"
+  echo "source .venv/bin/activate"
+  echo "pip install -r requirements.txt"
+  exit 1
+fi
+
 echo "== Local CI: v3 divergence validation =="
 echo "Repo: $(pwd)"
 echo
