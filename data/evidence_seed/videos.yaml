@@ -1,0 +1,35 @@
+VID_JOBS_001:
+  case_id: CASE_002
+  source_type: video
+  platform: youtube
+  title: "Duma Boko, Botswana's president elect, promises to 500 000 new jobs in 5 years. I dare not fail!"
+  url: "https://www.youtube.com/watch?v=e0MLzB5nGDc"
+  evidence_role: promise_video
+  speaker: "Duma Boko"
+  speaker_confidence: "likely"
+  target_phrases:
+    - "500 000 new jobs"
+    - "I dare not fail"
+    - "jobs in 5 years"
+  transcript_status: pending
+  verification_status: source_found
+  evidence_strength: medium
+  notes: "Seed video for jobs promise evidence. Timestamp and transcript pending."
+
+VID_HEALTH_001:
+  case_id: CASE_006
+  source_type: video
+  platform: youtube
+  title: "Botswana Declares Health Emergency: Boko Secures 36 Tonnes of Medicines"
+  url: "https://www.youtube.com/watch?v=ZsxLObyHUYE"
+  evidence_role: outcome_video
+  speaker: "Duma Boko"
+  speaker_confidence: "likely"
+  target_phrases:
+    - "public health emergency"
+    - "36 tonnes of medicines"
+    - "hospitals and clinics have run out"
+  transcript_status: pending
+  verification_status: source_found
+  evidence_strength: medium
+  notes: "Seed video for healthcare emergency outcome evidence. Timestamp and transcript pending."

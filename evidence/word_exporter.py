@@ -57,10 +57,16 @@ class WordExporter:
             info = doc.add_paragraph()
             info.add_run("EVIDENCE ID: ").bold = True
             info.add_run(str(evidence.get("evidence_id")))
-            info.add_run("\nSOURCE: ").bold = True
-            info.add_run(str(evidence.get("source", "Unknown")))
-            info.add_run("\nDATE: ").bold = True
-            info.add_run(str(evidence.get("date", "Unknown")))
+            info.add_run("\nTITLE: ").bold = True
+            info.add_run(str(evidence.get("title", "Unknown")))
+            info.add_run("\nSOURCE TYPE: ").bold = True
+            info.add_run(str(evidence.get("source_type", "Unknown")))
+            info.add_run("\nPLATFORM: ").bold = True
+            info.add_run(str(evidence.get("platform", "Unknown")))
+            info.add_run("\nVERIFICATION STATUS: ").bold = True
+            info.add_run(str(evidence.get("verification_status", "Unknown")))
+            info.add_run("\nEVIDENCE STRENGTH: ").bold = True
+            info.add_run(str(evidence.get("evidence_strength", "Unknown")))
             info.add_run("\nLINK: ").bold = True
             self._add_hyperlink(info, "View Evidence", evidence.get("url", "#"))
 

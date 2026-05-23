@@ -30,6 +30,10 @@ python --version
 which python
 
 echo
+echo "== Building evidence index =="
+python scripts/build_evidence_index.py
+
+echo
 echo "== Running canonical v3 test =="
 python test_v3_divergence_pipeline.py
 
@@ -41,6 +45,12 @@ git restore outputs/reports/DUMA_BOKO_FINAL_FORENSIC_REPORT.docx
 echo
 echo "== Removing ignored dated report artifacts =="
 git clean -fX outputs/reports/
+
+echo
+echo "== Removing ignored evidence index artifacts =="
+if [ -d outputs/evidence ]; then
+  git clean -fX outputs/evidence/
+fi
 
 echo
 echo "== Git status after cleanup =="

@@ -4,7 +4,7 @@ evidence_gate.py - Shared EvidenceObject linkage validation for reportable cases
 
 from typing import Any, Dict, List, Tuple
 
-from evidence.evidence_schema import EvidenceObject
+from evidence.evidence_schema import EvidenceObject, validate_evidence_object
 
 
 REPORTABLE_CLAIM_KEYS = ("promise", "outcome_or_position", "analysis")
@@ -12,14 +12,13 @@ REPORTABLE_CLAIM_KEYS = ("promise", "outcome_or_position", "analysis")
 REQUIRED_EVIDENCE_KEYS = {
     "evidence_id",
     "case_id",
-    "claim_role",
-    "quote",
-    "source",
-    "url",
-    "date",
-    "evidence_type",
+    "source_type",
     "platform",
+    "title",
+    "url",
+    "evidence_role",
     "verification_status",
+    "evidence_strength",
 }
 
 
@@ -43,6 +42,10 @@ def evidence_id_for(case_id: str, claim_role: str, index: int = 1) -> str:
     return f"{case_id}-{_role_token(claim_role)}-{index:03d}"
 
 
+def _source_type_from_position(position: Dict[str, Any]) -> str:
+    return str(position.get("source_type") or position.get("evidence_type", ""))
+
+
 def evidence_object_from_position(
     case_id: str,
     claim_role: str,
@@ -52,20 +55,23 @@ def evidence_object_from_position(
     evidence = EvidenceObject(
         evidence_id=evidence_id_for(case_id, claim_role, index),
         case_id=case_id,
-        claim_role=claim_role,
-        quote=str(position.get("quote", "")),
-        source=str(position.get("source", "")),
-        url=str(position.get("url", "")),
-        date=str(position.get("date", "")),
-        evidence_type=str(position.get("evidence_type", "")),
+        source_type=_source_type_from_position(position),
         platform=str(position.get("platform", "")),
+        title=str(position.get("title") or position.get("source", "")),
+        url=str(position.get("url", "")),
+        evidence_role=claim_role,
         verification_status=str(position.get("verification_status", "source_linked")),
+        evidence_strength=str(position.get("evidence_strength", "low")),
+        speaker=position.get("speaker"),
+        speaker_confidence=position.get("speaker_confidence"),
+        target_phrases=list(position.get("target_phrases") or position.get("matched_terms", [])),
+        transcript_status=position.get("transcript_status"),
         timestamp_start=position.get("timestamp_start"),
         timestamp_end=position.get("timestamp_end"),
-        screenshot_path=position.get("screenshot_path"),
-        confidence=float(position.get("confidence", 0.0) or 0.0),
-        speaker=str(position.get("speaker", "Duma Boko")),
-        matched_terms=list(position.get("matched_terms", [])),
+        raw_quote=position.get("raw_quote"),
+        context_before=position.get("context_before"),
+        context_after=position.get("context_after"),
+        notes=position.get("notes"),
     )
     return evidence.to_dict()
 
@@ -92,20 +98,6 @@ def build_case_evidence(
     return evidence_objects, claim_evidence_links
 
 
-def _require_nonempty_string(value: Any, field_name: str, case_id: str) -> None:
-    if not isinstance(value, str) or not value.strip():
-        raise ValueError(f"{case_id}: evidence field {field_name} must be non-empty")
-
-
-def _reject_placeholder_url(url: str, case_id: str) -> None:
-    normalized_url = url.lower()
-    for placeholder in _placeholder_url_parts():
-        if placeholder in normalized_url:
-            raise ValueError(
-                f"{case_id}: evidence URL appears to be a placeholder: {url}"
-            )
-
-
 def validate_case_evidence_links(case: Dict[str, Any]) -> None:
     case_id = str(case.get("case_id", "UNKNOWN"))
     evidence_objects = case.get("evidence_objects")
@@ -123,17 +115,10 @@ def validate_case_evidence_links(case: Dict[str, Any]) -> None:
                 f"{case_id}: evidence_objects[{idx}] missing keys: {sorted(missing)}"
             )
 
-        for field_name in REQUIRED_EVIDENCE_KEYS:
-            _require_nonempty_string(evidence.get(field_name), field_name, case_id)
-
-        _reject_placeholder_url(evidence["url"], case_id)
-
-        verification_status = evidence["verification_status"].strip()
-        has_timestamp = bool(evidence.get("timestamp_start") or evidence.get("timestamp_end"))
-        if verification_status == "timestamp_verified" and not has_timestamp:
-            raise ValueError(
-                f"{case_id}: timestamp_verified evidence requires timestamp fields"
-            )
+        try:
+            validate_evidence_object(evidence)
+        except ValueError as exc:
+            raise ValueError(f"{case_id}: {exc}") from exc
 
         evidence_id = evidence["evidence_id"]
         if evidence_id in evidence_by_id:
