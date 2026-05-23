@@ -31,6 +31,12 @@ from evidence.timestamp_verification import (
     validate_timestamp_candidate,
     verify_timestamps_fixture_only,
 )
+from evidence.quote_verification import (
+    DEFAULT_QUOTE_OUTPUT,
+    QuoteCandidate,
+    validate_quote_candidate,
+    verify_quotes_fixture_only,
+)
 from evidence.evidence_loader import DEFAULT_INDEX_PATH, build_evidence_index, load_seed_evidence
 from evidence.evidence_gate import validate_case_evidence_links
 from evidence.evidence_schema import (
@@ -672,6 +678,108 @@ def validate_timestamp_verification_lane() -> None:
     print("✓ Timestamp Verification v1 lane validation OK")
 
 
+def validate_quote_verification_lane() -> None:
+    candidate = QuoteCandidate(
+        evidence_id="VID_JOBS_001",
+        case_id="CASE_002",
+        phrase="500 000 new jobs",
+        timestamp_start="00:00:10",
+        timestamp_end="00:00:18",
+        matched_text="We promised to create 500 000 new jobs in five years.",
+        raw_quote="500 000 new jobs",
+        quote_confidence=1.0,
+        verification_status="quote_verified",
+        verification_notes="Unit test quote fixture only. Report readiness pending.",
+    )
+    validate_quote_candidate(candidate)
+
+    assert_value_error(
+        lambda: validate_quote_candidate({**candidate.to_dict(), "raw_quote": ""}),
+        "raw_quote must be a non-empty string",
+    )
+
+    assert_value_error(
+        lambda: validate_quote_candidate(
+            {**candidate.to_dict(), "timestamp_start": ""}
+        ),
+        "timestamp_start must be a non-empty string",
+    )
+
+    assert_value_error(
+        lambda: validate_quote_candidate(
+            {**candidate.to_dict(), "timestamp_end": ""}
+        ),
+        "timestamp_end must be a non-empty string",
+    )
+
+    assert_value_error(
+        lambda: validate_quote_candidate({**candidate.to_dict(), "matched_text": ""}),
+        "matched_text must be a non-empty string",
+    )
+
+    assert_value_error(
+        lambda: validate_quote_candidate(
+            {**candidate.to_dict(), "raw_quote": "not in transcript"}
+        ),
+        "raw_quote must be contained in matched_text",
+    )
+
+    assert_value_error(
+        lambda: validate_quote_candidate(
+            {
+                **candidate.to_dict(),
+                "verification_status": "quote_unavailable",
+                "raw_quote": "",
+                "verification_notes": "",
+            }
+        ),
+        "verification_notes must be a non-empty string",
+    )
+
+    assert_value_error(
+        lambda: validate_quote_candidate(
+            {
+                **candidate.to_dict(),
+                "verification_status": "quote_rejected",
+                "raw_quote": "",
+                "verification_notes": "",
+            }
+        ),
+        "verification_notes must be a non-empty string",
+    )
+
+    assert_value_error(
+        lambda: validate_quote_candidate(
+            {**candidate.to_dict(), "evidence_verification_status": "report_ready"}
+        ),
+        "cannot mark evidence as report_ready",
+    )
+
+    summary = verify_quotes_fixture_only()
+    if summary["processed"] != 4:
+        raise AssertionError("Quote fixture verification must process 4 timestamps")
+    if summary["quote_verified"] != 4:
+        raise AssertionError("Quote fixtures must verify 4 quote candidates")
+    if (
+        summary["quote_candidate_found"] != 0
+        or summary["quote_rejected"] != 0
+        or summary["quote_unavailable"] != 0
+    ):
+        raise AssertionError("Quote fixtures should not be pending, rejected, or missed")
+
+    for produced in summary["candidates"]:
+        if produced.verification_status != "quote_verified":
+            raise AssertionError("Fixture quote candidates must be quote_verified only")
+        produced_data = produced.to_dict()
+        if produced_data.get("evidence_verification_status") == "report_ready":
+            raise AssertionError("Quote verification must not imply report_ready")
+        if "TEST FIXTURE ONLY" not in produced.verification_notes:
+            raise AssertionError("Fixture quote candidates must be clearly labeled")
+
+    assert_nonempty_file(str(DEFAULT_QUOTE_OUTPUT))
+    print("✓ Quote Verification v1 lane validation OK")
+
+
 def validate_seed_evidence_index() -> None:
     seed_evidence = load_seed_evidence()
     if len(seed_evidence) != 2:
@@ -703,6 +811,7 @@ def main() -> int:
     validate_ingestion_lane()
     validate_transcript_acquisition_lane()
     validate_timestamp_verification_lane()
+    validate_quote_verification_lane()
     validate_gate_rejections()
     validate_seed_evidence_index()
     validate_report_source_text()
