@@ -13,6 +13,7 @@ from docx.shared import Inches, Pt, RGBColor
 from docx.enum.text import WD_ALIGN_PARAGRAPH
 from docx.oxml.ns import qn
 from docx.oxml import OxmlElement
+from evidence.evidence_gate import get_linked_evidence, validate_cases_for_report
 
 class FinalReportGenerator:
     def __init__(self, output_dir: Path):
@@ -39,7 +40,27 @@ class FinalReportGenerator:
         hyperlink.append(new_run)
         paragraph._p.append(hyperlink)
 
+    def _add_evidence_details(self, doc, evidence_items):
+        for evidence in evidence_items:
+            info = doc.add_paragraph()
+            info.add_run("EVIDENCE ID: ").bold = True
+            info.add_run(str(evidence.get("evidence_id")))
+            info.add_run("\nSOURCE: ").bold = True
+            info.add_run(str(evidence.get("source", "Unknown")))
+            info.add_run("\nDATE: ").bold = True
+            info.add_run(str(evidence.get("date", "Unknown")))
+            info.add_run("\nLINK: ").bold = True
+            self._add_hyperlink(info, "View Evidence", evidence.get("url", "#"))
+
+            timestamp_start = evidence.get("timestamp_start")
+            timestamp_end = evidence.get("timestamp_end")
+            if timestamp_start or timestamp_end:
+                info.add_run("\nTIMESTAMP: ").bold = True
+                info.add_run(" - ".join(str(t) for t in (timestamp_start, timestamp_end) if t))
+
     def generate(self, cases: List[Dict[str, Any]], filename: str):
+        validate_cases_for_report(cases)
+
         doc = Document()
         
         # Title Page
@@ -72,11 +93,13 @@ class FinalReportGenerator:
         hdrs[0].text = 'Case ID'; hdrs[1].text = 'Investigation Theme'; hdrs[2].text = 'Divergence Type'; hdrs[3].text = 'Evidence Strength'
         
         summary_data = [
-            ("CASE_002", "Jobs Creation", "Promise vs Outcome", "Moderate"),
-            ("CASE_006", "Healthcare Reform", "Promise vs Outcome", "High"),
-            ("CASE_001", "Manifesto Contract", "Obligation Denial", "Low"),
-            ("CASE_004", "Economic Diversification", "Economic Constraint Justification", "Moderate"),
-            ("CASE_003", "Anti-Corruption", "Governance Distancing", "Low"),
+            (
+                str(case.get("case_id", "")),
+                str(case.get("topic", "")).replace("_", " ").title(),
+                str(case.get("divergence_type", "")).replace("_", " ").title(),
+                str(case.get("evidence_strength", "")).title(),
+            )
+            for case in cases
         ]
         for cid, theme, dtype, strength in summary_data:
             row = table.add_row().cells
@@ -94,36 +117,32 @@ class FinalReportGenerator:
         return save_path
 
     def _add_case_section(self, doc, case):
-        doc.add_heading(f"{case['case_id']} — {case['topic']}", level=1)
+        topic = str(case.get('topic', '')).replace('_', ' ').title()
+        doc.add_heading(f"{case['case_id']} — {topic}", level=1)
         doc.add_paragraph().add_run(f"Divergence Type: {case['divergence_type']}").bold = True
+        doc.add_paragraph().add_run(
+            f"Verification Status: {case.get('verification_status', 'unknown')}"
+        ).bold = True
         
         doc.add_heading("1. Campaign Promise (Earlier Position)", level=2)
-        doc.add_paragraph(case['promise_text'], style='Intense Quote')
-        
-        if case.get('promise_video'):
-            p = doc.add_paragraph()
-            run = p.add_run("VIDEO EVIDENCE: ")
-            run.bold = True
-            run.font.color.rgb = RGBColor(0, 102, 204)
-            self._add_hyperlink(p, f"\"{case['promise_video_title']}\"", case['promise_video_url'])
-            if case.get('promise_timestamp'):
-                p.add_run(f" [Timestamp: {case['promise_timestamp']}]").italic = True
+        promise = case.get('promise', {})
+        doc.add_paragraph(str(promise.get('quote', 'N/A')), style='Intense Quote')
+        self._add_evidence_details(doc, get_linked_evidence(case, "promise"))
 
         doc.add_heading("2. Governance Outcome (Later Position)", level=2)
-        doc.add_paragraph(case['outcome_text'], style='Intense Quote')
-        
-        if case.get('outcome_video'):
-            p = doc.add_paragraph()
-            run = p.add_run("VIDEO EVIDENCE: ")
-            run.bold = True
-            run.font.color.rgb = RGBColor(0, 102, 204)
-            self._add_hyperlink(p, f"\"{case['outcome_video_title']}\"", case['outcome_video_url'])
-            if case.get('outcome_timestamp'):
-                p.add_run(f" [Timestamp: {case['outcome_timestamp']}]").italic = True
+        outcome = case.get('outcome_or_position', {})
+        doc.add_paragraph(str(outcome.get('quote', 'N/A')), style='Intense Quote')
+        self._add_evidence_details(doc, get_linked_evidence(case, "outcome_or_position"))
 
         doc.add_heading("3. Reconstruction Analysis", level=2)
-        doc.add_paragraph(case['analysis_text'])
+        doc.add_paragraph(str(case.get('analysis', 'No analysis available.')))
+        analysis_evidence = get_linked_evidence(case, "analysis")
+        evidence_note = doc.add_paragraph()
+        evidence_note.add_run("Analysis Evidence IDs: ").bold = True
+        evidence_note.add_run(
+            ", ".join(str(evidence.get("evidence_id")) for evidence in analysis_evidence)
+        )
         
         p = doc.add_paragraph()
-        run = p.add_run("✔ VALIDATED FORENSIC EVIDENCE ATTACHED")
+        run = p.add_run("✔ VALIDATED FORENSIC EVIDENCE LINKS ATTACHED")
         run.bold = True; run.font.color.rgb = RGBColor(0, 128, 0)

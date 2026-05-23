@@ -15,6 +15,7 @@ from docx.shared import Inches, Pt, RGBColor
 from docx.enum.text import WD_ALIGN_PARAGRAPH
 from docx.oxml.ns import qn
 from docx.oxml import OxmlElement
+from evidence.evidence_gate import get_linked_evidence, validate_cases_for_report
 
 class WordExporter:
     """Exports divergence cases to a professional Word document."""
@@ -51,7 +52,27 @@ class WordExporter:
         paragraph._p.append(hyperlink)
         return hyperlink
 
+    def _add_evidence_details(self, doc, evidence_items):
+        for evidence in evidence_items:
+            info = doc.add_paragraph()
+            info.add_run("EVIDENCE ID: ").bold = True
+            info.add_run(str(evidence.get("evidence_id")))
+            info.add_run("\nSOURCE: ").bold = True
+            info.add_run(str(evidence.get("source", "Unknown")))
+            info.add_run("\nDATE: ").bold = True
+            info.add_run(str(evidence.get("date", "Unknown")))
+            info.add_run("\nLINK: ").bold = True
+            self._add_hyperlink(info, "View Evidence", evidence.get("url", "#"))
+
+            timestamp_start = evidence.get("timestamp_start")
+            timestamp_end = evidence.get("timestamp_end")
+            if timestamp_start or timestamp_end:
+                info.add_run("\nTIMESTAMP: ").bold = True
+                info.add_run(" - ".join(str(t) for t in (timestamp_start, timestamp_end) if t))
+
     def generate_report(self, cases: List[Dict[str, Any]], filename: str = "governance_divergence_report.docx"):
+        validate_cases_for_report(cases)
+
         doc = Document()
         
         # 1. Title Page
@@ -120,6 +141,9 @@ class WordExporter:
     def _add_case_section(self, doc, case):
         case_id = case.get('case_id')
         topic = str(case.get('topic', '')).replace('_', ' ').upper()
+        promise_evidence = get_linked_evidence(case, "promise")
+        outcome_evidence = get_linked_evidence(case, "outcome_or_position")
+        analysis_evidence = get_linked_evidence(case, "analysis")
         
         # Header
         heading = doc.add_heading(f"{case_id} — {topic}", level=1)
@@ -137,13 +161,7 @@ class WordExporter:
         p = doc.add_paragraph(style='Intense Quote')
         p.add_run(f"\"{promise.get('quote', 'N/A')}\"")
         
-        info = doc.add_paragraph()
-        info.add_run("SOURCE: ").bold = True
-        info.add_run(str(promise.get('source', 'Unknown')))
-        info.add_run("\nDATE: ").bold = True
-        info.add_run(str(promise.get('date', 'Unknown')))
-        info.add_run("\nVIDEO/LINK: ").bold = True
-        self._add_hyperlink(info, "View Evidence Video", promise.get('url', '#'))
+        self._add_evidence_details(doc, promise_evidence)
 
         # Outcome Block
         doc.add_heading("2. GOVERNANCE OUTCOME (Later Position)", level=2)
@@ -151,22 +169,21 @@ class WordExporter:
         p = doc.add_paragraph(style='Intense Quote')
         p.add_run(f"\"{outcome.get('quote', 'N/A')}\"")
         
-        info = doc.add_paragraph()
-        info.add_run("SOURCE: ").bold = True
-        info.add_run(str(outcome.get('source', 'Unknown')))
-        info.add_run("\nDATE: ").bold = True
-        info.add_run(str(outcome.get('date', 'Unknown')))
-        info.add_run("\nVIDEO/LINK: ").bold = True
-        self._add_hyperlink(info, "View Evidence Video", outcome.get('url', '#'))
+        self._add_evidence_details(doc, outcome_evidence)
 
         # Analysis
         doc.add_heading("3. RECONSTRUCTION ANALYSIS", level=2)
         doc.add_paragraph(str(case.get('analysis', 'No analysis available.')))
+        evidence_note = doc.add_paragraph()
+        evidence_note.add_run("ANALYSIS EVIDENCE IDS: ").bold = True
+        evidence_note.add_run(
+            ", ".join(str(evidence.get("evidence_id")) for evidence in analysis_evidence)
+        )
 
         # Video Validation Flag
         doc.add_paragraph()
         v_para = doc.add_paragraph()
-        run = v_para.add_run("✔ VALIDATED VIDEO EVIDENCE ATTACHED")
+        run = v_para.add_run("✔ SOURCE-LINKED EVIDENCE ATTACHED")
         run.font.color.rgb = RGBColor(0, 128, 0)
         run.bold = True
 
