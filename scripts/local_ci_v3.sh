@@ -34,6 +34,10 @@ echo "== Building evidence index =="
 python scripts/build_evidence_index.py
 
 echo
+echo "== Inspecting evidence sources =="
+python scripts/inspect_evidence_sources.py
+
+echo
 echo "== Running canonical v3 test =="
 python test_v3_divergence_pipeline.py
 
