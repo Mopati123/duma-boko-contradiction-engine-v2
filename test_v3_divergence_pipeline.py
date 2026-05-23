@@ -17,6 +17,14 @@ from evidence.evidence_ingestion import (
     load_transcript_artifact,
     upgrade_evidence_status,
 )
+from evidence.transcript_acquisition import (
+    acquire_transcripts,
+    extract_youtube_video_id,
+    failure_artifact,
+    transcript_found_artifact,
+    upgrade_evidence_from_transcript_artifact,
+    validate_transcript_artifact,
+)
 from evidence.evidence_loader import DEFAULT_INDEX_PATH, build_evidence_index, load_seed_evidence
 from evidence.evidence_gate import validate_case_evidence_links
 from evidence.evidence_schema import (
@@ -484,6 +492,91 @@ def validate_ingestion_lane() -> None:
     print("✓ Evidence Ingestion v1 lane validation OK")
 
 
+def validate_transcript_acquisition_lane() -> None:
+    seed_evidence = load_seed_evidence()[0]
+
+    if extract_youtube_video_id(seed_evidence.url) != "e0MLzB5nGDc":
+        raise AssertionError("YouTube watch URL video_id extraction failed")
+    if extract_youtube_video_id("https://youtu.be/e0MLzB5nGDc") != "e0MLzB5nGDc":
+        raise AssertionError("youtu.be URL video_id extraction failed")
+
+    success_artifact = transcript_found_artifact(
+        seed_evidence,
+        [{"text": "Fixture transcript text for validation only."}],
+        "fixture-test",
+        "en",
+    )
+    validate_transcript_artifact(success_artifact)
+
+    assert_value_error(
+        lambda: validate_transcript_artifact(
+            {**success_artifact.to_dict(), "transcript_text": ""}
+        ),
+        "transcript_text must be non-empty",
+    )
+
+    unavailable_artifact = failure_artifact(
+        seed_evidence,
+        "transcript_unavailable",
+        "fixture-test",
+        "No transcript available in fixture.",
+    )
+    validate_transcript_artifact(unavailable_artifact)
+
+    failed_artifact = failure_artifact(
+        seed_evidence,
+        "acquisition_failed",
+        "fixture-test",
+        "Fixture provider failure.",
+    )
+    validate_transcript_artifact(failed_artifact)
+
+    assert_value_error(
+        lambda: validate_transcript_artifact(
+            {**unavailable_artifact.to_dict(), "error": ""}
+        ),
+        "error must be non-empty",
+    )
+
+    assert_value_error(
+        lambda: validate_transcript_artifact(
+            {**failed_artifact.to_dict(), "transcript_text": "not allowed"}
+        ),
+        "transcript_text must be empty",
+    )
+
+    assert_value_error(
+        lambda: validate_transcript_artifact(
+            {**success_artifact.to_dict(), "verification_status": "timestamp_verified"}
+        ),
+        "cannot mark evidence as timestamp_verified",
+    )
+
+    upgraded = upgrade_evidence_from_transcript_artifact(seed_evidence, success_artifact)
+    if upgraded.verification_status != "transcript_found":
+        raise AssertionError("Transcript acquisition must only upgrade to transcript_found")
+    if upgraded.timestamp_start or upgraded.timestamp_end or upgraded.raw_quote:
+        raise AssertionError("Transcript acquisition must not set timestamps or raw_quote")
+
+    assert_value_error(
+        lambda: upgrade_evidence_from_transcript_artifact(
+            seed_evidence,
+            unavailable_artifact,
+        ),
+        "transcript_found is required",
+    )
+
+    summary = acquire_transcripts(fixtures_only=True)
+    if summary["processed"] != 2:
+        raise AssertionError("Fixture transcript acquisition must process 2 records")
+    if summary["transcript_found"] != 0:
+        raise AssertionError("Fixture acquisition must not invent transcript text")
+    if summary["transcript_unavailable"] != 1 or summary["acquisition_failed"] != 1:
+        raise AssertionError("Fixture acquisition counts are not deterministic")
+
+    print("✓ Transcript Acquisition v1 lane validation OK")
+
+
 def validate_seed_evidence_index() -> None:
     seed_evidence = load_seed_evidence()
     if len(seed_evidence) != 2:
@@ -513,6 +606,7 @@ def validate_report_source_text() -> None:
 def main() -> int:
     validate_schema_objects()
     validate_ingestion_lane()
+    validate_transcript_acquisition_lane()
     validate_gate_rejections()
     validate_seed_evidence_index()
     validate_report_source_text()

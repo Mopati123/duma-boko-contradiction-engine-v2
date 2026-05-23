@@ -38,6 +38,10 @@ echo "== Inspecting evidence sources =="
 python scripts/inspect_evidence_sources.py
 
 echo
+echo "== Validating transcript acquisition fixtures =="
+python scripts/acquire_transcripts.py --fixtures-only
+
+echo
 echo "== Running canonical v3 test =="
 python test_v3_divergence_pipeline.py
 
@@ -55,6 +59,10 @@ echo "== Removing ignored evidence index artifacts =="
 if [ -d outputs/evidence ]; then
   git clean -fX outputs/evidence/
 fi
+
+echo
+echo "== Removing ignored transcript acquisition artifacts =="
+git clean -fX data/evidence_transcripts/
 
 echo
 echo "== Git status after cleanup =="
