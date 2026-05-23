@@ -12,15 +12,22 @@ import sys
 from pathlib import Path
 
 from analysis.target_search import run_divergence_engine
+from evidence.evidence_ingestion import (
+    load_or_build_evidence_index,
+    load_transcript_artifact,
+    upgrade_evidence_status,
+)
 from evidence.evidence_loader import DEFAULT_INDEX_PATH, build_evidence_index, load_seed_evidence
 from evidence.evidence_gate import validate_case_evidence_links
 from evidence.evidence_schema import (
     CaseObject,
     ClaimObject,
     EvidenceObject,
+    TranscriptObject,
     validate_case_object,
     validate_claim_object,
     validate_evidence_object,
+    validate_transcript_object,
 )
 from evidence.word_exporter import WordExporter
 
@@ -389,6 +396,94 @@ def validate_schema_objects() -> None:
     print("✓ EvidenceObject v1 schema validation OK")
 
 
+def validate_ingestion_lane() -> None:
+    index = load_or_build_evidence_index()
+    if index["metadata"]["total_evidence_records"] != 2:
+        raise AssertionError("Evidence ingestion index must contain 2 records")
+
+    seed_evidence = load_seed_evidence()[0]
+    validate_evidence_object(seed_evidence)
+
+    pending_transcript = load_transcript_artifact(seed_evidence.evidence_id)
+    if pending_transcript is None:
+        raise AssertionError(f"Missing transcript artifact: {seed_evidence.evidence_id}")
+
+    validate_transcript_object(pending_transcript)
+    if pending_transcript.transcript_status != "pending":
+        raise AssertionError("Seed transcript artifact must remain pending")
+
+    assert_value_error(
+        lambda: upgrade_evidence_status(seed_evidence, "timestamp_verified"),
+        "Invalid evidence status transition",
+    )
+
+    assert_value_error(
+        lambda: upgrade_evidence_status(seed_evidence, "transcript_found"),
+        "requires a transcript artifact",
+    )
+
+    assert_value_error(
+        lambda: upgrade_evidence_status(
+            seed_evidence,
+            "transcript_found",
+            pending_transcript,
+        ),
+        "transcript_status=transcribed",
+    )
+
+    transcribed = TranscriptObject(
+        evidence_id=seed_evidence.evidence_id,
+        transcript_status="transcribed",
+        transcript_text="Unit test transcript text.",
+        source="unit-test",
+        generated_by="unit-test",
+        verification_notes="Unit test transcript fixture only.",
+    )
+    validate_transcript_object(transcribed)
+
+    transcript_found = upgrade_evidence_status(
+        seed_evidence,
+        "transcript_found",
+        transcribed,
+    )
+    if transcript_found.verification_status != "transcript_found":
+        raise AssertionError("Evidence did not move to transcript_found")
+
+    for immutable_field in ("evidence_id", "case_id", "url", "title"):
+        if getattr(seed_evidence, immutable_field) != getattr(transcript_found, immutable_field):
+            raise AssertionError(f"Evidence ingestion changed {immutable_field}")
+
+    assert_value_error(
+        lambda: upgrade_evidence_status(transcript_found, "timestamp_verified"),
+        "requires timestamp_start and timestamp_end",
+    )
+
+    timestamped = upgrade_evidence_status(
+        transcript_found,
+        "timestamp_verified",
+        timestamp_start="00:01",
+        timestamp_end="00:05",
+    )
+    validate_evidence_object(timestamped)
+
+    assert_value_error(
+        lambda: upgrade_evidence_status(timestamped, "quote_verified"),
+        "requires raw_quote",
+    )
+
+    quoted = upgrade_evidence_status(
+        timestamped,
+        "quote_verified",
+        raw_quote="Unit test quote.",
+    )
+    validate_evidence_object(quoted)
+
+    report_ready = upgrade_evidence_status(quoted, "report_ready")
+    validate_evidence_object(report_ready)
+
+    print("✓ Evidence Ingestion v1 lane validation OK")
+
+
 def validate_seed_evidence_index() -> None:
     seed_evidence = load_seed_evidence()
     if len(seed_evidence) != 2:
@@ -417,6 +512,7 @@ def validate_report_source_text() -> None:
 
 def main() -> int:
     validate_schema_objects()
+    validate_ingestion_lane()
     validate_gate_rejections()
     validate_seed_evidence_index()
     validate_report_source_text()

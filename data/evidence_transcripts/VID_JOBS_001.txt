@@ -1,0 +1,6 @@
+TRANSCRIPT_STATUS: pending
+EVIDENCE_ID: VID_JOBS_001
+NOT_VERIFIED: true
+SOURCE: data/evidence_transcripts/VID_JOBS_001.txt
+GENERATED_BY: manual_placeholder
+VERIFICATION_NOTES: Pending transcript placeholder only. No transcript text, timestamps, or quote verification.

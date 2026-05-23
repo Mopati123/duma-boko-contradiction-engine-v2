@@ -105,6 +105,20 @@ class EvidenceObject:
 
 
 @dataclass
+class TranscriptObject:
+    """Transcript artifact metadata for evidence ingestion."""
+    evidence_id: str
+    transcript_status: str
+    transcript_text: str
+    source: str
+    generated_by: str
+    verification_notes: str
+
+    def to_dict(self) -> Dict[str, Any]:
+        return asdict(self)
+
+
+@dataclass
 class ClaimObject:
     """A reportable claim linked to one or more evidence records."""
     claim_id: str
@@ -214,6 +228,24 @@ def validate_evidence_object(evidence: Any) -> None:
         raise ValueError(
             f"EvidenceObject with verification_status={status} requires raw_quote"
         )
+
+
+def validate_transcript_object(transcript: Any) -> None:
+    data = _as_dict(transcript)
+    object_name = "TranscriptObject"
+
+    for field_name in (
+        "evidence_id",
+        "transcript_status",
+        "source",
+        "generated_by",
+        "verification_notes",
+    ):
+        _require_nonempty_string(data, field_name, object_name)
+
+    transcript_status = data["transcript_status"].strip()
+    if transcript_status == "transcribed":
+        _require_nonempty_string(data, "transcript_text", object_name)
 
 
 def validate_claim_object(claim: Any) -> None:
