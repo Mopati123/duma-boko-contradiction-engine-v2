@@ -46,6 +46,10 @@ echo "== Validating timestamp verification fixtures =="
 python scripts/verify_timestamps.py --fixtures-only
 
 echo
+echo "== Validating quote verification fixtures =="
+python scripts/verify_quotes.py --fixtures-only
+
+echo
 echo "== Running canonical v3 test =="
 python test_v3_divergence_pipeline.py
 
@@ -72,6 +76,12 @@ echo
 echo "== Removing ignored timestamp verification artifacts =="
 if [ -d outputs/timestamps ]; then
   git clean -fX outputs/timestamps/
+fi
+
+echo
+echo "== Removing ignored quote verification artifacts =="
+if [ -d outputs/quotes ]; then
+  git clean -fX outputs/quotes/
 fi
 
 echo
