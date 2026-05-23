@@ -12,7 +12,16 @@ import sys
 from pathlib import Path
 
 from analysis.target_search import run_divergence_engine
+from evidence.evidence_loader import DEFAULT_INDEX_PATH, build_evidence_index, load_seed_evidence
 from evidence.evidence_gate import validate_case_evidence_links
+from evidence.evidence_schema import (
+    CaseObject,
+    ClaimObject,
+    EvidenceObject,
+    validate_case_object,
+    validate_claim_object,
+    validate_evidence_object,
+)
 from evidence.word_exporter import WordExporter
 
 
@@ -71,14 +80,13 @@ def make_reportable_case(url: str, verification_status: str = "source_linked"):
     evidence = {
         "evidence_id": evidence_id,
         "case_id": "CASE_TEST",
-        "claim_role": "promise",
-        "quote": "A sourced quote.",
-        "source": "Known Source",
-        "url": url,
-        "date": "2024-01-01",
-        "evidence_type": "video",
+        "source_type": "video",
         "platform": "youtube",
+        "title": "Known Source",
+        "url": url,
+        "evidence_role": "promise",
         "verification_status": verification_status,
+        "evidence_strength": "medium",
         "timestamp_start": None,
         "timestamp_end": None,
     }
@@ -137,14 +145,13 @@ def validate_divergence_cases(path: Path) -> None:
     required_evidence_keys = {
         "evidence_id",
         "case_id",
-        "claim_role",
-        "quote",
-        "source",
-        "url",
-        "date",
-        "evidence_type",
+        "source_type",
         "platform",
+        "title",
+        "url",
+        "evidence_role",
         "verification_status",
+        "evidence_strength",
     }
 
     required_claim_links = {
@@ -272,14 +279,14 @@ def validate_divergence_cases(path: Path) -> None:
 def validate_gate_rejections() -> None:
     assert_value_error(
         lambda: validate_case_evidence_links(make_reportable_case("")),
-        "evidence field url must be non-empty",
+        "EvidenceObject.url must be a non-empty string",
     )
 
     token = "example"
     placeholder_url = "https://www.youtube.com/watch?v=" + token + str(1)
     assert_value_error(
         lambda: validate_case_evidence_links(make_reportable_case(placeholder_url)),
-        "evidence URL appears to be a placeholder",
+        "EvidenceObject.url appears to be a placeholder",
     )
 
     assert_value_error(
@@ -289,8 +296,110 @@ def validate_gate_rejections() -> None:
                 verification_status="timestamp_verified",
             )
         ),
-        "timestamp_verified evidence requires timestamp fields",
+        "requires timestamp_start and timestamp_end",
     )
+
+
+def validate_schema_objects() -> None:
+    evidence = EvidenceObject(
+        evidence_id="VID_TEST_001",
+        case_id="CASE_TEST",
+        source_type="video",
+        platform="youtube",
+        title="Known Source",
+        url="https://www.youtube.com/watch?v=abc123",
+        evidence_role="promise_video",
+        verification_status="source_found",
+        evidence_strength="medium",
+    )
+    validate_evidence_object(evidence)
+
+    assert_value_error(
+        lambda: validate_evidence_object({**evidence.to_dict(), "url": ""}),
+        "EvidenceObject.url must be a non-empty string",
+    )
+
+    token = "example"
+    placeholder_url = "https://www.youtube.com/watch?v=" + token + str(1)
+    assert_value_error(
+        lambda: validate_evidence_object({**evidence.to_dict(), "url": placeholder_url}),
+        "EvidenceObject.url appears to be a placeholder",
+    )
+
+    assert_value_error(
+        lambda: validate_evidence_object(
+            {**evidence.to_dict(), "verification_status": "timestamp_verified"}
+        ),
+        "requires timestamp_start and timestamp_end",
+    )
+
+    assert_value_error(
+        lambda: validate_evidence_object(
+            {
+                **evidence.to_dict(),
+                "verification_status": "quote_verified",
+                "timestamp_start": "00:01",
+                "timestamp_end": "00:10",
+                "raw_quote": None,
+            }
+        ),
+        "requires raw_quote",
+    )
+
+    claim = ClaimObject(
+        claim_id="CLAIM_TEST_001",
+        case_id="CASE_TEST",
+        claim_type="promise",
+        text="A sourced claim.",
+        evidence_ids=[evidence.evidence_id],
+        verification_status="source_found",
+    )
+    validate_claim_object(claim)
+
+    assert_value_error(
+        lambda: validate_claim_object({**claim.to_dict(), "evidence_ids": []}),
+        "ClaimObject.evidence_ids must be a non-empty list",
+    )
+
+    case = CaseObject(
+        case_id="CASE_TEST",
+        title="Test Case",
+        domain="governance",
+        divergence_type="promise_vs_outcome",
+        claims=[claim],
+        evidence=[evidence],
+        evidence_strength="medium",
+        verification_status="source_found",
+    )
+    validate_case_object(case)
+
+    unresolved_claim = ClaimObject(
+        claim_id="CLAIM_TEST_002",
+        case_id="CASE_TEST",
+        claim_type="promise",
+        text="An unresolved claim.",
+        evidence_ids=["MISSING_EVIDENCE"],
+        verification_status="source_found",
+    )
+    assert_value_error(
+        lambda: validate_case_object({**case.to_dict(), "claims": [unresolved_claim]}),
+        "references unknown evidence_id",
+    )
+
+    print("✓ EvidenceObject v1 schema validation OK")
+
+
+def validate_seed_evidence_index() -> None:
+    seed_evidence = load_seed_evidence()
+    if len(seed_evidence) != 2:
+        raise AssertionError(f"Expected 2 seed evidence records, got {len(seed_evidence)}")
+
+    index = build_evidence_index()
+    if index["metadata"]["total_evidence_records"] != 2:
+        raise AssertionError("evidence_index.json must contain 2 evidence records")
+
+    assert_nonempty_file(str(DEFAULT_INDEX_PATH))
+    print("✓ seed evidence index OK: 2 records")
 
 
 def validate_report_source_text() -> None:
@@ -307,7 +416,9 @@ def validate_report_source_text() -> None:
 
 
 def main() -> int:
+    validate_schema_objects()
     validate_gate_rejections()
+    validate_seed_evidence_index()
     validate_report_source_text()
 
     run_divergence_engine(
@@ -324,14 +435,14 @@ def main() -> int:
             json.loads(divergence_json.read_text(encoding="utf-8")).get("cases", []),
             "DUMA_BOKO_DIVERGENCE_REPORT_BLOCKED.docx",
         ),
-        "evidence field url must be non-empty",
+        "EvidenceObject.url must be a non-empty string",
     )
 
     rc, output = run_command("python run_final_report.py")
     if rc == 0:
         print("run_final_report.py unexpectedly succeeded")
         return 1
-    if "evidence field url must be non-empty" not in output:
+    if "EvidenceObject.url must be a non-empty string" not in output:
         print("run_final_report.py failed for an unexpected reason")
         return 1
 
