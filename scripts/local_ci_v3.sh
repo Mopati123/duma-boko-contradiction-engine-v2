@@ -42,6 +42,10 @@ echo "== Validating transcript acquisition fixtures =="
 python scripts/acquire_transcripts.py --fixtures-only
 
 echo
+echo "== Validating timestamp verification fixtures =="
+python scripts/verify_timestamps.py --fixtures-only
+
+echo
 echo "== Running canonical v3 test =="
 python test_v3_divergence_pipeline.py
 
@@ -63,6 +67,12 @@ fi
 echo
 echo "== Removing ignored transcript acquisition artifacts =="
 git clean -fX data/evidence_transcripts/
+
+echo
+echo "== Removing ignored timestamp verification artifacts =="
+if [ -d outputs/timestamps ]; then
+  git clean -fX outputs/timestamps/
+fi
 
 echo
 echo "== Git status after cleanup =="

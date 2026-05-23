@@ -67,6 +67,7 @@ outputs/reports/DUMA_BOKO_DIVERGENCE_REPORT_*.docx
 # but keep future ad-hoc generated copies out of commits.
 outputs/evidence/evidence_index.json
 data/evidence_transcripts/*.json
+outputs/timestamps/
 outputs/reports/*_generated*.docx
 outputs/reports/*_generated*.pdf
 
