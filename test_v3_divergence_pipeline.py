@@ -25,6 +25,12 @@ from evidence.transcript_acquisition import (
     upgrade_evidence_from_transcript_artifact,
     validate_transcript_artifact,
 )
+from evidence.timestamp_verification import (
+    DEFAULT_TIMESTAMP_OUTPUT,
+    TimestampCandidate,
+    validate_timestamp_candidate,
+    verify_timestamps_fixture_only,
+)
 from evidence.evidence_loader import DEFAULT_INDEX_PATH, build_evidence_index, load_seed_evidence
 from evidence.evidence_gate import validate_case_evidence_links
 from evidence.evidence_schema import (
@@ -577,6 +583,95 @@ def validate_transcript_acquisition_lane() -> None:
     print("✓ Transcript Acquisition v1 lane validation OK")
 
 
+def validate_timestamp_verification_lane() -> None:
+    candidate = TimestampCandidate(
+        evidence_id="VID_JOBS_001",
+        case_id="CASE_002",
+        phrase="500 000 new jobs",
+        timestamp_start="00:00:10",
+        timestamp_end="00:00:18",
+        matched_text="We promised to create 500 000 new jobs in five years.",
+        match_confidence=1.0,
+        verification_status="timestamp_verified",
+        verification_notes="Unit test timestamp fixture only.",
+    )
+    validate_timestamp_candidate(candidate)
+
+    assert_value_error(
+        lambda: validate_timestamp_candidate(
+            {**candidate.to_dict(), "timestamp_start": ""}
+        ),
+        "timestamp_start must be a non-empty string",
+    )
+
+    assert_value_error(
+        lambda: validate_timestamp_candidate(
+            {**candidate.to_dict(), "timestamp_end": ""}
+        ),
+        "timestamp_end must be a non-empty string",
+    )
+
+    assert_value_error(
+        lambda: validate_timestamp_candidate(
+            {
+                **candidate.to_dict(),
+                "timestamp_start": "00:00:20",
+                "timestamp_end": "00:00:10",
+            }
+        ),
+        "timestamp_end must not be before start",
+    )
+
+    assert_value_error(
+        lambda: validate_timestamp_candidate(
+            {**candidate.to_dict(), "matched_text": ""}
+        ),
+        "matched_text must be a non-empty string",
+    )
+
+    assert_value_error(
+        lambda: validate_timestamp_candidate(
+            {
+                **candidate.to_dict(),
+                "phrase": "not in transcript",
+            }
+        ),
+        "phrase must appear in matched_text",
+    )
+
+    assert_value_error(
+        lambda: validate_timestamp_candidate(
+            {
+                **candidate.to_dict(),
+                "evidence_verification_status": "quote_verified",
+            }
+        ),
+        "cannot mark evidence as quote_verified",
+    )
+
+    summary = verify_timestamps_fixture_only()
+    if summary["processed"] != 2:
+        raise AssertionError("Timestamp fixture verification must process 2 records")
+    if summary["candidates_found"] != 4:
+        raise AssertionError("Timestamp fixture verification must produce 4 candidates")
+    if summary["timestamp_verified"] != 4:
+        raise AssertionError("Timestamp fixtures must verify 4 timestamp candidates")
+    if summary["timestamp_rejected"] != 0 or summary["timestamp_unavailable"] != 0:
+        raise AssertionError("Timestamp fixtures should not reject or miss candidates")
+
+    for produced in summary["candidates"]:
+        if produced.verification_status != "timestamp_verified":
+            raise AssertionError("Fixture candidates must be timestamp_verified only")
+        produced_data = produced.to_dict()
+        if produced_data.get("raw_quote"):
+            raise AssertionError("Timestamp verification must not set raw_quote")
+        if produced_data.get("evidence_verification_status") == "quote_verified":
+            raise AssertionError("Timestamp verification must not imply quote_verified")
+
+    assert_nonempty_file(str(DEFAULT_TIMESTAMP_OUTPUT))
+    print("✓ Timestamp Verification v1 lane validation OK")
+
+
 def validate_seed_evidence_index() -> None:
     seed_evidence = load_seed_evidence()
     if len(seed_evidence) != 2:
@@ -607,6 +702,7 @@ def main() -> int:
     validate_schema_objects()
     validate_ingestion_lane()
     validate_transcript_acquisition_lane()
+    validate_timestamp_verification_lane()
     validate_gate_rejections()
     validate_seed_evidence_index()
     validate_report_source_text()
