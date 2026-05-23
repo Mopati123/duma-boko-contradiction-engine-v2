@@ -37,12 +37,20 @@ from evidence.quote_verification import (
     validate_quote_candidate,
     verify_quotes_fixture_only,
 )
+from evidence.case_evidence_linking import (
+    DEFAULT_CASE_LINK_OUTPUT,
+    CaseEvidenceLink,
+    link_case_evidence_fixture_only,
+    validate_case_evidence_link,
+    validate_report_sections_resolve,
+)
 from evidence.evidence_loader import DEFAULT_INDEX_PATH, build_evidence_index, load_seed_evidence
 from evidence.evidence_gate import validate_case_evidence_links
 from evidence.evidence_schema import (
     CaseObject,
     ClaimObject,
     EvidenceObject,
+    ReportSection,
     TranscriptObject,
     validate_case_object,
     validate_claim_object,
@@ -780,6 +788,143 @@ def validate_quote_verification_lane() -> None:
     print("✓ Quote Verification v1 lane validation OK")
 
 
+def validate_case_evidence_linking_lane() -> None:
+    link = CaseEvidenceLink(
+        case_id="CASE_002",
+        claim_id="CLAIM_JOBS_001",
+        evidence_id="VID_JOBS_001",
+        quote_id="QUOTE_VID_JOBS_001_500_000_NEW_JOBS",
+        phrase="500 000 new jobs",
+        timestamp_start="00:00:10",
+        timestamp_end="00:00:18",
+        raw_quote="500 000 new jobs",
+        link_status="link_verified",
+        link_notes="Unit test link fixture only. Report readiness pending.",
+    )
+    validate_case_evidence_link(link)
+
+    for field_name in ("case_id", "claim_id", "evidence_id", "quote_id", "raw_quote"):
+        assert_value_error(
+            lambda field_name=field_name: validate_case_evidence_link(
+                {**link.to_dict(), field_name: ""}
+            ),
+            f"{field_name} must be a non-empty string",
+        )
+
+    assert_value_error(
+        lambda: validate_case_evidence_link(
+            {
+                **link.to_dict(),
+                "link_status": "link_rejected",
+                "link_notes": "",
+            }
+        ),
+        "link_notes must be a non-empty string",
+    )
+
+    assert_value_error(
+        lambda: validate_case_evidence_link(
+            {
+                **link.to_dict(),
+                "link_status": "link_unavailable",
+                "link_notes": "",
+            }
+        ),
+        "link_notes must be a non-empty string",
+    )
+
+    assert_value_error(
+        lambda: validate_case_evidence_link(
+            {**link.to_dict(), "evidence_verification_status": "report_ready"}
+        ),
+        "cannot mark evidence as report_ready",
+    )
+
+    seed_evidence = load_seed_evidence()[0]
+    unresolved_claim = ClaimObject(
+        claim_id="CLAIM_UNRESOLVED",
+        case_id=seed_evidence.case_id,
+        claim_type="unit_test",
+        text="Unit test unresolved evidence claim.",
+        evidence_ids=["MISSING_EVIDENCE"],
+        verification_status="quote_linked_fixture",
+    )
+    unresolved_case = CaseObject(
+        case_id=seed_evidence.case_id,
+        title="Unit test unresolved evidence case",
+        domain="unit_test",
+        divergence_type="unit_test",
+        claims=[unresolved_claim],
+        evidence=[seed_evidence],
+        evidence_strength=seed_evidence.evidence_strength,
+        verification_status="quote_linked_fixture",
+    )
+    assert_value_error(
+        lambda: validate_case_object(unresolved_case),
+        "references unknown evidence_id: MISSING_EVIDENCE",
+    )
+
+    resolved_claim = ClaimObject(
+        claim_id="CLAIM_RESOLVED",
+        case_id=seed_evidence.case_id,
+        claim_type="unit_test",
+        text="Unit test resolved evidence claim.",
+        evidence_ids=[seed_evidence.evidence_id],
+        verification_status="quote_linked_fixture",
+    )
+    resolved_case = CaseObject(
+        case_id=seed_evidence.case_id,
+        title="Unit test resolved evidence case",
+        domain="unit_test",
+        divergence_type="unit_test",
+        claims=[resolved_claim],
+        evidence=[seed_evidence],
+        evidence_strength=seed_evidence.evidence_strength,
+        verification_status="quote_linked_fixture",
+    )
+    validate_case_object(resolved_case)
+    unresolved_section = ReportSection(
+        section_id="SECTION_UNRESOLVED",
+        case_id=seed_evidence.case_id,
+        heading="Unit test unresolved section",
+        body="Unit test section body.",
+        evidence_ids=["MISSING_EVIDENCE"],
+    )
+    assert_value_error(
+        lambda: validate_report_sections_resolve(
+            resolved_case,
+            [unresolved_section],
+        ),
+        "references unknown evidence_id: MISSING_EVIDENCE",
+    )
+
+    summary = link_case_evidence_fixture_only()
+    if summary["processed"] != 4:
+        raise AssertionError("Case linking fixture must process 4 quote candidates")
+    if summary["link_verified"] != 2:
+        raise AssertionError("Case linking fixtures must verify 2 links")
+    if summary["link_unavailable"] != 2:
+        raise AssertionError("Case linking fixtures must leave 2 quotes unavailable")
+    if summary["link_candidate"] != 0 or summary["link_rejected"] != 0:
+        raise AssertionError("Case linking fixtures should not be pending or rejected")
+    if summary["cases_built"] != 2:
+        raise AssertionError("Case linking fixtures must build 2 cases")
+    if summary["claims_built"] != 2:
+        raise AssertionError("Case linking fixtures must build 2 claims")
+    if summary["report_sections_built"] != 2:
+        raise AssertionError("Case linking fixtures must build 2 report sections")
+
+    for produced in summary["links"]:
+        produced_data = produced.to_dict()
+        if produced_data.get("evidence_verification_status") == "report_ready":
+            raise AssertionError("Case evidence linking must not imply report_ready")
+        if "TEST FIXTURE ONLY" not in produced.link_notes:
+            raise AssertionError("Fixture case links must be clearly labeled")
+
+    assert_nonempty_file(str(DEFAULT_CASE_LINK_OUTPUT))
+    print("✓ Case Evidence Linking v1 lane validation OK")
+
+
 def validate_seed_evidence_index() -> None:
     seed_evidence = load_seed_evidence()
     if len(seed_evidence) != 2:
@@ -812,6 +957,7 @@ def main() -> int:
     validate_transcript_acquisition_lane()
     validate_timestamp_verification_lane()
     validate_quote_verification_lane()
+    validate_case_evidence_linking_lane()
     validate_gate_rejections()
     validate_seed_evidence_index()
     validate_report_source_text()
