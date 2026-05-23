@@ -50,6 +50,10 @@ echo "== Validating quote verification fixtures =="
 python scripts/verify_quotes.py --fixtures-only
 
 echo
+echo "== Validating case evidence linking fixtures =="
+python scripts/link_case_evidence.py --fixtures-only
+
+echo
 echo "== Running canonical v3 test =="
 python test_v3_divergence_pipeline.py
 
@@ -82,6 +86,12 @@ echo
 echo "== Removing ignored quote verification artifacts =="
 if [ -d outputs/quotes ]; then
   git clean -fX outputs/quotes/
+fi
+
+echo
+echo "== Removing ignored case evidence linking artifacts =="
+if [ -d outputs/case_links ]; then
+  git clean -fX outputs/case_links/
 fi
 
 echo
