@@ -20,6 +20,7 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 from evidence.evidence_schema import (
     EvidencePosition, GovernanceDivergenceCase, save_json, load_json
 )
+from evidence.evidence_gate import build_case_evidence
 from analysis.claim_matcher import ClaimMatcher
 
 # ─────────────────────────────────────────
@@ -46,6 +47,12 @@ def expand_indicators(base_indicators: List[str]) -> List[str]:
                     expanded.add(term_lower.replace(key, syn))
     return list(expanded)
 
+def source_url_from_target(target: Dict[str, Any], key: str) -> str:
+    value = target.get(key)
+    if isinstance(value, str):
+        return value.strip()
+    return ""
+
 # ─────────────────────────────────────────
 # SEARCH & RECONSTRUCTION
 # ─────────────────────────────────────────
@@ -66,18 +73,20 @@ def process_target(
         print(f"  [DRY RUN] Search: {p_indicators[:3]} vs {f_indicators[:3]}")
         return {'case_id': case_id, 'status': 'dry_run'}
 
-    # 2. Mock search execution (for now, will link to actual results in future)
-    # This part would call web_searcher.py to find actual matches.
-    # For the pivot demo, we assume matches are found based on the provided framing.
+    # 2. Mock search execution (for now, will link to actual results in future).
+    # No fallback source URL is invented here; unlinked cases must fail report export.
+    promise_url = source_url_from_target(target, 'promise_url')
+    outcome_url = source_url_from_target(target, 'outcome_url')
     
-    # Placeholder for a "found" promise and outcome
+    # Discovery-only promise and outcome until real source URLs are available.
     promise_data = {
         'quote': f"We will deliver {target.get('topic').replace('_', ' ')} for all Batswana.",
         'source': "Campaign Speech / Manifesto",
-        'url': "https://www.youtube.com/watch?v=example1",
+        'url': promise_url,
         'date': "2024-09-15",
         'evidence_type': "manifesto",
         'platform': "youtube",
+        'verification_status': "source_linked",
         'confidence': 0.9,
         'matched_terms': p_indicators[:3]
     }
@@ -85,16 +94,23 @@ def process_target(
     outcome_data = {
         'quote': f"Current conditions like the diamond downturn affect {target.get('topic').replace('_', ' ')} implementation.",
         'source': "Post-Election Interview",
-        'url': "https://www.youtube.com/watch?v=example2",
+        'url': outcome_url,
         'date': "2024-11-20",
         'evidence_type': "interview",
         'platform': "youtube",
+        'verification_status': "source_linked",
         'confidence': 0.85,
         'matched_terms': f_indicators[:3]
     }
 
     # 3. Score Divergence
     score_result = matcher.score_pair(promise_data, outcome_data, target)
+
+    evidence_objects, claim_evidence_links = build_case_evidence(
+        case_id,
+        promise_data,
+        outcome_data,
+    )
     
     # 4. Build Divergence Case
     divergence_case = GovernanceDivergenceCase(
@@ -107,7 +123,9 @@ def process_target(
         evidence_strength=score_result['evidence_strength'],
         verification_status='verified',
         description=target.get('description'),
-        raw_urls=[promise_data['url'], outcome_data['url']]
+        raw_urls=[url for url in (promise_data['url'], outcome_data['url']) if url],
+        evidence_objects=evidence_objects,
+        claim_evidence_links=claim_evidence_links
     )
 
     return divergence_case.to_dict()

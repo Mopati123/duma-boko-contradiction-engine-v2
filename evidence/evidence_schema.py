@@ -32,6 +32,30 @@ class EvidencePosition:
 
 
 @dataclass
+class EvidenceObject:
+    """A normalized, reportable evidence record linked to a claim."""
+    evidence_id: str
+    case_id: str
+    claim_role: str
+    quote: str
+    source: str
+    url: str
+    date: str
+    evidence_type: str
+    platform: str
+    verification_status: str = "source_linked"
+    timestamp_start: Optional[str] = None
+    timestamp_end: Optional[str] = None
+    screenshot_path: Optional[str] = None
+    confidence: float = 0.0
+    speaker: str = "Duma Boko"
+    matched_terms: List[str] = field(default_factory=list)
+
+    def to_dict(self) -> Dict[str, Any]:
+        return asdict(self)
+
+
+@dataclass
 class GovernanceDivergenceCase:
     """
     A complete divergence case from the reconstruction engine.
@@ -54,6 +78,8 @@ class GovernanceDivergenceCase:
     all_promise_sources: List[Dict[str, Any]] = field(default_factory=list)
     all_outcome_sources: List[Dict[str, Any]] = field(default_factory=list)
     raw_urls: List[str] = field(default_factory=list)
+    evidence_objects: List[Dict[str, Any]] = field(default_factory=list)
+    claim_evidence_links: Dict[str, List[str]] = field(default_factory=dict)
 
     # Metadata
     created_at: str = field(default_factory=lambda: datetime.now().isoformat())
