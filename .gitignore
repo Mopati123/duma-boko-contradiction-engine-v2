@@ -70,6 +70,7 @@ data/evidence_transcripts/*.json
 outputs/timestamps/
 outputs/quotes/
 outputs/case_links/
+outputs/report_sections/
 outputs/reports/*_generated*.docx
 outputs/reports/*_generated*.pdf
 
