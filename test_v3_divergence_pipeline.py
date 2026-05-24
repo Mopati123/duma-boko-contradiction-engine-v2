@@ -70,6 +70,14 @@ from evidence.real_evidence_replacement import (
     replace_real_evidence,
     validate_real_evidence_replacement_status,
 )
+from evidence.manual_review import (
+    DEFAULT_MANUAL_REVIEW_RECORDS_OUTPUT,
+    DEFAULT_MANUAL_REVIEW_SUMMARY_OUTPUT,
+    DRY_RUN_REVIEW_NOTES,
+    ManualReviewRecord,
+    manual_review_dry_run,
+    validate_manual_review_record,
+)
 from evidence.evidence_loader import DEFAULT_INDEX_PATH, build_evidence_index, load_seed_evidence
 from evidence.evidence_gate import validate_case_evidence_links
 from evidence.evidence_schema import (
@@ -1326,6 +1334,113 @@ def validate_real_evidence_replacement_lane() -> None:
     print("✓ Real Evidence Replacement v1 lane validation OK")
 
 
+def validate_manual_review_lane() -> None:
+    record = ManualReviewRecord(
+        review_id="REVIEW_VID_JOBS_001",
+        evidence_id="VID_JOBS_001",
+        case_id="CASE_002",
+        url="https://www.youtube.com/watch?v=e0MLzB5nGDc",
+        reviewer="manual-review-v1-test",
+        review_status="pending_review",
+        transcript_review="Transcript requires human verification.",
+        timestamp_review="Timestamp requires human verification.",
+        quote_review="Quote requires human verification.",
+        context_review="Context requires human verification.",
+        speaker_review="Speaker confidence requires human verification.",
+        publication_recommendation="needs_more_evidence",
+        manual_review_required=True,
+        public_ready=False,
+        report_ready=False,
+        review_notes=DRY_RUN_REVIEW_NOTES,
+    )
+    validate_manual_review_record(record)
+
+    for field_name in ("review_id", "evidence_id", "reviewer", "review_notes"):
+        assert_value_error(
+            lambda field_name=field_name: validate_manual_review_record(
+                {**record.to_dict(), field_name: ""}
+            ),
+            f"{field_name} must be a non-empty string",
+        )
+
+    assert_value_error(
+        lambda: validate_manual_review_record(
+            {**record.to_dict(), "public_ready": True}
+        ),
+        "public_ready must be false",
+    )
+
+    assert_value_error(
+        lambda: validate_manual_review_record(
+            {**record.to_dict(), "report_ready": True}
+        ),
+        "report_ready must be false",
+    )
+
+    assert_value_error(
+        lambda: validate_manual_review_record(
+            {**record.to_dict(), "manual_review_required": False}
+        ),
+        "manual_review_required must be true",
+    )
+
+    assert_value_error(
+        lambda: validate_manual_review_record(
+            {
+                **record.to_dict(),
+                "review_status": "reviewed_rejected",
+                "publication_recommendation": "do_not_publish",
+                "review_notes": "Rejected by dry-run reviewer.",
+            }
+        ),
+        "reviewed_rejected requires a reason",
+    )
+
+    assert_value_error(
+        lambda: validate_manual_review_record(
+            {
+                **record.to_dict(),
+                "review_status": "reviewed_with_concerns",
+                "review_notes": "Concern noted by dry-run reviewer.",
+            }
+        ),
+        "reviewed_with_concerns requires a reason",
+    )
+
+    hardening_candidate = ManualReviewRecord(
+        **{
+            **record.to_dict(),
+            "review_status": "reviewed_candidate",
+            "publication_recommendation": "candidate_for_hardening",
+            "review_notes": (
+                "Dry-run candidate for hardening only. Manual review still required."
+            ),
+        }
+    )
+    validate_manual_review_record(hardening_candidate)
+    if hardening_candidate.public_ready or hardening_candidate.report_ready:
+        raise AssertionError("candidate_for_hardening must not imply readiness")
+
+    summary = manual_review_dry_run()
+    if summary["total_evidence_records_reviewed"] != 2:
+        raise AssertionError("Manual Review v1 dry-run must produce 2 records")
+    if summary["pending_review"] != 2:
+        raise AssertionError("Manual Review v1 dry-run records must remain pending")
+    if summary["public_ready"] != 0 or summary["report_ready"] != 0:
+        raise AssertionError("Manual Review v1 dry-run must not mark readiness")
+    for produced in summary["records"]:
+        if produced.manual_review_required is not True:
+            raise AssertionError("Manual Review v1 must require manual review")
+        if produced.public_ready or produced.report_ready:
+            raise AssertionError("Manual Review v1 must not mark readiness")
+        if produced.publication_recommendation != "needs_more_evidence":
+            raise AssertionError("Manual Review v1 dry-run must need more evidence")
+
+    assert_nonempty_file(str(DEFAULT_MANUAL_REVIEW_RECORDS_OUTPUT))
+    assert_nonempty_file(str(DEFAULT_MANUAL_REVIEW_SUMMARY_OUTPUT))
+    print("✓ Manual Review v1 lane validation OK")
+
+
 def validate_seed_evidence_index() -> None:
     seed_evidence = load_seed_evidence()
     if len(seed_evidence) != 2:
@@ -1362,6 +1477,7 @@ def main() -> int:
     validate_report_section_assembly_lane()
     validate_final_report_generation_lane()
     validate_real_evidence_replacement_lane()
+    validate_manual_review_lane()
     validate_gate_rejections()
     validate_seed_evidence_index()
     validate_report_source_text()
