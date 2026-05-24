@@ -66,6 +66,10 @@ echo "== Validating real evidence replacement dry-run =="
 python scripts/replace_real_evidence.py --dry-run
 
 echo
+echo "== Validating manual review dry-run =="
+python scripts/manual_review.py --dry-run
+
+echo
 echo "== Running canonical v3 test =="
 python test_v3_divergence_pipeline.py
 
@@ -122,6 +126,12 @@ echo
 echo "== Removing ignored real evidence replacement artifacts =="
 if [ -d outputs/real_evidence ]; then
   git clean -fX outputs/real_evidence/
+fi
+
+echo
+echo "== Removing ignored manual review artifacts =="
+if [ -d outputs/manual_review ]; then
+  git clean -fX outputs/manual_review/
 fi
 
 echo
