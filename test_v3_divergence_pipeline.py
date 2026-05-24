@@ -77,6 +77,15 @@ from evidence.release_readiness import (
     check_release_readiness_dry_run,
     validate_release_readiness_record,
 )
+from evidence.release_policy import (
+    DEFAULT_RELEASE_POLICY_RECORD,
+    DEFAULT_RELEASE_POLICY_SUMMARY,
+    PROHIBITED_CONDITIONS,
+    REQUIRED_CONDITIONS,
+    ReleasePolicyRecord,
+    check_release_policy_dry_run,
+    validate_release_policy_record,
+)
 from evidence.real_evidence_replacement import (
     DEFAULT_REAL_EVIDENCE_OUTPUT_DIR,
     DEFAULT_REAL_QUOTE_OUTPUT,
@@ -1741,6 +1750,105 @@ def validate_release_readiness_lane() -> None:
     print("✓ Release Readiness v1 lane validation OK")
 
 
+def validate_release_policy_lane() -> None:
+    record = ReleasePolicyRecord(
+        policy_id="RELEASE_POLICY_TEST",
+        policy_status="active_local_ci_override_policy",
+        local_ci_authority="temporary CI validation replacement only",
+        github_actions_status="unavailable_due_to_billing_account_lock",
+        manual_override_allowed=True,
+        required_conditions=list(REQUIRED_CONDITIONS),
+        prohibited_conditions=list(PROHIBITED_CONDITIONS),
+        public_ready=False,
+        institutional_ready=False,
+        report_ready=False,
+        policy_notes=(
+            "Manual override is limited to CI validation replacement and is not "
+            "evidence/public/institutional release approval."
+        ),
+    )
+    validate_release_policy_record(record)
+
+    for field_name in (
+        "policy_id",
+        "policy_status",
+        "local_ci_authority",
+        "github_actions_status",
+        "policy_notes",
+    ):
+        assert_value_error(
+            lambda field_name=field_name: validate_release_policy_record(
+                {**record.to_dict(), field_name: ""}
+            ),
+            f"{field_name} must be a non-empty string",
+        )
+
+    for field_name in ("required_conditions", "prohibited_conditions"):
+        assert_value_error(
+            lambda field_name=field_name: validate_release_policy_record(
+                {**record.to_dict(), field_name: []}
+            ),
+            f"{field_name} must be a non-empty list",
+        )
+
+    assert_value_error(
+        lambda: validate_release_policy_record(
+            {**record.to_dict(), "public_ready": True}
+        ),
+        "public_ready must be false",
+    )
+
+    assert_value_error(
+        lambda: validate_release_policy_record(
+            {**record.to_dict(), "institutional_ready": True}
+        ),
+        "institutional_ready must be false",
+    )
+
+    assert_value_error(
+        lambda: validate_release_policy_record(
+            {**record.to_dict(), "report_ready": True}
+        ),
+        "report_ready must be false",
+    )
+
+    assert_value_error(
+        lambda: validate_release_policy_record(
+            {
+                **record.to_dict(),
+                "policy_notes": "Manual override approves evidence release.",
+            }
+        ),
+        "must not imply release approval",
+    )
+
+    validate_release_policy_record(record)
+    if record.public_ready or record.institutional_ready or record.report_ready:
+        raise AssertionError("Release Policy v1 must not imply readiness")
+    if "CI validation replacement" not in record.local_ci_authority:
+        raise AssertionError("Release Policy v1 must be limited to CI validation")
+
+    summary = check_release_policy_dry_run()
+    if summary["manual_override_allowed"] is not True:
+        raise AssertionError("Release Policy v1 dry-run must allow CI override only")
+    if (
+        summary["public_ready"]
+        or summary["institutional_ready"]
+        or summary["report_ready"]
+    ):
+        raise AssertionError("Release Policy v1 dry-run must not mark readiness")
+    if "billing_account_lock" not in summary["github_actions_status"]:
+        raise AssertionError("Release Policy v1 must document GitHub Actions lock")
+
+    readiness_summary = check_release_readiness_dry_run()
+    if readiness_summary["release_blocked"] is not True:
+        raise AssertionError("Release Readiness v1 must remain blocked")
+
+    assert_nonempty_file(str(DEFAULT_RELEASE_POLICY_RECORD))
+    assert_nonempty_file(str(DEFAULT_RELEASE_POLICY_SUMMARY))
+    print("✓ Release Policy v1 lane validation OK")
+
+
 def validate_seed_evidence_index() -> None:
     seed_evidence = load_seed_evidence()
     if len(seed_evidence) != 2:
@@ -1780,6 +1888,7 @@ def main() -> int:
     validate_manual_review_lane()
     validate_final_report_hardening_lane()
     validate_release_readiness_lane()
+    validate_release_policy_lane()
     validate_gate_rejections()
     validate_seed_evidence_index()
     validate_report_source_text()
