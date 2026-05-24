@@ -70,6 +70,10 @@ echo "== Validating manual review dry-run =="
 python scripts/manual_review.py --dry-run
 
 echo
+echo "== Validating final report hardening dry-run =="
+python scripts/harden_final_report.py --dry-run
+
+echo
 echo "== Running canonical v3 test =="
 python test_v3_divergence_pipeline.py
 
@@ -132,6 +136,12 @@ echo
 echo "== Removing ignored manual review artifacts =="
 if [ -d outputs/manual_review ]; then
   git clean -fX outputs/manual_review/
+fi
+
+echo
+echo "== Removing ignored final report hardening artifacts =="
+if [ -d outputs/final_report_hardening ]; then
+  git clean -fX outputs/final_report_hardening/
 fi
 
 echo

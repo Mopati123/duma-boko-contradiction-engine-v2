@@ -35,9 +35,17 @@ FORBIDDEN_REVIEW_TEXT = (
     "validated public evidence",
     "final forensic report",
     "institution-ready",
+    "public-ready",
+    "public ready",
+    "ready for public release",
+    "ready for institutional release",
     "proven corruption",
     "proven failure",
     "report_ready",
+)
+
+ALLOWED_NEGATED_REVIEW_TEXT = (
+    "not institution-ready",
 )
 
 
@@ -89,6 +97,13 @@ def _combined_text(data: Dict[str, Any]) -> str:
     return json.dumps(data, sort_keys=True, ensure_ascii=False).lower()
 
 
+def _text_for_forbidden_scan(text: str) -> str:
+    sanitized = text.lower()
+    for phrase in ALLOWED_NEGATED_REVIEW_TEXT:
+        sanitized = sanitized.replace(phrase, "")
+    return sanitized
+
+
 def _validate_section_references(section: Dict[str, Any]) -> None:
     validate_assembled_report_section(section)
     evidence_ids = set(section["evidence_ids"])
@@ -131,9 +146,15 @@ def validate_final_report_payload(payload: Any) -> None:
     if status == "review_draft":
         review_text = _combined_text(data)
         required_review_phrases = (
+            "review draft only",
             "fixture-based validation artifact",
+            "fixture/test evidence may be present",
+            "manual review required",
+            "not institution-ready",
             "not a public evidentiary conclusion",
             "requires real transcript/timestamp/quote replacement before publication",
+            "github actions unavailable due to account/billing lock; local ci used as validation authority",
+            "evidence conclusions require real transcript, timestamp, quote, and context approval",
             "not for public release",
         )
         for phrase in required_review_phrases:
@@ -152,7 +173,7 @@ def validate_final_report_payload(payload: Any) -> None:
     for section in sections:
         _validate_section_references(section)
 
-    review_text = _combined_text(data)
+    review_text = _text_for_forbidden_scan(_combined_text(data))
     for phrase in FORBIDDEN_REVIEW_TEXT:
         if phrase in review_text:
             raise ValueError(
@@ -209,21 +230,24 @@ def build_final_report_payload_fixture_only(
         generated_from=str(input_path),
         sections=[section.to_dict() for section in verified_sections],
         evidence_disclaimer=(
-            "Review draft fixture-based validation artifact. Not for public release. "
-            "Fixture sections are not public evidence and not a public evidentiary "
-            "conclusion."
+            "Review draft only. Fixture-based validation artifact. Not for public "
+            "release. Fixture/test evidence may be present. Fixture sections are "
+            "not public evidence and not a public evidentiary conclusion."
         ),
         methodology_note=(
             "Evidence pipeline demonstration using deterministic fixtures only. "
-            "Requires real transcript/timestamp/quote replacement before publication."
+            "Requires real transcript/timestamp/quote replacement before publication. "
+            "Evidence conclusions require real transcript, timestamp, quote, and "
+            "context approval."
         ),
         limitations_note=(
             "This review draft is non-public, non-final, and cannot be used as an "
-            "evidentiary conclusion."
+            "evidentiary conclusion. Manual review required. Not institution-ready."
         ),
         generation_notes=(
-            "Generated for local pipeline validation only. Publication readiness is "
-            "not set and release remains gated."
+            "Generated for local pipeline validation only. GitHub Actions unavailable "
+            "due to account/billing lock; local CI used as validation authority. "
+            "Publication readiness is not set and release remains gated."
         ),
     )
     validate_final_report_payload(payload)
@@ -253,7 +277,7 @@ def write_final_report_payload(
 
 
 def _assert_document_text_allowed(text: str) -> None:
-    lower_text = text.lower()
+    lower_text = _text_for_forbidden_scan(text)
     for phrase in FORBIDDEN_REVIEW_TEXT:
         if phrase in lower_text:
             raise ValueError(f"Generated review document contains forbidden text: {phrase}")
@@ -267,22 +291,35 @@ def write_review_docx(
 
     document = Document()
     document.add_heading(payload.title, level=0)
-    document.add_paragraph("REVIEW DRAFT - NOT FOR PUBLIC RELEASE")
+    document.add_paragraph("REVIEW DRAFT ONLY - NOT FOR PUBLIC RELEASE")
+    document.add_paragraph("Release status: Manual review required. Not institution-ready.")
     document.add_paragraph("Fixture-based validation artifact.")
+    document.add_paragraph("Fixture/test evidence may be present.")
     document.add_paragraph(payload.evidence_disclaimer)
     document.add_heading("Methodology Note", level=1)
     document.add_paragraph(payload.methodology_note)
     document.add_heading("Limitations Note", level=1)
     document.add_paragraph(payload.limitations_note)
+    document.add_heading("Validation Note", level=1)
+    document.add_paragraph(
+        "GitHub Actions unavailable due to account/billing lock; local CI used as "
+        "validation authority."
+    )
     document.add_heading("Case Sections", level=1)
 
     text_parts = [
         payload.title,
-        "REVIEW DRAFT - NOT FOR PUBLIC RELEASE",
+        "REVIEW DRAFT ONLY - NOT FOR PUBLIC RELEASE",
+        "Release status: Manual review required. Not institution-ready.",
         "Fixture-based validation artifact.",
+        "Fixture/test evidence may be present.",
         payload.evidence_disclaimer,
         payload.methodology_note,
         payload.limitations_note,
+        (
+            "GitHub Actions unavailable due to account/billing lock; local CI used "
+            "as validation authority."
+        ),
     ]
 
     for section in payload.sections:

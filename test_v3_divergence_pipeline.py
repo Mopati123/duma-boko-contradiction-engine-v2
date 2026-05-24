@@ -60,6 +60,14 @@ from evidence.final_report_v1 import (
     generate_final_report_fixture_only,
     validate_final_report_payload,
 )
+from evidence.final_report_hardening import (
+    DEFAULT_FINAL_REPORT_HARDENING_RECORD,
+    DEFAULT_FINAL_REPORT_HARDENING_SUMMARY,
+    FinalReportHardeningRecord,
+    build_final_report_hardening_record_dry_run,
+    harden_final_report_dry_run,
+    validate_final_report_hardening_record,
+)
 from evidence.real_evidence_replacement import (
     DEFAULT_REAL_EVIDENCE_OUTPUT_DIR,
     DEFAULT_REAL_QUOTE_OUTPUT,
@@ -137,6 +145,10 @@ def extract_docx_text(path: Path) -> str:
             for cell in row.cells:
                 parts.append(cell.text)
     return "\n".join(parts)
+
+
+def text_without_allowed_negated_readiness(text: str) -> str:
+    return text.lower().replace("not institution-ready", "")
 
 
 def assert_value_error(func, expected_text: str) -> None:
@@ -1135,21 +1147,24 @@ def validate_final_report_generation_lane() -> None:
         generated_from=str(DEFAULT_REPORT_SECTION_OUTPUT),
         sections=verified_sections,
         evidence_disclaimer=(
-            "Review draft fixture-based validation artifact. Not for public release. "
-            "Fixture sections are not public evidence and not a public evidentiary "
-            "conclusion."
+            "Review draft only. Fixture-based validation artifact. Not for public "
+            "release. Fixture/test evidence may be present. Fixture sections are "
+            "not public evidence and not a public evidentiary conclusion."
         ),
         methodology_note=(
             "Evidence pipeline demonstration using deterministic fixtures only. "
-            "Requires real transcript/timestamp/quote replacement before publication."
+            "Requires real transcript/timestamp/quote replacement before publication. "
+            "Evidence conclusions require real transcript, timestamp, quote, and "
+            "context approval."
         ),
         limitations_note=(
             "This review draft is non-public, non-final, and cannot be used as an "
-            "evidentiary conclusion."
+            "evidentiary conclusion. Manual review required. Not institution-ready."
         ),
         generation_notes=(
-            "Generated for local pipeline validation only. Publication readiness is "
-            "not set and release remains gated."
+            "Generated for local pipeline validation only. GitHub Actions unavailable "
+            "due to account/billing lock; local CI used as validation authority. "
+            "Publication readiness is not set and release remains gated."
         ),
     )
     validate_final_report_payload(payload)
@@ -1222,26 +1237,36 @@ def validate_final_report_generation_lane() -> None:
     combined_text = f"{generated_text}\n{docx_text}".lower()
 
     for required_text in (
+        "review draft only",
         "review draft",
         "not for public release",
         "fixture-based validation artifact",
+        "fixture/test evidence may be present",
+        "manual review required",
+        "not institution-ready",
         "not a public evidentiary conclusion",
         "requires real transcript/timestamp/quote replacement before publication",
+        "github actions unavailable due to account/billing lock; local ci used as validation authority",
+        "evidence conclusions require real transcript, timestamp, quote, and context approval",
     ):
         if required_text not in combined_text:
             raise AssertionError(
                 f"Final Report Generation v1 missing required wording: {required_text}"
             )
 
+    forbidden_scan_text = text_without_allowed_negated_readiness(combined_text)
     for forbidden_text in (
         "validated public evidence",
         "final forensic report",
         "institution-ready",
+        "public-ready",
+        "ready for public release",
+        "ready for institutional release",
         "proven corruption",
         "proven failure",
         "report_ready",
     ):
-        if forbidden_text in combined_text:
+        if forbidden_text in forbidden_scan_text:
             raise AssertionError(
                 f"Final Report Generation v1 overclaims with: {forbidden_text}"
             )
@@ -1441,6 +1466,150 @@ def validate_manual_review_lane() -> None:
     print("✓ Manual Review v1 lane validation OK")
 
 
+def validate_final_report_hardening_lane() -> None:
+    record = FinalReportHardeningRecord(
+        hardening_id="FINAL_REPORT_HARDENING_TEST",
+        report_id="DUMA_BOKO_REVIEW_DRAFT_V1_FIXTURE",
+        hardening_status="hardened_review_draft",
+        release_status="manual_review_required",
+        methodology_note=(
+            "Review draft only. Hardening adds methodology and audit context "
+            "without changing readiness."
+        ),
+        limitations_note=(
+            "Not for public release. Fixture/test evidence may be present. "
+            "Manual review required. Not institution-ready."
+        ),
+        evidence_status_summary={
+            "sections_included": 2,
+            "evidence_ids_represented": 2,
+        },
+        manual_review_summary={
+            "pending_review": 2,
+            "public_ready": 0,
+            "report_ready": 0,
+        },
+        source_index=[
+            {
+                "section_id": "SECTION_CASE_002_JOBS",
+                "evidence_ids": ["VID_JOBS_001"],
+            }
+        ],
+        audit_trail_summary=["Local CI validated the dry-run lane."],
+        ci_validation_note="Local CI used as validation authority.",
+        github_actions_note=(
+            "GitHub Actions unavailable due to account/billing lock; local CI used "
+            "as validation authority."
+        ),
+        public_ready=False,
+        institutional_ready=False,
+        report_ready=False,
+        hardening_notes=(
+            "Dry-run hardening record only. Review draft remains blocked from "
+            "release pending real-source evidence and manual approval."
+        ),
+    )
+    validate_final_report_hardening_record(record)
+
+    for field_name in (
+        "hardening_id",
+        "report_id",
+        "methodology_note",
+        "limitations_note",
+        "ci_validation_note",
+        "github_actions_note",
+        "hardening_notes",
+    ):
+        assert_value_error(
+            lambda field_name=field_name: validate_final_report_hardening_record(
+                {**record.to_dict(), field_name: ""}
+            ),
+            f"{field_name} must be a non-empty string",
+        )
+
+    for field_name in ("evidence_status_summary", "manual_review_summary"):
+        assert_value_error(
+            lambda field_name=field_name: validate_final_report_hardening_record(
+                {**record.to_dict(), field_name: {}}
+            ),
+            f"{field_name} must be a non-empty object",
+        )
+
+    for field_name in ("source_index", "audit_trail_summary"):
+        assert_value_error(
+            lambda field_name=field_name: validate_final_report_hardening_record(
+                {**record.to_dict(), field_name: []}
+            ),
+            f"{field_name} must be a non-empty list",
+        )
+
+    assert_value_error(
+        lambda: validate_final_report_hardening_record(
+            {**record.to_dict(), "public_ready": True}
+        ),
+        "public_ready must be false",
+    )
+
+    assert_value_error(
+        lambda: validate_final_report_hardening_record(
+            {**record.to_dict(), "institutional_ready": True}
+        ),
+        "institutional_ready must be false",
+    )
+
+    assert_value_error(
+        lambda: validate_final_report_hardening_record(
+            {**record.to_dict(), "report_ready": True}
+        ),
+        "report_ready must be false",
+    )
+
+    assert_value_error(
+        lambda: validate_final_report_hardening_record(
+            {
+                **record.to_dict(),
+                "hardening_status": "hardening_blocked",
+                "release_status": "blocked_from_public_release",
+                "hardening_notes": "Blocked pending manual review.",
+            }
+        ),
+        "hardening_blocked requires a reason",
+    )
+
+    assert_value_error(
+        lambda: validate_final_report_hardening_record(
+            {
+                **record.to_dict(),
+                "hardening_notes": "This draft is ready for institutional release.",
+            }
+        ),
+        "prohibited readiness claim",
+    )
+
+    hardened = FinalReportHardeningRecord(**record.to_dict())
+    validate_final_report_hardening_record(hardened)
+    if hardened.public_ready or hardened.institutional_ready or hardened.report_ready:
+        raise AssertionError("hardened_review_draft must not imply readiness")
+
+    built = build_final_report_hardening_record_dry_run()
+    validate_final_report_hardening_record(built)
+    summary = harden_final_report_dry_run()
+    if summary["hardening_status"] != "hardened_review_draft":
+        raise AssertionError("Final Report Hardening v1 must harden review draft only")
+    if summary["release_status"] != "manual_review_required":
+        raise AssertionError("Final Report Hardening v1 must require manual review")
+    if (
+        summary["public_ready"]
+        or summary["institutional_ready"]
+        or summary["report_ready"]
+    ):
+        raise AssertionError("Final Report Hardening v1 must not mark readiness")
+
+    assert_nonempty_file(str(DEFAULT_FINAL_REPORT_HARDENING_RECORD))
+    assert_nonempty_file(str(DEFAULT_FINAL_REPORT_HARDENING_SUMMARY))
+    print("✓ Final Report Hardening v1 lane validation OK")
+
+
 def validate_seed_evidence_index() -> None:
     seed_evidence = load_seed_evidence()
     if len(seed_evidence) != 2:
@@ -1478,6 +1647,7 @@ def main() -> int:
     validate_final_report_generation_lane()
     validate_real_evidence_replacement_lane()
     validate_manual_review_lane()
+    validate_final_report_hardening_lane()
     validate_gate_rejections()
     validate_seed_evidence_index()
     validate_report_source_text()
