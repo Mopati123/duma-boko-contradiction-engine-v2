@@ -68,6 +68,15 @@ from evidence.final_report_hardening import (
     harden_final_report_dry_run,
     validate_final_report_hardening_record,
 )
+from evidence.release_readiness import (
+    DEFAULT_RELEASE_READINESS_RECORD,
+    DEFAULT_RELEASE_READINESS_SUMMARY,
+    DRY_RUN_BLOCKER_REASONS,
+    DRY_RUN_RELEASE_NOTES,
+    ReleaseReadinessRecord,
+    check_release_readiness_dry_run,
+    validate_release_readiness_record,
+)
 from evidence.real_evidence_replacement import (
     DEFAULT_REAL_EVIDENCE_OUTPUT_DIR,
     DEFAULT_REAL_QUOTE_OUTPUT,
@@ -1610,6 +1619,128 @@ def validate_final_report_hardening_lane() -> None:
     print("✓ Final Report Hardening v1 lane validation OK")
 
 
+def validate_release_readiness_lane() -> None:
+    record = ReleaseReadinessRecord(
+        readiness_id="RELEASE_READINESS_TEST",
+        report_id="DUMA_BOKO_REVIEW_DRAFT_V1_FIXTURE",
+        release_status="blocked_manual_review_required",
+        release_blocked=True,
+        public_ready=False,
+        institutional_ready=False,
+        report_ready=False,
+        evidence_approval_status="manual_review_required",
+        manual_review_status="pending_review",
+        source_verification_status="source_present_but_not_release_approved",
+        timestamp_verification_status="fixture_verified_not_public_evidence",
+        quote_verification_status="fixture_verified_not_public_evidence",
+        context_verification_status="manual_context_review_required",
+        ci_policy_status="github_actions_unavailable_local_ci_used",
+        blocker_reasons=list(DRY_RUN_BLOCKER_REASONS),
+        release_notes=DRY_RUN_RELEASE_NOTES,
+    )
+    validate_release_readiness_record(record)
+
+    for field_name in (
+        "readiness_id",
+        "report_id",
+        "release_status",
+        "release_notes",
+        "evidence_approval_status",
+        "manual_review_status",
+        "source_verification_status",
+        "timestamp_verification_status",
+        "quote_verification_status",
+        "context_verification_status",
+        "ci_policy_status",
+    ):
+        assert_value_error(
+            lambda field_name=field_name: validate_release_readiness_record(
+                {**record.to_dict(), field_name: ""}
+            ),
+            f"{field_name} must be a non-empty string",
+        )
+
+    assert_value_error(
+        lambda: validate_release_readiness_record(
+            {**record.to_dict(), "blocker_reasons": []}
+        ),
+        "blocker_reasons must be non-empty",
+    )
+
+    assert_value_error(
+        lambda: validate_release_readiness_record(
+            {**record.to_dict(), "release_blocked": False}
+        ),
+        "release_blocked must be true",
+    )
+
+    assert_value_error(
+        lambda: validate_release_readiness_record(
+            {**record.to_dict(), "public_ready": True}
+        ),
+        "public_ready must be false",
+    )
+
+    assert_value_error(
+        lambda: validate_release_readiness_record(
+            {**record.to_dict(), "institutional_ready": True}
+        ),
+        "institutional_ready must be false",
+    )
+
+    assert_value_error(
+        lambda: validate_release_readiness_record(
+            {**record.to_dict(), "report_ready": True}
+        ),
+        "report_ready must be false",
+    )
+
+    assert_value_error(
+        lambda: validate_release_readiness_record(
+            {
+                **record.to_dict(),
+                "release_notes": "This report is ready for public release.",
+            }
+        ),
+        "prohibited release claim",
+    )
+
+    pending = ReleaseReadinessRecord(
+        **{
+            **record.to_dict(),
+            "release_status": "release_candidate_pending_approval",
+            "blocker_reasons": [
+                "release candidate remains blocked pending explicit future approvals"
+            ],
+        }
+    )
+    validate_release_readiness_record(pending)
+    if pending.public_ready or pending.institutional_ready or pending.report_ready:
+        raise AssertionError(
+            "release_candidate_pending_approval must not imply readiness"
+        )
+
+    summary = check_release_readiness_dry_run()
+    if summary["release_status"] != "blocked_manual_review_required":
+        raise AssertionError("Release Readiness v1 must block manual-review drafts")
+    if summary["release_blocked"] is not True:
+        raise AssertionError("Release Readiness v1 must block release")
+    if (
+        summary["public_ready"]
+        or summary["institutional_ready"]
+        or summary["report_ready"]
+    ):
+        raise AssertionError("Release Readiness v1 must not mark readiness")
+    if summary["blocker_count"] != len(DRY_RUN_BLOCKER_REASONS):
+        raise AssertionError("Release Readiness v1 blocker count changed")
+    if summary["record"].blocker_reasons != DRY_RUN_BLOCKER_REASONS:
+        raise AssertionError("Release Readiness v1 blockers must be deterministic")
+
+    assert_nonempty_file(str(DEFAULT_RELEASE_READINESS_RECORD))
+    assert_nonempty_file(str(DEFAULT_RELEASE_READINESS_SUMMARY))
+    print("✓ Release Readiness v1 lane validation OK")
+
+
 def validate_seed_evidence_index() -> None:
     seed_evidence = load_seed_evidence()
     if len(seed_evidence) != 2:
@@ -1648,6 +1779,7 @@ def main() -> int:
     validate_real_evidence_replacement_lane()
     validate_manual_review_lane()
     validate_final_report_hardening_lane()
+    validate_release_readiness_lane()
     validate_gate_rejections()
     validate_seed_evidence_index()
     validate_report_source_text()

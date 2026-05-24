@@ -74,6 +74,10 @@ echo "== Validating final report hardening dry-run =="
 python scripts/harden_final_report.py --dry-run
 
 echo
+echo "== Validating release readiness dry-run =="
+python scripts/check_release_readiness.py --dry-run
+
+echo
 echo "== Running canonical v3 test =="
 python test_v3_divergence_pipeline.py
 
@@ -142,6 +146,12 @@ echo
 echo "== Removing ignored final report hardening artifacts =="
 if [ -d outputs/final_report_hardening ]; then
   git clean -fX outputs/final_report_hardening/
+fi
+
+echo
+echo "== Removing ignored release readiness artifacts =="
+if [ -d outputs/release_readiness ]; then
+  git clean -fX outputs/release_readiness/
 fi
 
 echo
