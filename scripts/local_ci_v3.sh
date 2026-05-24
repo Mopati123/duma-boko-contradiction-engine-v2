@@ -82,6 +82,10 @@ echo "== Validating release policy dry-run =="
 python scripts/check_release_policy.py --dry-run
 
 echo
+echo "== Validating real evidence approval dry-run =="
+python scripts/approve_real_evidence.py --dry-run
+
+echo
 echo "== Running canonical v3 test =="
 python test_v3_divergence_pipeline.py
 
@@ -162,6 +166,12 @@ echo
 echo "== Removing ignored release policy artifacts =="
 if [ -d outputs/release_policy ]; then
   git clean -fX outputs/release_policy/
+fi
+
+echo
+echo "== Removing ignored real evidence approval artifacts =="
+if [ -d outputs/real_evidence_approval ]; then
+  git clean -fX outputs/real_evidence_approval/
 fi
 
 echo

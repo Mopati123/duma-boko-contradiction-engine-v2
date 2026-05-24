@@ -86,6 +86,14 @@ from evidence.release_policy import (
     check_release_policy_dry_run,
     validate_release_policy_record,
 )
+from evidence.real_evidence_approval import (
+    DEFAULT_REAL_EVIDENCE_APPROVAL_RECORDS_OUTPUT,
+    DEFAULT_REAL_EVIDENCE_APPROVAL_SUMMARY_OUTPUT,
+    DRY_RUN_BLOCKER_REASONS as APPROVAL_DRY_RUN_BLOCKER_REASONS,
+    RealEvidenceApprovalRecord,
+    approve_real_evidence_dry_run,
+    validate_real_evidence_approval_record,
+)
 from evidence.real_evidence_replacement import (
     DEFAULT_REAL_EVIDENCE_OUTPUT_DIR,
     DEFAULT_REAL_QUOTE_OUTPUT,
@@ -1849,6 +1857,176 @@ def validate_release_policy_lane() -> None:
     print("✓ Release Policy v1 lane validation OK")
 
 
+def validate_real_evidence_approval_lane() -> None:
+    blocked = RealEvidenceApprovalRecord(
+        approval_id="APPROVAL_TEST_BLOCKED",
+        evidence_id="VID_JOBS_001",
+        case_id="CASE_002",
+        source_url="https://www.youtube.com/watch?v=e0MLzB5nGDc",
+        transcript_status="real_transcript_approval_required",
+        timestamp_status="real_timestamp_approval_required",
+        quote_status="real_quote_approval_required",
+        context_status="context_approval_required",
+        case_relevance_status="case_relevance_review_required",
+        reviewer="real-evidence-approval-v1-test",
+        approval_status="blocked_manual_review_required",
+        approval_candidate=False,
+        public_ready=False,
+        institutional_ready=False,
+        report_ready=False,
+        approval_notes=(
+            "Blocked test record. Real transcript, timestamp, quote, context, "
+            "case relevance, and reviewer approval are required."
+        ),
+        blocker_reasons=list(APPROVAL_DRY_RUN_BLOCKER_REASONS),
+    )
+    validate_real_evidence_approval_record(blocked)
+
+    approved_candidate = RealEvidenceApprovalRecord(
+        approval_id="APPROVAL_TEST_CANDIDATE",
+        evidence_id="VID_JOBS_001",
+        case_id="CASE_002",
+        source_url="https://www.youtube.com/watch?v=e0MLzB5nGDc",
+        transcript_status="real_transcript_verified",
+        timestamp_status="real_timestamp_verified",
+        quote_status="real_quote_verified",
+        context_status="context_verified",
+        case_relevance_status="case_relevance_verified",
+        reviewer="real-evidence-approval-v1-test",
+        approval_status="approved_evidence_candidate",
+        approval_candidate=True,
+        public_ready=False,
+        institutional_ready=False,
+        report_ready=False,
+        approval_notes=(
+            "Candidate test record only. Candidate approval remains below "
+            "public, institutional, and report readiness."
+        ),
+        blocker_reasons=[],
+    )
+    validate_real_evidence_approval_record(approved_candidate)
+
+    for field_name in (
+        "approval_id",
+        "evidence_id",
+        "case_id",
+        "source_url",
+        "reviewer",
+        "approval_status",
+        "approval_notes",
+    ):
+        assert_value_error(
+            lambda field_name=field_name: validate_real_evidence_approval_record(
+                {**blocked.to_dict(), field_name: ""}
+            ),
+            f"{field_name} must be a non-empty string",
+        )
+
+    assert_value_error(
+        lambda: validate_real_evidence_approval_record(
+            {**blocked.to_dict(), "public_ready": True}
+        ),
+        "public_ready must be false",
+    )
+
+    assert_value_error(
+        lambda: validate_real_evidence_approval_record(
+            {**blocked.to_dict(), "institutional_ready": True}
+        ),
+        "institutional_ready must be false",
+    )
+
+    assert_value_error(
+        lambda: validate_real_evidence_approval_record(
+            {**blocked.to_dict(), "report_ready": True}
+        ),
+        "report_ready must be false",
+    )
+
+    assert_value_error(
+        lambda: validate_real_evidence_approval_record(
+            {
+                **approved_candidate.to_dict(),
+                "transcript_status": "real_transcript_approval_required",
+            }
+        ),
+        "approval_candidate requires transcript_status=real_transcript_verified",
+    )
+
+    assert_value_error(
+        lambda: validate_real_evidence_approval_record(
+            {
+                **approved_candidate.to_dict(),
+                "approval_status": "blocked_manual_review_required",
+                "blocker_reasons": list(APPROVAL_DRY_RUN_BLOCKER_REASONS),
+            }
+        ),
+        "approval_candidate requires approval_status=approved_evidence_candidate",
+    )
+
+    assert_value_error(
+        lambda: validate_real_evidence_approval_record(
+            {**blocked.to_dict(), "blocker_reasons": []}
+        ),
+        "blocked statuses require blocker_reasons",
+    )
+
+    assert_value_error(
+        lambda: validate_real_evidence_approval_record(
+            {
+                **blocked.to_dict(),
+                "approval_status": "rejected_evidence",
+                "blocker_reasons": [],
+            }
+        ),
+        "rejected_evidence requires blocker_reasons",
+    )
+
+    assert_value_error(
+        lambda: validate_real_evidence_approval_record(
+            {**approved_candidate.to_dict(), "public_ready": True}
+        ),
+        "public_ready must be false",
+    )
+    if (
+        approved_candidate.public_ready
+        or approved_candidate.institutional_ready
+        or approved_candidate.report_ready
+    ):
+        raise AssertionError(
+            "approved_evidence_candidate must not imply release readiness"
+        )
+
+    summary = approve_real_evidence_dry_run()
+    if summary["total_evidence_items_evaluated"] != 2:
+        raise AssertionError("Real Evidence Approval v1 dry-run must produce 2 records")
+    if summary["blocked_manual_review_required"] != 2:
+        raise AssertionError("Real Evidence Approval v1 dry-run must block records")
+    if summary["approved_evidence_candidate"] != 0:
+        raise AssertionError("Real Evidence Approval v1 dry-run must not approve")
+    if (
+        summary["public_ready"]
+        or summary["institutional_ready"]
+        or summary["report_ready"]
+    ):
+        raise AssertionError("Real Evidence Approval v1 must not mark readiness")
+    for record in summary["records"]:
+        if record.blocker_reasons != APPROVAL_DRY_RUN_BLOCKER_REASONS:
+            raise AssertionError("Real Evidence Approval v1 blockers must be deterministic")
+
+    policy_summary = check_release_policy_dry_run()
+    if policy_summary["manual_override_allowed"] is not True:
+        raise AssertionError("Release Policy v1 must still work")
+
+    readiness_summary = check_release_readiness_dry_run()
+    if readiness_summary["release_blocked"] is not True:
+        raise AssertionError("Release Readiness v1 must remain blocked")
+
+    assert_nonempty_file(str(DEFAULT_REAL_EVIDENCE_APPROVAL_RECORDS_OUTPUT))
+    assert_nonempty_file(str(DEFAULT_REAL_EVIDENCE_APPROVAL_SUMMARY_OUTPUT))
+    print("✓ Real Evidence Approval v1 lane validation OK")
+
+
 def validate_seed_evidence_index() -> None:
     seed_evidence = load_seed_evidence()
     if len(seed_evidence) != 2:
@@ -1889,6 +2067,7 @@ def main() -> int:
     validate_final_report_hardening_lane()
     validate_release_readiness_lane()
     validate_release_policy_lane()
+    validate_real_evidence_approval_lane()
     validate_gate_rejections()
     validate_seed_evidence_index()
     validate_report_source_text()
