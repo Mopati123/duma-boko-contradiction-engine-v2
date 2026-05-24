@@ -77,6 +77,7 @@ outputs/manual_review/
 outputs/final_report_hardening/
 outputs/release_readiness/
 outputs/release_policy/
+outputs/real_evidence_approval/
 outputs/reports/*_generated*.docx
 outputs/reports/*_generated*.pdf
 
