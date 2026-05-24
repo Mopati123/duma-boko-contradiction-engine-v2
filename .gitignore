@@ -72,6 +72,7 @@ outputs/quotes/
 outputs/case_links/
 outputs/report_sections/
 outputs/final_report/
+outputs/real_evidence/
 outputs/reports/*_generated*.docx
 outputs/reports/*_generated*.pdf
 
