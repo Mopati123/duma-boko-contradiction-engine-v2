@@ -78,6 +78,10 @@ echo "== Validating release readiness dry-run =="
 python scripts/check_release_readiness.py --dry-run
 
 echo
+echo "== Validating release policy dry-run =="
+python scripts/check_release_policy.py --dry-run
+
+echo
 echo "== Running canonical v3 test =="
 python test_v3_divergence_pipeline.py
 
@@ -152,6 +156,12 @@ echo
 echo "== Removing ignored release readiness artifacts =="
 if [ -d outputs/release_readiness ]; then
   git clean -fX outputs/release_readiness/
+fi
+
+echo
+echo "== Removing ignored release policy artifacts =="
+if [ -d outputs/release_policy ]; then
+  git clean -fX outputs/release_policy/
 fi
 
 echo
