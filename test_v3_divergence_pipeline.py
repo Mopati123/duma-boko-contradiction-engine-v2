@@ -94,6 +94,14 @@ from evidence.real_evidence_approval import (
     approve_real_evidence_dry_run,
     validate_real_evidence_approval_record,
 )
+from evidence.final_approved_packet import (
+    DEFAULT_FINAL_APPROVED_PACKET_RECORD,
+    DEFAULT_FINAL_APPROVED_PACKET_SUMMARY,
+    DRY_RUN_BLOCKER_REASONS as PACKET_DRY_RUN_BLOCKER_REASONS,
+    FinalApprovedEvidencePacketRecord,
+    generate_final_approved_packet_dry_run,
+    validate_final_approved_packet_record,
+)
 from evidence.real_evidence_replacement import (
     DEFAULT_REAL_EVIDENCE_OUTPUT_DIR,
     DEFAULT_REAL_QUOTE_OUTPUT,
@@ -2027,6 +2035,197 @@ def validate_real_evidence_approval_lane() -> None:
     print("✓ Real Evidence Approval v1 lane validation OK")
 
 
+def validate_final_approved_packet_lane() -> None:
+    blocked = FinalApprovedEvidencePacketRecord(
+        packet_id="FINAL_APPROVED_EVIDENCE_PACKET_TEST_BLOCKED",
+        report_id="DUMA_BOKO_REVIEW_DRAFT_V1_FIXTURE",
+        packet_status="blocked_no_approved_evidence",
+        approved_evidence_count=0,
+        blocked_evidence_count=2,
+        approved_evidence_ids=[],
+        blocked_evidence_ids=["VID_JOBS_001", "VID_HEALTH_001"],
+        source_table_status="blocked_pending_approval",
+        transcript_table_status="blocked_pending_approval",
+        timestamp_table_status="blocked_pending_approval",
+        quote_table_status="blocked_pending_approval",
+        manual_review_table_status="available_but_not_release_approval",
+        approval_table_status="no_approved_evidence_candidates",
+        release_readiness_status="blocked_manual_review_required",
+        release_policy_status="active_local_ci_override_policy",
+        audit_trail_status="dry_run_audit_available",
+        packet_ready=False,
+        public_ready=False,
+        institutional_ready=False,
+        report_ready=False,
+        blocker_reasons=list(PACKET_DRY_RUN_BLOCKER_REASONS),
+        packet_notes=(
+            "Blocked packet test record. No approved evidence candidates are "
+            "available for packet readiness."
+        ),
+    )
+    validate_final_approved_packet_record(blocked)
+
+    approved_candidate = FinalApprovedEvidencePacketRecord(
+        packet_id="FINAL_APPROVED_EVIDENCE_PACKET_TEST_CANDIDATE",
+        report_id="DUMA_BOKO_REVIEW_DRAFT_V1_FIXTURE",
+        packet_status="approved_packet_candidate",
+        approved_evidence_count=1,
+        blocked_evidence_count=0,
+        approved_evidence_ids=["VID_JOBS_001"],
+        blocked_evidence_ids=[],
+        source_table_status="available_from_approved_candidates",
+        transcript_table_status="available_from_approved_candidates",
+        timestamp_table_status="available_from_approved_candidates",
+        quote_table_status="available_from_approved_candidates",
+        manual_review_table_status="available_from_approved_candidates",
+        approval_table_status="approved_evidence_candidates_available",
+        release_readiness_status="release_candidate_pending_approval",
+        release_policy_status="active_local_ci_override_policy",
+        audit_trail_status="dry_run_audit_available",
+        packet_ready=True,
+        public_ready=False,
+        institutional_ready=False,
+        report_ready=False,
+        blocker_reasons=[],
+        packet_notes=(
+            "Approved packet candidate test record only. Packet candidacy remains "
+            "below public, institutional, and report readiness."
+        ),
+    )
+    validate_final_approved_packet_record(approved_candidate)
+
+    for field_name in ("packet_id", "report_id", "packet_status", "packet_notes"):
+        assert_value_error(
+            lambda field_name=field_name: validate_final_approved_packet_record(
+                {**blocked.to_dict(), field_name: ""}
+            ),
+            f"{field_name} must be a non-empty string",
+        )
+
+    assert_value_error(
+        lambda: validate_final_approved_packet_record(
+            {**blocked.to_dict(), "packet_ready": True}
+        ),
+        "packet_ready requires approved_evidence_count > 0",
+    )
+
+    assert_value_error(
+        lambda: validate_final_approved_packet_record(
+            {**blocked.to_dict(), "public_ready": True}
+        ),
+        "public_ready must be false",
+    )
+
+    assert_value_error(
+        lambda: validate_final_approved_packet_record(
+            {**blocked.to_dict(), "institutional_ready": True}
+        ),
+        "institutional_ready must be false",
+    )
+
+    assert_value_error(
+        lambda: validate_final_approved_packet_record(
+            {**blocked.to_dict(), "report_ready": True}
+        ),
+        "report_ready must be false",
+    )
+
+    assert_value_error(
+        lambda: validate_final_approved_packet_record(
+            {**blocked.to_dict(), "blocker_reasons": []}
+        ),
+        "blocked packet statuses require blocker_reasons",
+    )
+
+    assert_value_error(
+        lambda: validate_final_approved_packet_record(
+            {
+                **blocked.to_dict(),
+                "packet_status": "blocked_release_not_authorized",
+                "blocker_reasons": [],
+            }
+        ),
+        "blocked packet statuses require blocker_reasons",
+    )
+
+    assert_value_error(
+        lambda: validate_final_approved_packet_record(
+            {
+                **approved_candidate.to_dict(),
+                "approved_evidence_count": 0,
+                "approved_evidence_ids": [],
+                "packet_ready": False,
+            }
+        ),
+        "approved_packet_candidate requires approved_evidence_count > 0",
+    )
+
+    assert_value_error(
+        lambda: validate_final_approved_packet_record(
+            {
+                **approved_candidate.to_dict(),
+                "blocked_evidence_count": 1,
+                "blocked_evidence_ids": ["VID_JOBS_001"],
+            }
+        ),
+        "blocked evidence IDs must not appear in approved_evidence_ids",
+    )
+
+    assert_value_error(
+        lambda: validate_final_approved_packet_record(
+            {**approved_candidate.to_dict(), "public_ready": True}
+        ),
+        "public_ready must be false",
+    )
+    if (
+        approved_candidate.public_ready
+        or approved_candidate.institutional_ready
+        or approved_candidate.report_ready
+    ):
+        raise AssertionError("approved_packet_candidate must not imply readiness")
+
+    summary = generate_final_approved_packet_dry_run()
+    if summary["packet_status"] != "blocked_no_approved_evidence":
+        raise AssertionError("Final Approved Evidence Packet v1 must block dry-run")
+    if summary["approved_evidence_count"] != 0:
+        raise AssertionError("Final Approved Evidence Packet v1 must not approve")
+    if summary["blocked_evidence_count"] != 2:
+        raise AssertionError("Final Approved Evidence Packet v1 must block 2 records")
+    if summary["packet_ready"] is not False:
+        raise AssertionError("Final Approved Evidence Packet v1 must not be ready")
+    if (
+        summary["public_ready"]
+        or summary["institutional_ready"]
+        or summary["report_ready"]
+    ):
+        raise AssertionError("Final Approved Evidence Packet v1 must not mark readiness")
+    record = summary["record"]
+    if record.approved_evidence_ids:
+        raise AssertionError("Final Approved Evidence Packet v1 must not approve IDs")
+    if record.blocked_evidence_ids != ["VID_JOBS_001", "VID_HEALTH_001"]:
+        raise AssertionError("Final Approved Evidence Packet v1 blocked IDs changed")
+    if record.blocker_reasons != PACKET_DRY_RUN_BLOCKER_REASONS:
+        raise AssertionError("Final Approved Evidence Packet v1 blockers changed")
+
+    approval_summary = approve_real_evidence_dry_run()
+    if approval_summary["approved_evidence_candidate"] != 0:
+        raise AssertionError("Real Evidence Approval v1 must still block fixtures")
+    if approval_summary["blocked_manual_review_required"] != 2:
+        raise AssertionError("Real Evidence Approval v1 must still block both records")
+
+    policy_summary = check_release_policy_dry_run()
+    if policy_summary["manual_override_allowed"] is not True:
+        raise AssertionError("Release Policy v1 must still work")
+
+    readiness_summary = check_release_readiness_dry_run()
+    if readiness_summary["release_blocked"] is not True:
+        raise AssertionError("Release Readiness v1 must remain blocked")
+
+    assert_nonempty_file(str(DEFAULT_FINAL_APPROVED_PACKET_RECORD))
+    assert_nonempty_file(str(DEFAULT_FINAL_APPROVED_PACKET_SUMMARY))
+    print("✓ Final Approved Evidence Packet v1 lane validation OK")
+
+
 def validate_seed_evidence_index() -> None:
     seed_evidence = load_seed_evidence()
     if len(seed_evidence) != 2:
@@ -2068,6 +2267,7 @@ def main() -> int:
     validate_release_readiness_lane()
     validate_release_policy_lane()
     validate_real_evidence_approval_lane()
+    validate_final_approved_packet_lane()
     validate_gate_rejections()
     validate_seed_evidence_index()
     validate_report_source_text()
