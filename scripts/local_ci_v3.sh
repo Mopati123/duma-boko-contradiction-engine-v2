@@ -86,6 +86,10 @@ echo "== Validating real evidence approval dry-run =="
 python scripts/approve_real_evidence.py --dry-run
 
 echo
+echo "== Validating final approved evidence packet dry-run =="
+python scripts/generate_final_approved_packet.py --dry-run
+
+echo
 echo "== Running canonical v3 test =="
 python test_v3_divergence_pipeline.py
 
@@ -172,6 +176,12 @@ echo
 echo "== Removing ignored real evidence approval artifacts =="
 if [ -d outputs/real_evidence_approval ]; then
   git clean -fX outputs/real_evidence_approval/
+fi
+
+echo
+echo "== Removing ignored final approved evidence packet artifacts =="
+if [ -d outputs/final_approved_packet ]; then
+  git clean -fX outputs/final_approved_packet/
 fi
 
 echo
