@@ -60,6 +60,16 @@ from evidence.final_report_v1 import (
     generate_final_report_fixture_only,
     validate_final_report_payload,
 )
+from evidence.real_evidence_replacement import (
+    DEFAULT_REAL_EVIDENCE_OUTPUT_DIR,
+    DEFAULT_REAL_QUOTE_OUTPUT,
+    DEFAULT_REAL_STATUS_OUTPUT,
+    DEFAULT_REAL_TIMESTAMP_OUTPUT,
+    RealEvidenceReplacementStatus,
+    phrase_matches_real_text,
+    replace_real_evidence,
+    validate_real_evidence_replacement_status,
+)
 from evidence.evidence_loader import DEFAULT_INDEX_PATH, build_evidence_index, load_seed_evidence
 from evidence.evidence_gate import validate_case_evidence_links
 from evidence.evidence_schema import (
@@ -1231,6 +1241,91 @@ def validate_final_report_generation_lane() -> None:
     print("✓ Final Report Generation v1 lane validation OK")
 
 
+def validate_real_evidence_replacement_lane() -> None:
+    status = RealEvidenceReplacementStatus(
+        evidence_id="VID_JOBS_001",
+        case_id="CASE_002",
+        url="https://www.youtube.com/watch?v=e0MLzB5nGDc",
+        acquisition_status="manual_review_required",
+        transcript_status="unavailable",
+        timestamp_status="unavailable",
+        quote_status="unavailable",
+        manual_review_required=True,
+        public_ready=False,
+        notes="Manual review required before real evidence replacement.",
+    )
+    validate_real_evidence_replacement_status(status)
+
+    assert_value_error(
+        lambda: validate_real_evidence_replacement_status(
+            {**status.to_dict(), "public_ready": True}
+        ),
+        "public_ready must be false",
+    )
+
+    assert_value_error(
+        lambda: validate_real_evidence_replacement_status(
+            {**status.to_dict(), "manual_review_required": False}
+        ),
+        "manual_review_required must be true",
+    )
+
+    assert_value_error(
+        lambda: validate_real_evidence_replacement_status(
+            {
+                **status.to_dict(),
+                "acquisition_status": "transcript_found_real",
+                "transcript_status": "transcript_found_real",
+            }
+        ),
+        "transcript_found_real requires a real transcript artifact",
+    )
+
+    assert_value_error(
+        lambda: validate_real_evidence_replacement_status(
+            {**status.to_dict(), "timestamp_status": "timestamp_candidate_real"}
+        ),
+        "timestamp_candidate_real requires a timestamp candidate",
+    )
+
+    assert_value_error(
+        lambda: validate_real_evidence_replacement_status(
+            {**status.to_dict(), "quote_status": "quote_candidate_real"}
+        ),
+        "quote_candidate_real requires a quote candidate",
+    )
+
+    if not phrase_matches_real_text(
+        "500,000 new jobs",
+        "We promised to create 500 000 new jobs in five years.",
+    ):
+        raise AssertionError("Real evidence matching must ignore comma differences")
+
+    empty_transcript_dir = DEFAULT_REAL_EVIDENCE_OUTPUT_DIR / "empty_transcripts"
+    summary = replace_real_evidence(
+        dry_run=True,
+        transcript_dir=empty_transcript_dir,
+    )
+    if summary["processed"] != 2:
+        raise AssertionError("Real Evidence Replacement v1 dry-run must process 2 records")
+    if summary["transcript_found_real"] != 0:
+        raise AssertionError("Dry-run without real transcript artifacts must not find transcripts")
+    if summary["timestamp_candidate_real"] != 0:
+        raise AssertionError("Dry-run without real transcripts must not create timestamps")
+    if summary["quote_candidate_real"] != 0:
+        raise AssertionError("Dry-run without real transcripts must not create quotes")
+    if summary["manual_review_required"] != 2:
+        raise AssertionError("Dry-run must keep both seed records in manual review")
+
+    assert_nonempty_file(str(DEFAULT_REAL_STATUS_OUTPUT))
+    assert_nonempty_file(str(DEFAULT_REAL_TIMESTAMP_OUTPUT))
+    assert_nonempty_file(str(DEFAULT_REAL_QUOTE_OUTPUT))
+    if empty_transcript_dir.exists() and any(empty_transcript_dir.iterdir()):
+        raise AssertionError("Dry-run must not write real transcript artifacts")
+
+    print("✓ Real Evidence Replacement v1 lane validation OK")
+
+
 def validate_seed_evidence_index() -> None:
     seed_evidence = load_seed_evidence()
     if len(seed_evidence) != 2:
@@ -1266,6 +1361,7 @@ def main() -> int:
     validate_case_evidence_linking_lane()
     validate_report_section_assembly_lane()
     validate_final_report_generation_lane()
+    validate_real_evidence_replacement_lane()
     validate_gate_rejections()
     validate_seed_evidence_index()
     validate_report_source_text()

@@ -62,6 +62,10 @@ echo "== Validating final report generation fixtures =="
 python scripts/generate_final_report_v1.py --fixtures-only
 
 echo
+echo "== Validating real evidence replacement dry-run =="
+python scripts/replace_real_evidence.py --dry-run
+
+echo
 echo "== Running canonical v3 test =="
 python test_v3_divergence_pipeline.py
 
@@ -112,6 +116,12 @@ echo
 echo "== Removing ignored final report v1 artifacts =="
 if [ -d outputs/final_report ]; then
   git clean -fX outputs/final_report/
+fi
+
+echo
+echo "== Removing ignored real evidence replacement artifacts =="
+if [ -d outputs/real_evidence ]; then
+  git clean -fX outputs/real_evidence/
 fi
 
 echo
