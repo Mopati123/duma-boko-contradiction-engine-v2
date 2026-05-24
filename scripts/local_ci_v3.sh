@@ -58,6 +58,10 @@ echo "== Validating report section assembly fixtures =="
 python scripts/assemble_report_sections.py --fixtures-only
 
 echo
+echo "== Validating final report generation fixtures =="
+python scripts/generate_final_report_v1.py --fixtures-only
+
+echo
 echo "== Running canonical v3 test =="
 python test_v3_divergence_pipeline.py
 
@@ -102,6 +106,12 @@ echo
 echo "== Removing ignored report section assembly artifacts =="
 if [ -d outputs/report_sections ]; then
   git clean -fX outputs/report_sections/
+fi
+
+echo
+echo "== Removing ignored final report v1 artifacts =="
+if [ -d outputs/final_report ]; then
+  git clean -fX outputs/final_report/
 fi
 
 echo

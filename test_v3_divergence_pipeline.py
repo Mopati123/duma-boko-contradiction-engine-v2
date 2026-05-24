@@ -11,6 +11,8 @@ import subprocess
 import sys
 from pathlib import Path
 
+from docx import Document
+
 from analysis.target_search import run_divergence_engine
 from evidence.evidence_ingestion import (
     load_or_build_evidence_index,
@@ -50,6 +52,13 @@ from evidence.report_section_assembly import (
     assemble_report_sections_fixture_only,
     validate_assembled_report_section,
     validate_assembled_section_resolves,
+)
+from evidence.final_report_v1 import (
+    DEFAULT_FINAL_REPORT_DOCX,
+    DEFAULT_FINAL_REPORT_PAYLOAD,
+    FinalReportPayload,
+    generate_final_report_fixture_only,
+    validate_final_report_payload,
 )
 from evidence.evidence_loader import DEFAULT_INDEX_PATH, build_evidence_index, load_seed_evidence
 from evidence.evidence_gate import validate_case_evidence_links
@@ -100,6 +109,16 @@ def assert_nonempty_file(path: str) -> Path:
     if p.stat().st_size <= 0:
         raise AssertionError(f"Expected non-empty file: {path}")
     return p
+
+
+def extract_docx_text(path: Path) -> str:
+    document = Document(path)
+    parts = [paragraph.text for paragraph in document.paragraphs]
+    for table in document.tables:
+        for row in table.rows:
+            for cell in row.cells:
+                parts.append(cell.text)
+    return "\n".join(parts)
 
 
 def assert_value_error(func, expected_text: str) -> None:
@@ -1084,6 +1103,134 @@ def validate_report_section_assembly_lane() -> None:
     print("✓ Report Section Assembly v1 lane validation OK")
 
 
+def validate_final_report_generation_lane() -> None:
+    assembly_summary = assemble_report_sections_fixture_only()
+    verified_sections = [
+        section.to_dict()
+        for section in assembly_summary["sections"]
+        if section.assembly_status == "assembly_verified"
+    ]
+    payload = FinalReportPayload(
+        report_id="DUMA_BOKO_REVIEW_DRAFT_V1_FIXTURE",
+        title="Duma Boko Evidence Pipeline Review Draft",
+        report_status="review_draft",
+        generated_from=str(DEFAULT_REPORT_SECTION_OUTPUT),
+        sections=verified_sections,
+        evidence_disclaimer=(
+            "Review draft fixture-based validation artifact. Not for public release. "
+            "Fixture sections are not public evidence and not a public evidentiary "
+            "conclusion."
+        ),
+        methodology_note=(
+            "Evidence pipeline demonstration using deterministic fixtures only. "
+            "Requires real transcript/timestamp/quote replacement before publication."
+        ),
+        limitations_note=(
+            "This review draft is non-public, non-final, and cannot be used as an "
+            "evidentiary conclusion."
+        ),
+        generation_notes=(
+            "Generated for local pipeline validation only. Publication readiness is "
+            "not set and release remains gated."
+        ),
+    )
+    validate_final_report_payload(payload)
+
+    for field_name in (
+        "report_id",
+        "title",
+        "evidence_disclaimer",
+        "methodology_note",
+        "limitations_note",
+        "generation_notes",
+    ):
+        assert_value_error(
+            lambda field_name=field_name: validate_final_report_payload(
+                {**payload.to_dict(), field_name: ""}
+            ),
+            f"{field_name} must be a non-empty string",
+        )
+
+    assert_value_error(
+        lambda: validate_final_report_payload({**payload.to_dict(), "sections": []}),
+        "sections must be a non-empty list for review_draft",
+    )
+
+    assert_value_error(
+        lambda: validate_final_report_payload(
+            {
+                **payload.to_dict(),
+                "report_status": "blocked",
+                "sections": [],
+                "generation_notes": "Blocked pending review.",
+            }
+        ),
+        "blocked requires a reason",
+    )
+
+    assert_value_error(
+        lambda: validate_final_report_payload(
+            {
+                **payload.to_dict(),
+                "report_status": "generation_failed",
+                "sections": [],
+                "generation_notes": "Generation failed during review.",
+            }
+        ),
+        "generation_failed requires a reason",
+    )
+
+    assert_value_error(
+        lambda: validate_final_report_payload({**payload.to_dict(), "report_ready": True}),
+        "cannot mark evidence as report_ready",
+    )
+
+    summary = generate_final_report_fixture_only()
+    if summary["report_status"] != "review_draft":
+        raise AssertionError("Final Report Generation v1 must create review_draft only")
+    if summary["sections_included"] != 2:
+        raise AssertionError("Final Report Generation v1 must include 2 fixture sections")
+    if summary["evidence_ids_represented"] != 2:
+        raise AssertionError(
+            "Final Report Generation v1 must represent 2 fixture evidence IDs"
+        )
+
+    payload_path = assert_nonempty_file(str(DEFAULT_FINAL_REPORT_PAYLOAD))
+    docx_path = assert_nonempty_file(str(DEFAULT_FINAL_REPORT_DOCX))
+
+    generated_payload = json.loads(payload_path.read_text(encoding="utf-8"))
+    generated_text = json.dumps(generated_payload, sort_keys=True).lower()
+    docx_text = extract_docx_text(docx_path)
+    combined_text = f"{generated_text}\n{docx_text}".lower()
+
+    for required_text in (
+        "review draft",
+        "not for public release",
+        "fixture-based validation artifact",
+        "not a public evidentiary conclusion",
+        "requires real transcript/timestamp/quote replacement before publication",
+    ):
+        if required_text not in combined_text:
+            raise AssertionError(
+                f"Final Report Generation v1 missing required wording: {required_text}"
+            )
+
+    for forbidden_text in (
+        "validated public evidence",
+        "final forensic report",
+        "institution-ready",
+        "proven corruption",
+        "proven failure",
+        "report_ready",
+    ):
+        if forbidden_text in combined_text:
+            raise AssertionError(
+                f"Final Report Generation v1 overclaims with: {forbidden_text}"
+            )
+
+    print("✓ Final Report Generation v1 lane validation OK")
+
+
 def validate_seed_evidence_index() -> None:
     seed_evidence = load_seed_evidence()
     if len(seed_evidence) != 2:
@@ -1118,6 +1265,7 @@ def main() -> int:
     validate_quote_verification_lane()
     validate_case_evidence_linking_lane()
     validate_report_section_assembly_lane()
+    validate_final_report_generation_lane()
     validate_gate_rejections()
     validate_seed_evidence_index()
     validate_report_source_text()
