@@ -78,6 +78,7 @@ outputs/final_report_hardening/
 outputs/release_readiness/
 outputs/release_policy/
 outputs/real_evidence_inputs/
+outputs/real_evidence_auto_collection/
 outputs/real_evidence_approval/
 outputs/final_approved_packet/
 outputs/reports/*_generated*.docx
