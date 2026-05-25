@@ -125,6 +125,12 @@ from evidence.recovery_candidate_verification import (
     verify_candidate_reachability,
     verify_recovery_candidates,
 )
+from evidence.selected_recovery_source import (
+    DEFAULT_SELECTED_RECOVERY_SOURCE_PATH,
+    load_selected_recovery_sources,
+    summarize_selected_recovery_sources,
+    validate_selected_recovery_source_record,
+)
 from evidence.final_approved_packet import (
     DEFAULT_FINAL_APPROVED_PACKET_RECORD,
     DEFAULT_FINAL_APPROVED_PACKET_SUMMARY,
@@ -2293,6 +2299,152 @@ def validate_recovery_candidate_verification_lane() -> None:
     print("✓ Recovery Candidate Verification v1 lane validation OK")
 
 
+def validate_selected_recovery_source_lane() -> None:
+    candidates = load_source_recovery_candidates()
+    records = load_selected_recovery_sources(candidates=candidates)
+    if len(records) != 2:
+        raise AssertionError("Selected Recovery Source v1 must load 2 records")
+
+    candidate_ids = {candidate.recovery_candidate_id for candidate in candidates}
+    selected_by_evidence_id = {
+        record.original_evidence_id: record
+        for record in records
+        if record.selection_status == "selected_for_content_review"
+    }
+    if set(selected_by_evidence_id) != {"VID_JOBS_001", "VID_HEALTH_001"}:
+        raise AssertionError("Selected Recovery Source v1 must select both evidence IDs")
+
+    jobs_record = selected_by_evidence_id["VID_JOBS_001"]
+    health_record = selected_by_evidence_id["VID_HEALTH_001"]
+    if jobs_record.selected_recovery_candidate_id != "RECOVERY_VID_JOBS_001_UDC_HOME":
+        raise AssertionError("Selected jobs recovery source changed")
+    if health_record.selected_recovery_candidate_id != "RECOVERY_VID_HEALTH_001_REUTERS":
+        raise AssertionError("Selected health recovery source changed")
+
+    summary = summarize_selected_recovery_sources(records)
+    if summary["selected_count"] != 2:
+        raise AssertionError("Selected Recovery Source v1 selected count changed")
+    if summary["pending_selection_count"] != 0:
+        raise AssertionError("Selected Recovery Source v1 should have no pending rows")
+    if summary["approved_evidence"] != 0:
+        raise AssertionError("Selected Recovery Source v1 must not approve evidence")
+    if (
+        summary["public_ready"]
+        or summary["institutional_ready"]
+        or summary["report_ready"]
+    ):
+        raise AssertionError("Selected Recovery Source v1 must not mark readiness")
+
+    for record in records:
+        validate_selected_recovery_source_record(record, candidates)
+        if record.selected_recovery_candidate_id not in candidate_ids:
+            raise AssertionError("Selected source candidate ID must exist in registry")
+        if (
+            record.approved_evidence
+            or record.public_ready
+            or record.institutional_ready
+            or record.report_ready
+        ):
+            raise AssertionError("Selected source must not approve or mark readiness")
+
+    assert_value_error(
+        lambda: validate_selected_recovery_source_record(
+            {**jobs_record.to_dict(), "selection_status": "approved_evidence"},
+            candidates,
+        ),
+        "selection_status is unsupported",
+    )
+    assert_value_error(
+        lambda: validate_selected_recovery_source_record(
+            {**jobs_record.to_dict(), "selected_source_url": ""},
+            candidates,
+        ),
+        "selected_source_url must be a non-empty string",
+    )
+    assert_value_error(
+        lambda: validate_selected_recovery_source_record(
+            {**jobs_record.to_dict(), "approved_evidence": True},
+            candidates,
+        ),
+        "approved_evidence must be false",
+    )
+    assert_value_error(
+        lambda: validate_selected_recovery_source_record(
+            {**jobs_record.to_dict(), "public_ready": True},
+            candidates,
+        ),
+        "public_ready must be false",
+    )
+    assert_value_error(
+        lambda: validate_selected_recovery_source_record(
+            {
+                **jobs_record.to_dict(),
+                "selected_recovery_candidate_id": "RECOVERY_UNKNOWN",
+            },
+            candidates,
+        ),
+        "selected_recovery_candidate_id is unknown",
+    )
+
+    protected_paths = [
+        Path("data/evidence_seed/videos.yaml"),
+        Path("data/real_evidence_inputs/VID_JOBS_001.template.json"),
+        Path("data/real_evidence_inputs/VID_HEALTH_001.template.json"),
+    ]
+    before = {path: path.read_text(encoding="utf-8") for path in protected_paths}
+    for command in (
+        "python scripts/inspect_selected_recovery_sources.py",
+        "python scripts/inspect_selected_recovery_sources.py --evidence-id VID_JOBS_001",
+        "python scripts/inspect_selected_recovery_sources.py --evidence-id VID_HEALTH_001",
+    ):
+        exit_code, output = run_command(command)
+        if exit_code != 0:
+            raise AssertionError(
+                f"Selected recovery source inspection command failed: {command}"
+            )
+        if "approved_evidence: 0" not in output:
+            raise AssertionError("Selected recovery inspection must not approve evidence")
+        if "public_ready: False" not in output:
+            raise AssertionError("Selected recovery inspection must not mark readiness")
+    after = {path: path.read_text(encoding="utf-8") for path in protected_paths}
+    if before != after:
+        raise AssertionError(
+            "Selected recovery source lane must not modify protected source files"
+        )
+
+    with tempfile.TemporaryDirectory() as temp_dir:
+        payload = json.loads(
+            DEFAULT_SELECTED_RECOVERY_SOURCE_PATH.read_text(encoding="utf-8")
+        )
+        duplicate = json.loads(json.dumps(payload))
+        duplicate["selected_sources"].append(dict(duplicate["selected_sources"][0]))
+        duplicate_path = Path(temp_dir) / "selected_recovery_sources.json"
+        duplicate_path.write_text(json.dumps(duplicate, indent=2), encoding="utf-8")
+        assert_value_error(
+            lambda: load_selected_recovery_sources(
+                path=duplicate_path,
+                candidates=candidates,
+            ),
+            "Duplicate selected recovery source",
+        )
+
+        unknown = json.loads(json.dumps(payload))
+        unknown["selected_sources"][0]["selected_recovery_candidate_id"] = (
+            "RECOVERY_UNKNOWN"
+        )
+        unknown_path = Path(temp_dir) / "selected_recovery_sources_unknown.json"
+        unknown_path.write_text(json.dumps(unknown, indent=2), encoding="utf-8")
+        assert_value_error(
+            lambda: load_selected_recovery_sources(
+                path=unknown_path,
+                candidates=candidates,
+            ),
+            "selected_recovery_candidate_id is unknown",
+        )
+
+    print("✓ Selected Recovery Source v1 lane validation OK")
+
+
 def validate_real_evidence_approval_lane() -> None:
     blocked = RealEvidenceApprovalRecord(
         approval_id="APPROVAL_TEST_BLOCKED",
@@ -2698,6 +2850,7 @@ def main() -> int:
     validate_real_evidence_auto_collection_helper_lane()
     validate_source_recovery_lane()
     validate_recovery_candidate_verification_lane()
+    validate_selected_recovery_source_lane()
     validate_real_evidence_approval_lane()
     validate_final_approved_packet_lane()
     validate_gate_rejections()
