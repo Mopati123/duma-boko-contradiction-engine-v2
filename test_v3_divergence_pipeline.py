@@ -131,6 +131,13 @@ from evidence.selected_recovery_source import (
     summarize_selected_recovery_sources,
     validate_selected_recovery_source_record,
 )
+from evidence.source_content_extraction import (
+    SourceContentExtractionRecord,
+    extract_candidate_text,
+    extract_content_for_selected_source,
+    extract_selected_source_content,
+    validate_source_content_extraction_record,
+)
 from evidence.final_approved_packet import (
     DEFAULT_FINAL_APPROVED_PACKET_RECORD,
     DEFAULT_FINAL_APPROVED_PACKET_SUMMARY,
@@ -2445,6 +2452,148 @@ def validate_selected_recovery_source_lane() -> None:
     print("✓ Selected Recovery Source v1 lane validation OK")
 
 
+def validate_source_content_extraction_lane() -> None:
+    selected_sources = load_selected_recovery_sources()
+    if len(selected_sources) != 2:
+        raise AssertionError("Source Content Extraction v1 must load 2 sources")
+
+    no_network_record = extract_content_for_selected_source(
+        selected_sources[0],
+        no_network=True,
+        timeout_seconds=1,
+    )
+    validate_source_content_extraction_record(no_network_record)
+    if no_network_record.extraction_status != "not_checked":
+        raise AssertionError("No-network extraction must remain not_checked")
+    if no_network_record.content_source_status != "not_checked":
+        raise AssertionError("No-network extraction must not check source status")
+    if not no_network_record.requires_manual_review:
+        raise AssertionError("Extraction records must require manual review")
+    if (
+        no_network_record.approved_evidence
+        or no_network_record.public_ready
+        or no_network_record.institutional_ready
+        or no_network_record.report_ready
+    ):
+        raise AssertionError("Extraction records must not mark readiness")
+    if "verified_for_approval_review" in no_network_record.to_dict():
+        raise AssertionError("Extraction records must not include approval verification")
+    if "verified_for_manual_review" in no_network_record.to_dict():
+        raise AssertionError("Extraction records must not include manual verification")
+
+    jobs_text, jobs_quote = extract_candidate_text(
+        "VID_JOBS_001",
+        """
+        <html><head><script>var ignored = 'jobs';</script></head>
+        <body><p>The manifesto commits to create 500,000 jobs through
+        employment programmes.</p></body></html>
+        """,
+    )
+    if "500,000 jobs" not in jobs_text:
+        raise AssertionError("Jobs extraction fixture did not find candidate text")
+    if "500,000 jobs" not in jobs_quote:
+        raise AssertionError("Jobs extraction fixture did not find quote candidate")
+
+    health_text, health_quote = extract_candidate_text(
+        "VID_HEALTH_001",
+        """
+        <html><body><p>Botswana declared a public health emergency after
+        clinics reported medicine shortage pressure.</p></body></html>
+        """,
+    )
+    if "public health emergency" not in health_text:
+        raise AssertionError("Health extraction fixture did not find candidate text")
+    if "public health emergency" not in health_quote:
+        raise AssertionError("Health extraction fixture did not find quote candidate")
+
+    assert_value_error(
+        lambda: validate_source_content_extraction_record(
+            {**no_network_record.to_dict(), "source_url": ""}
+        ),
+        "source_url must be a non-empty string",
+    )
+    assert_value_error(
+        lambda: validate_source_content_extraction_record(
+            {**no_network_record.to_dict(), "approved_evidence": True}
+        ),
+        "approved_evidence must be false",
+    )
+    assert_value_error(
+        lambda: validate_source_content_extraction_record(
+            {**no_network_record.to_dict(), "public_ready": True}
+        ),
+        "public_ready must be false",
+    )
+    assert_value_error(
+        lambda: validate_source_content_extraction_record(
+            {**no_network_record.to_dict(), "verified_for_approval_review": False}
+        ),
+        "must not contain verification field",
+    )
+
+    candidate_record = SourceContentExtractionRecord(
+        original_evidence_id="VID_JOBS_001",
+        selected_recovery_candidate_id="RECOVERY_VID_JOBS_001_UDC_HOME",
+        source_url="https://www.udc.org.bw/",
+        extraction_status="extracted_candidate",
+        content_source_status="source_reachable",
+        extracted_text_candidate="The manifesto references 500,000 jobs.",
+        extracted_quote_candidate="The manifesto references 500,000 jobs.",
+        extraction_method="fixture",
+        requires_manual_review=True,
+        approved_evidence=False,
+        public_ready=False,
+        institutional_ready=False,
+        report_ready=False,
+        notes="Fixture candidate only. Human review required.",
+    )
+    validate_source_content_extraction_record(candidate_record)
+
+    protected_paths = [
+        Path("data/evidence_seed/videos.yaml"),
+        Path("data/real_evidence_inputs/VID_JOBS_001.template.json"),
+        Path("data/real_evidence_inputs/VID_HEALTH_001.template.json"),
+    ]
+    before = {path: path.read_text(encoding="utf-8") for path in protected_paths}
+    summary = extract_selected_source_content(no_network=True, timeout_seconds=1)
+    after = {path: path.read_text(encoding="utf-8") for path in protected_paths}
+    if before != after:
+        raise AssertionError(
+            "Source content extraction must not modify protected source files"
+        )
+    if summary["total_sources"] != 2:
+        raise AssertionError("Source content extraction no-network must process 2 records")
+    if summary["not_checked_count"] != 2:
+        raise AssertionError("Source content extraction no-network must not check URLs")
+    if summary["requires_manual_review_count"] != 2:
+        raise AssertionError("Source content extraction must require manual review")
+    if summary["approved_evidence"] != 0:
+        raise AssertionError("Source content extraction must not approve evidence")
+    if (
+        summary["public_ready"]
+        or summary["institutional_ready"]
+        or summary["report_ready"]
+    ):
+        raise AssertionError("Source content extraction must not mark readiness")
+
+    for command in (
+        "python scripts/extract_selected_source_content.py --no-network",
+        "python scripts/extract_selected_source_content.py --evidence-id VID_JOBS_001 --no-network",
+        "python scripts/extract_selected_source_content.py --evidence-id VID_HEALTH_001 --no-network",
+    ):
+        exit_code, output = run_command(command)
+        if exit_code != 0:
+            raise AssertionError(
+                f"Source content extraction command failed: {command}"
+            )
+        if "approved_evidence: 0" not in output:
+            raise AssertionError("Source extraction CLI must not approve evidence")
+        if "public_ready: False" not in output:
+            raise AssertionError("Source extraction CLI must not mark readiness")
+
+    print("✓ Source Content Extraction v1 lane validation OK")
+
+
 def validate_real_evidence_approval_lane() -> None:
     blocked = RealEvidenceApprovalRecord(
         approval_id="APPROVAL_TEST_BLOCKED",
@@ -2851,6 +3000,7 @@ def main() -> int:
     validate_source_recovery_lane()
     validate_recovery_candidate_verification_lane()
     validate_selected_recovery_source_lane()
+    validate_source_content_extraction_lane()
     validate_real_evidence_approval_lane()
     validate_final_approved_packet_lane()
     validate_gate_rejections()
