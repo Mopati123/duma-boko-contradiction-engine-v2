@@ -119,6 +119,12 @@ from evidence.source_recovery import (
     summarize_source_recovery_candidates,
     validate_source_recovery_candidate_record,
 )
+from evidence.recovery_candidate_verification import (
+    RecoveryCandidateVerificationRecord,
+    validate_recovery_candidate_verification_record,
+    verify_candidate_reachability,
+    verify_recovery_candidates,
+)
 from evidence.final_approved_packet import (
     DEFAULT_FINAL_APPROVED_PACKET_RECORD,
     DEFAULT_FINAL_APPROVED_PACKET_SUMMARY,
@@ -2190,6 +2196,103 @@ def validate_source_recovery_lane() -> None:
     print("✓ Evidence Source Recovery v1 lane validation OK")
 
 
+def validate_recovery_candidate_verification_lane() -> None:
+    candidates = load_source_recovery_candidates()
+    if len(candidates) != 5:
+        raise AssertionError("Recovery Candidate Verification v1 must load 5 candidates")
+
+    no_network_record = verify_candidate_reachability(
+        candidates[0],
+        no_network=True,
+        timeout_seconds=1,
+    )
+    validate_recovery_candidate_verification_record(no_network_record)
+    if no_network_record.reachability_status != "not_checked":
+        raise AssertionError("No-network verification must not check reachability")
+    if no_network_record.content_status != "requires_manual_review":
+        raise AssertionError("No-network verification must require manual review")
+    if no_network_record.verification_status != "candidate_unverified":
+        raise AssertionError("No-network verification must remain unverified")
+    if (
+        no_network_record.verified_for_manual_review
+        or no_network_record.approved_evidence
+        or no_network_record.public_ready
+        or no_network_record.institutional_ready
+        or no_network_record.report_ready
+    ):
+        raise AssertionError("Recovery candidate verification must not mark readiness")
+
+    assert_value_error(
+        lambda: validate_recovery_candidate_verification_record(
+            {**no_network_record.to_dict(), "approved_evidence": True}
+        ),
+        "approved_evidence must be false",
+    )
+    assert_value_error(
+        lambda: validate_recovery_candidate_verification_record(
+            {**no_network_record.to_dict(), "public_ready": True}
+        ),
+        "public_ready must be false",
+    )
+    assert_value_error(
+        lambda: validate_recovery_candidate_verification_record(
+            {**no_network_record.to_dict(), "recovery_source_url": ""}
+        ),
+        "recovery_source_url must be a non-empty string",
+    )
+
+    protected_paths = [
+        Path("data/evidence_seed/videos.yaml"),
+        Path("data/real_evidence_inputs/VID_JOBS_001.template.json"),
+        Path("data/real_evidence_inputs/VID_HEALTH_001.template.json"),
+    ]
+    before = {
+        path: path.read_text(encoding="utf-8")
+        for path in protected_paths
+    }
+    summary = verify_recovery_candidates(no_network=True, timeout_seconds=1)
+    after = {
+        path: path.read_text(encoding="utf-8")
+        for path in protected_paths
+    }
+    if before != after:
+        raise AssertionError(
+            "Recovery candidate verification must not modify protected source files"
+        )
+    if summary["total_candidates"] != 5:
+        raise AssertionError("Recovery verification no-network must process 5 records")
+    if summary["not_checked_candidates"] != 5:
+        raise AssertionError("Recovery verification no-network must not check URLs")
+    if summary["requires_manual_review"] != 5:
+        raise AssertionError("Recovery verification no-network must require review")
+    if summary["approved_evidence"] != 0 or summary["verified_for_manual_review"] != 0:
+        raise AssertionError("Recovery verification must not approve candidates")
+    if (
+        summary["public_ready"]
+        or summary["institutional_ready"]
+        or summary["report_ready"]
+    ):
+        raise AssertionError("Recovery verification must not mark readiness")
+
+    filtered_summary = verify_recovery_candidates(
+        candidate_id="RECOVERY_VID_JOBS_001_UDC_HOME",
+        no_network=True,
+        timeout_seconds=1,
+    )
+    if filtered_summary["total_candidates"] != 1:
+        raise AssertionError("Recovery verification candidate-id filter failed")
+
+    exit_code, output = run_command("python scripts/verify_recovery_candidates.py --no-network")
+    if exit_code != 0:
+        raise AssertionError("Recovery verification no-network CLI failed")
+    if "approved_evidence: 0" not in output:
+        raise AssertionError("Recovery verification CLI must not approve evidence")
+    if "public_ready: False" not in output:
+        raise AssertionError("Recovery verification CLI must not mark readiness")
+
+    print("✓ Recovery Candidate Verification v1 lane validation OK")
+
+
 def validate_real_evidence_approval_lane() -> None:
     blocked = RealEvidenceApprovalRecord(
         approval_id="APPROVAL_TEST_BLOCKED",
@@ -2594,6 +2697,7 @@ def main() -> int:
     validate_real_evidence_inputs_lane()
     validate_real_evidence_auto_collection_helper_lane()
     validate_source_recovery_lane()
+    validate_recovery_candidate_verification_lane()
     validate_real_evidence_approval_lane()
     validate_final_approved_packet_lane()
     validate_gate_rejections()
