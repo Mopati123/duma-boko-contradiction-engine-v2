@@ -1,0 +1,34 @@
+{
+  "metadata": {
+    "schema_version": "SelectedRecoverySourceRecord.v1",
+    "notes": "Selected recovery sources are for content review only. These records do not approve evidence and do not change release readiness."
+  },
+  "selected_sources": [
+    {
+      "original_evidence_id": "VID_JOBS_001",
+      "selected_recovery_candidate_id": "RECOVERY_VID_JOBS_001_UDC_HOME",
+      "selected_source_url": "https://www.udc.org.bw/",
+      "selected_source_type": "official_manifesto_source",
+      "selection_reason": "Official UDC source is the primary/party-origin source for the 450,000\u2013500,000 jobs commitment.",
+      "selection_status": "selected_for_content_review",
+      "approved_evidence": false,
+      "public_ready": false,
+      "institutional_ready": false,
+      "report_ready": false,
+      "notes": "Selected for later human content review only. This is not approved evidence and does not change readiness."
+    },
+    {
+      "original_evidence_id": "VID_HEALTH_001",
+      "selected_recovery_candidate_id": "RECOVERY_VID_HEALTH_001_REUTERS",
+      "selected_source_url": "https://www.reuters.com/business/healthcare-pharmaceuticals/botswana-declares-public-health-emergency-clinics-run-out-medicine-2025-08-25/",
+      "selected_source_type": "wire_report",
+      "selection_reason": "Reuters is the strongest independent source for the health emergency / medicine shortage claim.",
+      "selection_status": "selected_for_content_review",
+      "approved_evidence": false,
+      "public_ready": false,
+      "institutional_ready": false,
+      "report_ready": false,
+      "notes": "Selected for later human content review only. This is not approved evidence and does not change readiness."
+    }
+  ]
+}
