@@ -94,6 +94,10 @@ echo "== Validating selected source content extraction no-network =="
 python scripts/extract_selected_source_content.py --no-network
 
 echo
+echo "== Validating source content verification no-network =="
+python scripts/verify_source_content.py --no-network
+
+echo
 echo "== Validating real evidence approval dry-run =="
 python scripts/approve_real_evidence.py --dry-run
 
@@ -200,6 +204,12 @@ echo
 echo "== Removing ignored source content extraction artifacts =="
 if [ -d outputs/source_content_extraction ]; then
   git clean -fX outputs/source_content_extraction/
+fi
+
+echo
+echo "== Removing ignored source content verification artifacts =="
+if [ -d outputs/source_content_verification ]; then
+  git clean -fX outputs/source_content_verification/
 fi
 
 echo

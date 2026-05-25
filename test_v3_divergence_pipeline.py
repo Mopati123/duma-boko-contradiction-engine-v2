@@ -138,6 +138,12 @@ from evidence.source_content_extraction import (
     extract_selected_source_content,
     validate_source_content_extraction_record,
 )
+from evidence.source_content_verification import (
+    build_missing_artifact_records,
+    validate_source_content_verification_record,
+    verify_extraction_record,
+    verify_source_content,
+)
 from evidence.final_approved_packet import (
     DEFAULT_FINAL_APPROVED_PACKET_RECORD,
     DEFAULT_FINAL_APPROVED_PACKET_SUMMARY,
@@ -2594,6 +2600,211 @@ def validate_source_content_extraction_lane() -> None:
     print("✓ Source Content Extraction v1 lane validation OK")
 
 
+def validate_source_content_verification_lane() -> None:
+    missing_records = build_missing_artifact_records()
+    if len(missing_records) != 2:
+        raise AssertionError("Missing extraction artifact fallback must cover 2 sources")
+    for record in missing_records:
+        validate_source_content_verification_record(record)
+        if record.verification_status != "not_checked":
+            raise AssertionError("Missing extraction artifact must remain not_checked")
+        if record.content_review_status != "insufficient_content":
+            raise AssertionError("Missing extraction artifact must be insufficient")
+        if (
+            record.verified_for_content_review
+            or record.approved_evidence
+            or record.public_ready
+            or record.institutional_ready
+            or record.report_ready
+        ):
+            raise AssertionError("Missing extraction artifact must not mark readiness")
+
+    jobs_extraction = SourceContentExtractionRecord(
+        original_evidence_id="VID_JOBS_001",
+        selected_recovery_candidate_id="RECOVERY_VID_JOBS_001_UDC_HOME",
+        source_url="https://www.udc.org.bw/",
+        extraction_status="extracted_candidate",
+        content_source_status="source_reachable",
+        extracted_text_candidate=(
+            "The manifesto commits to create 500,000 jobs through employment "
+            "programmes."
+        ),
+        extracted_quote_candidate="The manifesto commits to create 500,000 jobs.",
+        extraction_method="fixture",
+        requires_manual_review=True,
+        approved_evidence=False,
+        public_ready=False,
+        institutional_ready=False,
+        report_ready=False,
+        notes="Fixture candidate only. Human review required.",
+    )
+    jobs_verification = verify_extraction_record(jobs_extraction)
+    validate_source_content_verification_record(jobs_verification)
+    if (
+        jobs_verification.verification_status
+        != "verified_candidate_for_content_review"
+    ):
+        raise AssertionError("Jobs candidate must verify for content review")
+    if jobs_verification.content_review_status != "keyword_match":
+        raise AssertionError("Jobs candidate must have keyword_match review status")
+    if not jobs_verification.verified_for_content_review:
+        raise AssertionError("Jobs candidate must set content-review candidate flag")
+    if (
+        jobs_verification.approved_evidence
+        or jobs_verification.public_ready
+        or jobs_verification.institutional_ready
+        or jobs_verification.report_ready
+    ):
+        raise AssertionError("Content-review candidate must not imply approval")
+
+    health_extraction = SourceContentExtractionRecord(
+        original_evidence_id="VID_HEALTH_001",
+        selected_recovery_candidate_id="RECOVERY_VID_HEALTH_001_REUTERS",
+        source_url=(
+            "https://www.reuters.com/business/healthcare-pharmaceuticals/"
+            "botswana-declares-public-health-emergency-clinics-run-out-medicine-"
+            "2025-08-25/"
+        ),
+        extraction_status="blocked",
+        content_source_status="source_blocked",
+        extracted_text_candidate="",
+        extracted_quote_candidate="",
+        extraction_method="fixture",
+        requires_manual_review=True,
+        approved_evidence=False,
+        public_ready=False,
+        institutional_ready=False,
+        report_ready=False,
+        notes="Fixture blocked source. Fallback review required.",
+    )
+    health_verification = verify_extraction_record(health_extraction)
+    validate_source_content_verification_record(health_verification)
+    if health_verification.verification_status != "blocked_pending_fallback":
+        raise AssertionError("Blocked health source must remain pending fallback")
+    if health_verification.content_review_status != "requires_fallback_source":
+        raise AssertionError("Blocked health source must require fallback")
+    if health_verification.verified_for_content_review:
+        raise AssertionError("Blocked health source must not verify for review")
+
+    assert_value_error(
+        lambda: validate_source_content_verification_record(
+            {**jobs_verification.to_dict(), "verified_for_approval_review": True}
+        ),
+        "must not contain verified_for_approval_review",
+    )
+    assert_value_error(
+        lambda: validate_source_content_verification_record(
+            {**jobs_verification.to_dict(), "approved_evidence": True}
+        ),
+        "approved_evidence must be false",
+    )
+    assert_value_error(
+        lambda: validate_source_content_verification_record(
+            {**jobs_verification.to_dict(), "public_ready": True}
+        ),
+        "public_ready must be false",
+    )
+    assert_value_error(
+        lambda: validate_source_content_verification_record(
+            {**jobs_verification.to_dict(), "source_url": ""}
+        ),
+        "source_url must be a non-empty string",
+    )
+
+    protected_paths = [
+        Path("data/evidence_seed/videos.yaml"),
+        Path("data/real_evidence_inputs/VID_JOBS_001.template.json"),
+        Path("data/real_evidence_inputs/VID_HEALTH_001.template.json"),
+    ]
+    before = {path: path.read_text(encoding="utf-8") for path in protected_paths}
+
+    with tempfile.TemporaryDirectory() as temp_dir:
+        temp_path = Path(temp_dir)
+        missing_summary = verify_source_content(
+            extraction_status_path=temp_path / "missing_status.json",
+            output_dir=temp_path / "missing_output",
+            no_network=True,
+        )
+        if missing_summary["artifact_found"]:
+            raise AssertionError("Missing extraction artifact must report artifact_found=false")
+        if missing_summary["not_checked_count"] != 2:
+            raise AssertionError("Missing extraction artifact must keep records unchecked")
+
+        status_path = temp_path / "source_content_extraction_status.json"
+        status_path.write_text(
+            json.dumps(
+                {
+                    "records": [
+                        jobs_extraction.to_dict(),
+                        health_extraction.to_dict(),
+                    ]
+                },
+                indent=2,
+            ),
+            encoding="utf-8",
+        )
+        summary = verify_source_content(
+            extraction_status_path=status_path,
+            output_dir=temp_path / "verification_output",
+            no_network=True,
+        )
+        if summary["total_records"] != 2:
+            raise AssertionError("Source content verification must process 2 records")
+        if summary["verified_candidate_for_content_review_count"] != 1:
+            raise AssertionError("Jobs source must be one content-review candidate")
+        if summary["blocked_pending_fallback_count"] != 1:
+            raise AssertionError("Health source must be one blocked fallback")
+        if summary["approved_evidence"] != 0:
+            raise AssertionError("Source content verification must not approve evidence")
+        if (
+            summary["public_ready"]
+            or summary["institutional_ready"]
+            or summary["report_ready"]
+        ):
+            raise AssertionError("Source content verification must not mark readiness")
+
+        jobs_summary = verify_source_content(
+            evidence_id="VID_JOBS_001",
+            extraction_status_path=status_path,
+            output_dir=temp_path / "jobs_verification_output",
+            no_network=True,
+        )
+        if jobs_summary["verified_candidate_for_content_review_count"] != 1:
+            raise AssertionError("Source verification evidence-id filter failed")
+
+    summary = verify_source_content(no_network=True)
+    after = {path: path.read_text(encoding="utf-8") for path in protected_paths}
+    if before != after:
+        raise AssertionError(
+            "Source content verification must not modify protected source files"
+        )
+    if summary["approved_evidence"] != 0:
+        raise AssertionError("Source content verification must not approve evidence")
+    if (
+        summary["public_ready"]
+        or summary["institutional_ready"]
+        or summary["report_ready"]
+    ):
+        raise AssertionError("Source content verification must not mark readiness")
+
+    for command in (
+        "python scripts/verify_source_content.py --no-network",
+        "python scripts/verify_source_content.py --evidence-id VID_JOBS_001 --no-network",
+        "python scripts/verify_source_content.py --evidence-id VID_HEALTH_001 --no-network",
+    ):
+        exit_code, output = run_command(command)
+        if exit_code != 0:
+            raise AssertionError(
+                f"Source content verification command failed: {command}"
+            )
+        if "approved_evidence: 0" not in output:
+            raise AssertionError("Source verification CLI must not approve evidence")
+        if "public_ready: False" not in output:
+            raise AssertionError("Source verification CLI must not mark readiness")
+
+    print("✓ Source Content Verification v1 lane validation OK")
+
+
 def validate_real_evidence_approval_lane() -> None:
     blocked = RealEvidenceApprovalRecord(
         approval_id="APPROVAL_TEST_BLOCKED",
@@ -3001,6 +3212,7 @@ def main() -> int:
     validate_recovery_candidate_verification_lane()
     validate_selected_recovery_source_lane()
     validate_source_content_extraction_lane()
+    validate_source_content_verification_lane()
     validate_real_evidence_approval_lane()
     validate_final_approved_packet_lane()
     validate_gate_rejections()
