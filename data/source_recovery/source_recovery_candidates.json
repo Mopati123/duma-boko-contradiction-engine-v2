@@ -1,0 +1,68 @@
+{
+  "metadata": {
+    "schema_version": "SourceRecoveryCandidateRecord.v1",
+    "notes": "Candidate-only source recovery registry. These records are not approved evidence and do not change release readiness."
+  },
+  "candidates": [
+    {
+      "original_evidence_id": "VID_JOBS_001",
+      "original_source_url": "https://www.youtube.com/watch?v=e0MLzB5nGDc",
+      "original_failure_status": "video_unavailable",
+      "recovery_candidate_id": "RECOVERY_VID_JOBS_001_UDC_HOME",
+      "recovery_source_url": "https://www.udc.org.bw/",
+      "recovery_source_type": "official_manifesto_source",
+      "recovery_source_rank": 1,
+      "recovery_reason": "Official UDC source may corroborate the jobs promise after the original YouTube source became unavailable.",
+      "verification_status": "candidate_unverified",
+      "notes": "Candidate source only. Human review must verify relevance, text, context, and source suitability before any manual review use."
+    },
+    {
+      "original_evidence_id": "VID_JOBS_001",
+      "original_source_url": "https://www.youtube.com/watch?v=e0MLzB5nGDc",
+      "original_failure_status": "video_unavailable",
+      "recovery_candidate_id": "RECOVERY_VID_JOBS_001_BOTSWANA_YOUTH",
+      "recovery_source_url": "https://www.botswanayouth.com/president-boko-pledges-to-create-500000-jobs-in-five-years/",
+      "recovery_source_type": "secondary_corroboration",
+      "recovery_source_rank": 2,
+      "recovery_reason": "Secondary article may corroborate the jobs pledge after the original YouTube source became unavailable.",
+      "verification_status": "candidate_unverified",
+      "notes": "Candidate source only. Human review must verify relevance, text, context, and source suitability before any manual review use."
+    },
+    {
+      "original_evidence_id": "VID_HEALTH_001",
+      "original_source_url": "https://www.youtube.com/watch?v=ZsxLObyHUYE",
+      "original_failure_status": "captions_unavailable",
+      "recovery_candidate_id": "RECOVERY_VID_HEALTH_001_REUTERS",
+      "recovery_source_url": "https://www.reuters.com/business/healthcare-pharmaceuticals/botswana-declares-public-health-emergency-clinics-run-out-medicine-2025-08-25/",
+      "recovery_source_type": "wire_report",
+      "recovery_source_rank": 1,
+      "recovery_reason": "Reuters report may corroborate the public health emergency after YouTube captions were unavailable.",
+      "verification_status": "candidate_unverified",
+      "notes": "Candidate source only. Human review must verify relevance, text, context, and source suitability before any manual review use."
+    },
+    {
+      "original_evidence_id": "VID_HEALTH_001",
+      "original_source_url": "https://www.youtube.com/watch?v=ZsxLObyHUYE",
+      "original_failure_status": "captions_unavailable",
+      "recovery_candidate_id": "RECOVERY_VID_HEALTH_001_AL_JAZEERA",
+      "recovery_source_url": "https://www.aljazeera.com/news/2025/8/26/botswana-declares-public-health-emergency-over-medicine-shortage",
+      "recovery_source_type": "secondary_corroboration",
+      "recovery_source_rank": 2,
+      "recovery_reason": "Al Jazeera report may corroborate the public health emergency after YouTube captions were unavailable.",
+      "verification_status": "candidate_unverified",
+      "notes": "Candidate source only. Human review must verify relevance, text, context, and source suitability before any manual review use."
+    },
+    {
+      "original_evidence_id": "VID_HEALTH_001",
+      "original_source_url": "https://www.youtube.com/watch?v=ZsxLObyHUYE",
+      "original_failure_status": "captions_unavailable",
+      "recovery_candidate_id": "RECOVERY_VID_HEALTH_001_BOTSWANA_YOUTH_36_TONNES",
+      "recovery_source_url": "https://www.botswanayouth.com/president-duma-boko-announces-arrival-of-36-tonnes-of-critical-medical-supplies/",
+      "recovery_source_type": "secondary_corroboration",
+      "recovery_source_rank": 3,
+      "recovery_reason": "Botswana Youth follow-up may corroborate the 36-tonnes medicines claim after YouTube captions were unavailable.",
+      "verification_status": "candidate_unverified",
+      "notes": "Candidate source only. Human review must verify relevance, text, context, and source suitability before any manual review use."
+    }
+  ]
+}

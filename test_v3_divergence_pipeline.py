@@ -9,6 +9,7 @@ It does not validate the legacy semantic pipeline.
 import json
 import subprocess
 import sys
+import tempfile
 from pathlib import Path
 
 from docx import Document
@@ -110,6 +111,13 @@ from scripts.auto_collect_real_evidence import (
     build_candidate_fields,
     collect_candidate_for_record,
     parse_webvtt,
+)
+from evidence.source_recovery import (
+    DEFAULT_SOURCE_RECOVERY_PATH,
+    SourceRecoveryCandidateRecord,
+    load_source_recovery_candidates,
+    summarize_source_recovery_candidates,
+    validate_source_recovery_candidate_record,
 )
 from evidence.final_approved_packet import (
     DEFAULT_FINAL_APPROVED_PACKET_RECORD,
@@ -2082,6 +2090,106 @@ This is the longer caption line for candidate selection.
     print("✓ Real Evidence Auto-Collection Helper v1 validation OK")
 
 
+def validate_source_recovery_lane() -> None:
+    records = load_source_recovery_candidates()
+    if len(records) != 5:
+        raise AssertionError("Source Recovery v1 must load 5 candidate records")
+
+    original_ids = {record.original_evidence_id for record in records}
+    if original_ids != {"VID_JOBS_001", "VID_HEALTH_001"}:
+        raise AssertionError("Source Recovery v1 must preserve original evidence IDs")
+
+    summary = summarize_source_recovery_candidates(records)
+    if summary["total_candidates"] != 5:
+        raise AssertionError("Source Recovery v1 candidate count changed")
+    if summary["jobs_candidates"] != 2:
+        raise AssertionError("Source Recovery v1 jobs candidate count changed")
+    if summary["health_candidates"] != 3:
+        raise AssertionError("Source Recovery v1 health candidate count changed")
+    if summary["approved_candidates"] != 0:
+        raise AssertionError("Source Recovery v1 must not approve candidates")
+    if (
+        summary["public_ready"]
+        or summary["institutional_ready"]
+        or summary["report_ready"]
+    ):
+        raise AssertionError("Source Recovery v1 must not mark readiness")
+
+    for record in records:
+        data = record.to_dict()
+        validate_source_recovery_candidate_record(record)
+        if record.verification_status != "candidate_unverified":
+            raise AssertionError("Seed source recovery candidates must be unverified")
+        for forbidden_field in (
+            "approved",
+            "approved_candidate",
+            "approval_candidate",
+            "approved_evidence_candidate",
+            "public_ready",
+            "institutional_ready",
+            "report_ready",
+        ):
+            if forbidden_field in data:
+                raise AssertionError(
+                    "Source Recovery v1 must not include approval/readiness fields"
+                )
+
+    candidate = records[0]
+    assert_value_error(
+        lambda: validate_source_recovery_candidate_record(
+            {**candidate.to_dict(), "verification_status": "approved_evidence"}
+        ),
+        "verification_status is unsupported",
+    )
+    assert_value_error(
+        lambda: validate_source_recovery_candidate_record(
+            {**candidate.to_dict(), "recovery_source_url": ""}
+        ),
+        "recovery_source_url must be a non-empty string",
+    )
+    assert_value_error(
+        lambda: validate_source_recovery_candidate_record(
+            {**candidate.to_dict(), "public_ready": False}
+        ),
+        "must not contain approval/readiness field",
+    )
+    assert_value_error(
+        lambda: validate_source_recovery_candidate_record(
+            {
+                **candidate.to_dict(),
+                "original_evidence_id": "VID_UNKNOWN_001",
+            }
+        ),
+        "original_evidence_id is unsupported",
+    )
+
+    with tempfile.TemporaryDirectory() as temp_dir:
+        payload = json.loads(DEFAULT_SOURCE_RECOVERY_PATH.read_text(encoding="utf-8"))
+        duplicate = json.loads(json.dumps(payload))
+        duplicate["candidates"].append(dict(duplicate["candidates"][0]))
+        duplicate_path = Path(temp_dir) / "source_recovery_candidates.json"
+        duplicate_path.write_text(json.dumps(duplicate, indent=2), encoding="utf-8")
+        assert_value_error(
+            lambda: load_source_recovery_candidates(path=duplicate_path),
+            "Duplicate source recovery candidate ID",
+        )
+
+    for command in (
+        "python scripts/inspect_source_recovery.py",
+        "python scripts/inspect_source_recovery.py --evidence-id VID_JOBS_001",
+        "python scripts/inspect_source_recovery.py --evidence-id VID_HEALTH_001",
+    ):
+        exit_code, output = run_command(command)
+        if exit_code != 0:
+            raise AssertionError(f"Source recovery inspection command failed: {command}")
+        if "approved_candidates: 0" not in output:
+            raise AssertionError("Source recovery inspection must not approve candidates")
+        if "public_ready: False" not in output:
+            raise AssertionError("Source recovery inspection must not mark public readiness")
+
+    print("✓ Evidence Source Recovery v1 lane validation OK")
+
+
 def validate_real_evidence_approval_lane() -> None:
     blocked = RealEvidenceApprovalRecord(
         approval_id="APPROVAL_TEST_BLOCKED",
@@ -2485,6 +2593,7 @@ def main() -> int:
     validate_release_policy_lane()
     validate_real_evidence_inputs_lane()
     validate_real_evidence_auto_collection_helper_lane()
+    validate_source_recovery_lane()
     validate_real_evidence_approval_lane()
     validate_final_approved_packet_lane()
     validate_gate_rejections()
