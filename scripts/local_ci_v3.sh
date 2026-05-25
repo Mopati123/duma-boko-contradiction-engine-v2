@@ -98,6 +98,10 @@ echo "== Validating source content verification no-network =="
 python scripts/verify_source_content.py --no-network
 
 echo
+echo "== Validating health fallback source no-network =="
+python scripts/handle_health_fallback_source.py --no-network
+
+echo
 echo "== Validating real evidence approval dry-run =="
 python scripts/approve_real_evidence.py --dry-run
 
@@ -210,6 +214,12 @@ echo
 echo "== Removing ignored source content verification artifacts =="
 if [ -d outputs/source_content_verification ]; then
   git clean -fX outputs/source_content_verification/
+fi
+
+echo
+echo "== Removing ignored health fallback source artifacts =="
+if [ -d outputs/health_fallback_source ]; then
+  git clean -fX outputs/health_fallback_source/
 fi
 
 echo
