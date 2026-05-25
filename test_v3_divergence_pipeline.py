@@ -102,6 +102,15 @@ from evidence.real_evidence_inputs import (
     validate_real_evidence_input_record,
     validate_real_evidence_inputs_dry_run,
 )
+from scripts.auto_collect_real_evidence import (
+    AUTO_CONTEXT_SUMMARY,
+    AUTO_REVIEWER_NOTES,
+    AUTO_SPEAKER,
+    auto_collect_real_evidence,
+    build_candidate_fields,
+    collect_candidate_for_record,
+    parse_webvtt,
+)
 from evidence.final_approved_packet import (
     DEFAULT_FINAL_APPROVED_PACKET_RECORD,
     DEFAULT_FINAL_APPROVED_PACKET_SUMMARY,
@@ -1978,6 +1987,101 @@ def validate_real_evidence_inputs_lane() -> None:
     print("✓ Real Evidence Population v1 input validation OK")
 
 
+def validate_real_evidence_auto_collection_helper_lane() -> None:
+    vtt_text = """WEBVTT
+
+00:00:01.000 --> 00:00:03.500
+Hello <c>world</c>
+
+00:00:04.000 --> 00:00:08.000
+This is the longer caption line for candidate selection.
+"""
+    segments = parse_webvtt(vtt_text)
+    if len(segments) != 2:
+        raise AssertionError("Auto-collection VTT parser must parse 2 segments")
+    if segments[0].timestamp_start != "00:01":
+        raise AssertionError("Auto-collection parser must format start timestamps")
+    if segments[1].timestamp_end != "00:08":
+        raise AssertionError("Auto-collection parser must format end timestamps")
+    if segments[0].text != "Hello world":
+        raise AssertionError("Auto-collection parser must clean caption markup")
+
+    record = {
+        "evidence_id": "VID_JOBS_001",
+        "case_id": "CASE_002",
+        "source_url": "https://www.youtube.com/watch?v=e0MLzB5nGDc",
+        "transcript_text": "",
+        "timestamp_start": "",
+        "timestamp_end": "",
+        "quote_text": "",
+        "speaker": "",
+        "context_summary": "",
+        "case_relevance_note": "",
+        "reviewer": "",
+        "reviewer_notes": "",
+        "verification_status": "pending_human_entry",
+    }
+    candidate_fields = build_candidate_fields(record, segments)
+    if candidate_fields["verification_status"] != "entered_pending_review":
+        raise AssertionError("Auto-collection candidate must remain pending review")
+    if candidate_fields["speaker"] != AUTO_SPEAKER:
+        raise AssertionError("Auto-collection must use an unverified speaker marker")
+    if candidate_fields["context_summary"] != AUTO_CONTEXT_SUMMARY:
+        raise AssertionError("Auto-collection must require human context review")
+    if candidate_fields["reviewer"] != "":
+        raise AssertionError("Auto-collection must not invent a reviewer")
+    if candidate_fields["reviewer_notes"] != AUTO_REVIEWER_NOTES:
+        raise AssertionError("Auto-collection must require human verification")
+    if "public_ready" in candidate_fields or "report_ready" in candidate_fields:
+        raise AssertionError("Auto-collection must not emit readiness fields")
+
+    no_network_status = collect_candidate_for_record(
+        record, no_network=True, timeout_seconds=1
+    )
+    if no_network_status.collection_status != "network_disabled":
+        raise AssertionError("Auto-collection --no-network must report network_disabled")
+    if no_network_status.candidate_available:
+        raise AssertionError("Auto-collection --no-network must not create candidates")
+    if (
+        no_network_status.public_ready
+        or no_network_status.institutional_ready
+        or no_network_status.report_ready
+    ):
+        raise AssertionError("Auto-collection status must not mark readiness")
+
+    missing_tool_status = collect_candidate_for_record(
+        record, no_network=False, timeout_seconds=1, yt_dlp_path=""
+    )
+    if missing_tool_status.collection_status != "yt_dlp_missing":
+        raise AssertionError("Auto-collection missing yt-dlp must be non-fatal")
+
+    template_path = Path("data/real_evidence_inputs/VID_JOBS_001.template.json")
+    before = template_path.read_text(encoding="utf-8")
+    summary = auto_collect_real_evidence(
+        evidence_id="VID_JOBS_001",
+        dry_run=True,
+        no_network=True,
+        timeout_seconds=1,
+    )
+    after = template_path.read_text(encoding="utf-8")
+    if before != after:
+        raise AssertionError("Auto-collection dry-run must not modify templates")
+    if summary["selected_evidence_count"] != 1:
+        raise AssertionError("Auto-collection evidence-id filter must select one record")
+    if summary["candidate_count"] != 0 or summary["unavailable_count"] != 1:
+        raise AssertionError("Auto-collection --no-network summary changed")
+    if summary["write_count"] != 0 or summary["backup_count"] != 0:
+        raise AssertionError("Auto-collection dry-run must not write or backup")
+    if (
+        summary["public_ready"]
+        or summary["institutional_ready"]
+        or summary["report_ready"]
+    ):
+        raise AssertionError("Auto-collection summary must not mark readiness")
+
+    print("✓ Real Evidence Auto-Collection Helper v1 validation OK")
+
+
 def validate_real_evidence_approval_lane() -> None:
     blocked = RealEvidenceApprovalRecord(
         approval_id="APPROVAL_TEST_BLOCKED",
@@ -2380,6 +2484,7 @@ def main() -> int:
     validate_release_readiness_lane()
     validate_release_policy_lane()
     validate_real_evidence_inputs_lane()
+    validate_real_evidence_auto_collection_helper_lane()
     validate_real_evidence_approval_lane()
     validate_final_approved_packet_lane()
     validate_gate_rejections()
