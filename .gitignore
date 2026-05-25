@@ -82,6 +82,7 @@ outputs/real_evidence_auto_collection/
 outputs/recovery_candidate_verification/
 outputs/source_content_extraction/
 outputs/source_content_verification/
+outputs/health_fallback_source/
 outputs/real_evidence_approval/
 outputs/final_approved_packet/
 outputs/reports/*_generated*.docx

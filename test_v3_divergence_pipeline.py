@@ -144,6 +144,18 @@ from evidence.source_content_verification import (
     verify_extraction_record,
     verify_source_content,
 )
+from evidence.health_fallback_source import (
+    BLOCKED_HEALTH_SELECTED_CANDIDATE_ID,
+    NEXT_HEALTH_FALLBACK_CANDIDATE_ID,
+    PRIMARY_HEALTH_FALLBACK_CANDIDATE_ID,
+    HealthFallbackSourceRecord,
+    build_health_fallback_record,
+    extract_health_fallback_candidate_text,
+    handle_health_fallback_candidate,
+    handle_health_fallback_source,
+    select_health_fallback_candidate,
+    validate_health_fallback_source_record,
+)
 from evidence.final_approved_packet import (
     DEFAULT_FINAL_APPROVED_PACKET_RECORD,
     DEFAULT_FINAL_APPROVED_PACKET_SUMMARY,
@@ -2805,6 +2817,203 @@ def validate_source_content_verification_lane() -> None:
     print("✓ Source Content Verification v1 lane validation OK")
 
 
+def validate_health_fallback_source_lane() -> None:
+    all_candidates = load_source_recovery_candidates()
+    health_candidates = [
+        candidate
+        for candidate in all_candidates
+        if candidate.original_evidence_id == "VID_HEALTH_001"
+    ]
+    selected_sources = load_selected_recovery_sources(
+        evidence_id="VID_HEALTH_001",
+        candidates=all_candidates,
+    )
+    selected_source, fallback_candidate, next_fallback_candidate = (
+        select_health_fallback_candidate(
+            candidates=all_candidates,
+            selected_sources=selected_sources,
+        )
+    )
+    if (
+        selected_source.selected_recovery_candidate_id
+        != BLOCKED_HEALTH_SELECTED_CANDIDATE_ID
+    ):
+        raise AssertionError("Reuters must remain the selected blocked health source")
+    if fallback_candidate.recovery_candidate_id != PRIMARY_HEALTH_FALLBACK_CANDIDATE_ID:
+        raise AssertionError("Al Jazeera must be the first health fallback")
+    if (
+        next_fallback_candidate.recovery_candidate_id
+        != NEXT_HEALTH_FALLBACK_CANDIDATE_ID
+    ):
+        raise AssertionError("Botswana Youth must remain the next fallback")
+    health_candidate_ids = {
+        candidate.recovery_candidate_id for candidate in health_candidates
+    }
+    if PRIMARY_HEALTH_FALLBACK_CANDIDATE_ID not in health_candidate_ids:
+        raise AssertionError("Primary health fallback must exist in recovery registry")
+    if fallback_candidate.original_evidence_id != "VID_HEALTH_001":
+        raise AssertionError("Health fallback candidate must belong to VID_HEALTH_001")
+
+    no_network_record = handle_health_fallback_candidate(
+        no_network=True,
+        timeout_seconds=1,
+    )
+    validate_health_fallback_source_record(no_network_record)
+    if no_network_record.original_evidence_id != "VID_HEALTH_001":
+        raise AssertionError("Health fallback lane must handle VID_HEALTH_001 only")
+    if no_network_record.fallback_candidate_id != PRIMARY_HEALTH_FALLBACK_CANDIDATE_ID:
+        raise AssertionError("No-network fallback must select Al Jazeera")
+    if no_network_record.extraction_status != "not_checked":
+        raise AssertionError("No-network fallback must not check source content")
+    if no_network_record.verification_status != "not_checked":
+        raise AssertionError("No-network fallback must remain not_checked")
+    if no_network_record.content_review_status != "not_checked":
+        raise AssertionError("No-network fallback must not review content")
+    if not no_network_record.requires_manual_review:
+        raise AssertionError("Fallback record must require manual review")
+    if (
+        no_network_record.verified_for_content_review
+        or no_network_record.approved_evidence
+        or no_network_record.public_ready
+        or no_network_record.institutional_ready
+        or no_network_record.report_ready
+    ):
+        raise AssertionError("No-network fallback must not approve or mark readiness")
+
+    text_candidate, quote_candidate = extract_health_fallback_candidate_text(
+        """
+        <html><body><p>Botswana declared a public health emergency after clinics and hospitals reported medicines shortage pressure in the medical supply chain under Duma Boko.</p></body></html>
+        """
+    )
+    if "public health emergency" not in text_candidate:
+        raise AssertionError("Health fallback extraction fixture missed text candidate")
+    if "public health emergency" not in quote_candidate:
+        raise AssertionError("Health fallback extraction fixture missed quote candidate")
+
+    verified_record = build_health_fallback_record(
+        selected_source,
+        fallback_candidate,
+        next_fallback_candidate,
+        fallback_status="fallback_selected",
+        extraction_status="extracted_candidate",
+        verification_status="verified_candidate_for_content_review",
+        content_review_status="keyword_match",
+        extracted_text_candidate=text_candidate,
+        extracted_quote_candidate=quote_candidate,
+        verified_for_content_review=True,
+        notes="Fixture keyword candidate only. Human review required.",
+    )
+    validate_health_fallback_source_record(verified_record)
+    if not verified_record.verified_for_content_review:
+        raise AssertionError("Keyword fallback fixture must set content-review flag")
+    if (
+        verified_record.approved_evidence
+        or verified_record.public_ready
+        or verified_record.institutional_ready
+        or verified_record.report_ready
+    ):
+        raise AssertionError("Content-review fallback must not imply approval")
+
+    blocked_record = build_health_fallback_record(
+        selected_source,
+        fallback_candidate,
+        next_fallback_candidate,
+        fallback_status="fallback_blocked",
+        extraction_status="blocked",
+        verification_status="blocked_pending_fallback",
+        content_review_status="blocked_source",
+        notes="Fixture blocked fallback source. Manual fallback review required.",
+    )
+    validate_health_fallback_source_record(blocked_record)
+    if NEXT_HEALTH_FALLBACK_CANDIDATE_ID not in blocked_record.notes:
+        raise AssertionError("Blocked fallback must name the next fallback candidate")
+    if blocked_record.verified_for_content_review:
+        raise AssertionError("Blocked fallback must not verify for content review")
+
+    unavailable_record = build_health_fallback_record(
+        selected_source,
+        fallback_candidate,
+        next_fallback_candidate,
+        fallback_status="fallback_unavailable",
+        extraction_status="extraction_unavailable",
+        verification_status="extraction_unavailable",
+        content_review_status="insufficient_content",
+        notes="Fixture unavailable fallback source. Manual review required.",
+    )
+    validate_health_fallback_source_record(unavailable_record)
+
+    assert_value_error(
+        lambda: validate_health_fallback_source_record(
+            {**no_network_record.to_dict(), "original_evidence_id": "VID_JOBS_001"}
+        ),
+        "original_evidence_id must be VID_HEALTH_001",
+    )
+    assert_value_error(
+        lambda: validate_health_fallback_source_record(
+            {**no_network_record.to_dict(), "fallback_source_url": ""}
+        ),
+        "fallback_source_url must be a non-empty string",
+    )
+    assert_value_error(
+        lambda: validate_health_fallback_source_record(
+            {**no_network_record.to_dict(), "verified_for_approval_review": True}
+        ),
+        "must not contain verified_for_approval_review",
+    )
+    assert_value_error(
+        lambda: validate_health_fallback_source_record(
+            {**no_network_record.to_dict(), "approved_evidence": True}
+        ),
+        "approved_evidence must be false",
+    )
+    assert_value_error(
+        lambda: validate_health_fallback_source_record(
+            {**no_network_record.to_dict(), "public_ready": True}
+        ),
+        "public_ready must be false",
+    )
+
+    protected_paths = [
+        Path("data/evidence_seed/videos.yaml"),
+        Path("data/real_evidence_inputs/VID_JOBS_001.template.json"),
+        Path("data/real_evidence_inputs/VID_HEALTH_001.template.json"),
+        Path("data/source_recovery/selected_recovery_sources.json"),
+    ]
+    before = {path: path.read_text(encoding="utf-8") for path in protected_paths}
+    summary = handle_health_fallback_source(no_network=True, timeout_seconds=1)
+    after = {path: path.read_text(encoding="utf-8") for path in protected_paths}
+    if before != after:
+        raise AssertionError("Health fallback lane must not modify protected files")
+    if summary["total_records"] != 1:
+        raise AssertionError("Health fallback no-network must produce one record")
+    if summary["fallback_candidate_id"] != PRIMARY_HEALTH_FALLBACK_CANDIDATE_ID:
+        raise AssertionError("Health fallback summary must name Al Jazeera")
+    if summary["not_checked_count"] != 1:
+        raise AssertionError("Health fallback no-network must remain not_checked")
+    if summary["approved_evidence"] != 0:
+        raise AssertionError("Health fallback must not approve evidence")
+    if (
+        summary["public_ready"]
+        or summary["institutional_ready"]
+        or summary["report_ready"]
+    ):
+        raise AssertionError("Health fallback must not mark readiness")
+
+    exit_code, output = run_command(
+        "python scripts/handle_health_fallback_source.py --no-network"
+    )
+    if exit_code != 0:
+        raise AssertionError("Health fallback CLI no-network command failed")
+    if PRIMARY_HEALTH_FALLBACK_CANDIDATE_ID not in output:
+        raise AssertionError("Health fallback CLI must report the selected fallback")
+    if "approved_evidence: 0" not in output:
+        raise AssertionError("Health fallback CLI must not approve evidence")
+    if "public_ready: False" not in output:
+        raise AssertionError("Health fallback CLI must not mark readiness")
+
+    print("✓ Health Fallback Source v1 lane validation OK")
+
+
 def validate_real_evidence_approval_lane() -> None:
     blocked = RealEvidenceApprovalRecord(
         approval_id="APPROVAL_TEST_BLOCKED",
@@ -3213,6 +3422,7 @@ def main() -> int:
     validate_selected_recovery_source_lane()
     validate_source_content_extraction_lane()
     validate_source_content_verification_lane()
+    validate_health_fallback_source_lane()
     validate_real_evidence_approval_lane()
     validate_final_approved_packet_lane()
     validate_gate_rejections()
