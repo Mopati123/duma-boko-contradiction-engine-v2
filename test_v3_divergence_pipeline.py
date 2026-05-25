@@ -94,6 +94,14 @@ from evidence.real_evidence_approval import (
     approve_real_evidence_dry_run,
     validate_real_evidence_approval_record,
 )
+from evidence.real_evidence_inputs import (
+    DEFAULT_REAL_EVIDENCE_INPUT_STATUS_OUTPUT,
+    DEFAULT_REAL_EVIDENCE_INPUT_SUMMARY_OUTPUT,
+    RealEvidenceInputRecord,
+    load_real_evidence_input_records,
+    validate_real_evidence_input_record,
+    validate_real_evidence_inputs_dry_run,
+)
 from evidence.final_approved_packet import (
     DEFAULT_FINAL_APPROVED_PACKET_RECORD,
     DEFAULT_FINAL_APPROVED_PACKET_SUMMARY,
@@ -1865,6 +1873,111 @@ def validate_release_policy_lane() -> None:
     print("✓ Release Policy v1 lane validation OK")
 
 
+def validate_real_evidence_inputs_lane() -> None:
+    pending = RealEvidenceInputRecord(
+        evidence_id="VID_JOBS_001",
+        case_id="CASE_002",
+        source_url="https://www.youtube.com/watch?v=e0MLzB5nGDc",
+        transcript_text="",
+        timestamp_start="",
+        timestamp_end="",
+        quote_text="",
+        speaker="",
+        context_summary="",
+        case_relevance_note="",
+        reviewer="",
+        reviewer_notes="",
+        verification_status="pending_human_entry",
+    )
+    validate_real_evidence_input_record(pending)
+
+    verified = RealEvidenceInputRecord(
+        evidence_id="VID_JOBS_001",
+        case_id="CASE_002",
+        source_url="https://www.youtube.com/watch?v=e0MLzB5nGDc",
+        transcript_text="Human-entered transcript excerpt.",
+        timestamp_start="00:01:00",
+        timestamp_end="00:01:10",
+        quote_text="Human-entered quote excerpt.",
+        speaker="Human-verified speaker",
+        context_summary="Human-entered context summary.",
+        case_relevance_note="Human-entered case relevance note.",
+        reviewer="real-evidence-population-v1-test",
+        reviewer_notes="Human reviewer notes for approval review.",
+        verification_status="verified_for_approval_review",
+    )
+    validate_real_evidence_input_record(verified)
+
+    for field_name in (
+        "transcript_text",
+        "timestamp_start",
+        "timestamp_end",
+        "quote_text",
+        "speaker",
+        "reviewer",
+    ):
+        assert_value_error(
+            lambda field_name=field_name: validate_real_evidence_input_record(
+                {**verified.to_dict(), field_name: ""}
+            ),
+            f"{field_name} must be a non-empty string",
+        )
+
+    assert_value_error(
+        lambda: validate_real_evidence_input_record(
+            {**verified.to_dict(), "verification_status": "unsupported_status"}
+        ),
+        "verification_status is unsupported",
+    )
+
+    templates = load_real_evidence_input_records()
+    if len(templates) != 2:
+        raise AssertionError("Real Evidence Population v1 must provide 2 templates")
+    for record in templates:
+        if record.verification_status != "pending_human_entry":
+            raise AssertionError("Real Evidence Population v1 templates must be pending")
+        for field_name in (
+            "transcript_text",
+            "timestamp_start",
+            "timestamp_end",
+            "quote_text",
+            "speaker",
+            "context_summary",
+            "case_relevance_note",
+            "reviewer",
+            "reviewer_notes",
+        ):
+            if getattr(record, field_name) != "":
+                raise AssertionError(
+                    "Real Evidence Population v1 templates must keep human "
+                    f"entry field empty: {field_name}"
+                )
+
+    summary = validate_real_evidence_inputs_dry_run()
+    if summary["total_input_records"] != 2:
+        raise AssertionError("Real Evidence Population v1 dry-run must validate 2 records")
+    if summary["pending_human_entry"] != 2:
+        raise AssertionError("Real Evidence Population v1 templates must remain pending")
+    if summary["records_ready_for_approval_review"] != 0:
+        raise AssertionError("Real Evidence Population v1 must not auto-approve inputs")
+
+    approval_summary = approve_real_evidence_dry_run()
+    if approval_summary["approved_evidence_candidate"] != 0:
+        raise AssertionError("Real Evidence Approval v1 must still block fixtures")
+    if approval_summary["blocked_manual_review_required"] != 2:
+        raise AssertionError("Real Evidence Approval v1 must still block both records")
+
+    packet_summary = generate_final_approved_packet_dry_run()
+    if packet_summary["packet_status"] != "blocked_no_approved_evidence":
+        raise AssertionError("Final Approved Evidence Packet v1 must remain blocked")
+    if packet_summary["approved_evidence_count"] != 0:
+        raise AssertionError("Final Approved Evidence Packet v1 must not approve")
+
+    assert_nonempty_file(str(DEFAULT_REAL_EVIDENCE_INPUT_STATUS_OUTPUT))
+    assert_nonempty_file(str(DEFAULT_REAL_EVIDENCE_INPUT_SUMMARY_OUTPUT))
+    print("✓ Real Evidence Population v1 input validation OK")
+
+
 def validate_real_evidence_approval_lane() -> None:
     blocked = RealEvidenceApprovalRecord(
         approval_id="APPROVAL_TEST_BLOCKED",
@@ -2266,6 +2379,7 @@ def main() -> int:
     validate_final_report_hardening_lane()
     validate_release_readiness_lane()
     validate_release_policy_lane()
+    validate_real_evidence_inputs_lane()
     validate_real_evidence_approval_lane()
     validate_final_approved_packet_lane()
     validate_gate_rejections()
