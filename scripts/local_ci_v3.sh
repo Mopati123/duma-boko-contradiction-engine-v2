@@ -86,6 +86,10 @@ echo "== Validating real evidence population inputs =="
 python scripts/validate_real_evidence_inputs.py --dry-run
 
 echo
+echo "== Validating recovery candidate verification no-network =="
+python scripts/verify_recovery_candidates.py --no-network
+
+echo
 echo "== Validating real evidence approval dry-run =="
 python scripts/approve_real_evidence.py --dry-run
 
@@ -180,6 +184,12 @@ echo
 echo "== Removing ignored real evidence input artifacts =="
 if [ -d outputs/real_evidence_inputs ]; then
   git clean -fX outputs/real_evidence_inputs/
+fi
+
+echo
+echo "== Removing ignored recovery candidate verification artifacts =="
+if [ -d outputs/recovery_candidate_verification ]; then
+  git clean -fX outputs/recovery_candidate_verification/
 fi
 
 echo
