@@ -90,6 +90,10 @@ echo "== Validating recovery candidate verification no-network =="
 python scripts/verify_recovery_candidates.py --no-network
 
 echo
+echo "== Validating selected source content extraction no-network =="
+python scripts/extract_selected_source_content.py --no-network
+
+echo
 echo "== Validating real evidence approval dry-run =="
 python scripts/approve_real_evidence.py --dry-run
 
@@ -190,6 +194,12 @@ echo
 echo "== Removing ignored recovery candidate verification artifacts =="
 if [ -d outputs/recovery_candidate_verification ]; then
   git clean -fX outputs/recovery_candidate_verification/
+fi
+
+echo
+echo "== Removing ignored source content extraction artifacts =="
+if [ -d outputs/source_content_extraction ]; then
+  git clean -fX outputs/source_content_extraction/
 fi
 
 echo
