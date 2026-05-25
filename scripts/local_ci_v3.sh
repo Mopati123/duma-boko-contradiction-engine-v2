@@ -102,6 +102,10 @@ echo "== Validating health fallback source no-network =="
 python scripts/handle_health_fallback_source.py --no-network
 
 echo
+echo "== Validating canonical six-block case models no-network =="
+python scripts/build_canonical_case_models.py --no-network
+
+echo
 echo "== Validating real evidence approval dry-run =="
 python scripts/approve_real_evidence.py --dry-run
 
@@ -220,6 +224,12 @@ echo
 echo "== Removing ignored health fallback source artifacts =="
 if [ -d outputs/health_fallback_source ]; then
   git clean -fX outputs/health_fallback_source/
+fi
+
+echo
+echo "== Removing ignored canonical case model artifacts =="
+if [ -d outputs/canonical_case_models ]; then
+  git clean -fX outputs/canonical_case_models/
 fi
 
 echo

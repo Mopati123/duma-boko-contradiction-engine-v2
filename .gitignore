@@ -83,6 +83,7 @@ outputs/recovery_candidate_verification/
 outputs/source_content_extraction/
 outputs/source_content_verification/
 outputs/health_fallback_source/
+outputs/canonical_case_models/
 outputs/real_evidence_approval/
 outputs/final_approved_packet/
 outputs/reports/*_generated*.docx

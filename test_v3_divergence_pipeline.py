@@ -156,6 +156,20 @@ from evidence.health_fallback_source import (
     select_health_fallback_candidate,
     validate_health_fallback_source_record,
 )
+from evidence.canonical_case_model import (
+    CanonicalCaseModel,
+    ContradictionAnalysis,
+    CurrentGovernmentPosition,
+    EvidenceCollection,
+    EvidenceReference,
+    OriginalPromise,
+    SourceDetails,
+    SourceOwnership,
+    SpeakerPoliticalLeader,
+    build_canonical_case_models,
+    has_six_blocks,
+    validate_canonical_case_model,
+)
 from evidence.final_approved_packet import (
     DEFAULT_FINAL_APPROVED_PACKET_RECORD,
     DEFAULT_FINAL_APPROVED_PACKET_SUMMARY,
@@ -3014,6 +3028,351 @@ def validate_health_fallback_source_lane() -> None:
     print("✓ Health Fallback Source v1 lane validation OK")
 
 
+def _valid_canonical_case_model_fixture() -> CanonicalCaseModel:
+    return CanonicalCaseModel(
+        case_id="CASE_TEST_CANONICAL",
+        topic="jobs_creation",
+        source_details=SourceDetails(
+            source_type="manifesto",
+            source_title="Fixture source",
+            source_date="",
+            source_platform="web",
+            source_url="https://example.com/source",
+            source_reference_id="FIXTURE_SOURCE",
+            source_status="pending_manual_review",
+        ),
+        source_ownership=SourceOwnership(
+            ownership_type="official_party_source",
+            correlation_level="high",
+            verification_status="pending_manual_review",
+            ownership_notes="Fixture ownership requires manual review.",
+        ),
+        speaker=SpeakerPoliticalLeader(
+            speaker_name="Duma Boko",
+            speaker_role="political leader",
+            political_party="UDC",
+            authority_context="candidate",
+        ),
+        original_promise=OriginalPromise(
+            promise_category="employment",
+            exact_promise_quote="",
+            word_for_word_transcript="",
+            promise_timeframe="five years",
+            promise_summary="Fixture candidate-only promise summary.",
+            measurability_status="measurable",
+        ),
+        current_government_position=CurrentGovernmentPosition(
+            position_type="not_yet_assessed",
+            current_statement_quote="",
+            current_outcome_summary="Fixture candidate-only current position summary.",
+            current_date="",
+            current_source_url="",
+            position_status="pending_manual_review",
+        ),
+        evidence_collection=EvidenceCollection(
+            video=[
+                EvidenceReference(
+                    evidence_id="VID_FIXTURE",
+                    evidence_type="video",
+                    source_url="https://example.com/video",
+                    status="candidate_unverified",
+                    notes="Fixture video reference.",
+                )
+            ],
+            audio=[],
+            transcript=[],
+            screenshots=[],
+            official_statements=[],
+            media_articles=[],
+            source_diagnostics=[],
+        ),
+        contradiction_analysis=ContradictionAnalysis(
+            contradiction_type="promise_vs_outcome",
+            analysis_summary="Fixture canonical case model.",
+            severity="not_assessed",
+            divergence_status="pending_manual_review",
+            evidence_gap_notes="Fixture evidence gap notes.",
+        ),
+        verification_status="pending_manual_review",
+        case_status="pending_manual_review",
+        approved_evidence=False,
+        public_ready=False,
+        institutional_ready=False,
+        report_ready=False,
+        requires_manual_review=True,
+        notes="Fixture candidate-only canonical model.",
+    )
+
+
+def validate_canonical_case_model_lane() -> None:
+    valid_model = _valid_canonical_case_model_fixture()
+    validate_canonical_case_model(valid_model)
+    if not has_six_blocks(valid_model):
+        raise AssertionError("Canonical model fixture must contain all six blocks")
+
+    assert_value_error(
+        lambda: validate_canonical_case_model(
+            {
+                **valid_model.to_dict(),
+                "contradiction_analysis": {
+                    **valid_model.contradiction_analysis.to_dict(),
+                    "contradiction_type": "unsupported_type",
+                },
+            }
+        ),
+        "contradiction_type is unsupported",
+    )
+    assert_value_error(
+        lambda: validate_canonical_case_model(
+            {**valid_model.to_dict(), "approved_evidence": True}
+        ),
+        "approved_evidence must be false",
+    )
+    assert_value_error(
+        lambda: validate_canonical_case_model(
+            {**valid_model.to_dict(), "public_ready": True}
+        ),
+        "public_ready must be false",
+    )
+    assert_value_error(
+        lambda: validate_canonical_case_model(
+            {**valid_model.to_dict(), "institutional_ready": True}
+        ),
+        "institutional_ready must be false",
+    )
+    assert_value_error(
+        lambda: validate_canonical_case_model(
+            {**valid_model.to_dict(), "report_ready": True}
+        ),
+        "report_ready must be false",
+    )
+    assert_value_error(
+        lambda: validate_canonical_case_model(
+            {**valid_model.to_dict(), "verified_for_approval_review": True}
+        ),
+        "must not contain verified_for_approval_review",
+    )
+    assert_value_error(
+        lambda: validate_canonical_case_model(
+            {
+                **valid_model.to_dict(),
+                "source_details": {
+                    **valid_model.source_details.to_dict(),
+                    "verified_for_approval_review": True,
+                },
+            }
+        ),
+        "must not contain verified_for_approval_review",
+    )
+    missing_source_details = valid_model.to_dict()
+    del missing_source_details["source_details"]
+    assert_value_error(
+        lambda: validate_canonical_case_model(missing_source_details),
+        "CanonicalCaseModel.source_details is required",
+    )
+
+    protected_paths = [
+        Path("data/evidence_seed/videos.yaml"),
+        Path("data/real_evidence_inputs/VID_JOBS_001.template.json"),
+        Path("data/real_evidence_inputs/VID_HEALTH_001.template.json"),
+        Path("data/source_recovery/selected_recovery_sources.json"),
+    ]
+    before = {path: path.read_text(encoding="utf-8") for path in protected_paths}
+    with tempfile.TemporaryDirectory() as temp_dir:
+        temp_path = Path(temp_dir)
+        missing_summary = build_canonical_case_models(
+            no_network=True,
+            source_verification_path=temp_path / "missing_source_verification.json",
+            health_fallback_path=temp_path / "missing_health_fallback.json",
+            output_dir=temp_path / "canonical_output",
+        )
+        if missing_summary["case_model_count"] != 5:
+            raise AssertionError("Canonical model lane must build 5 configured cases")
+        if missing_summary["six_block_complete_count"] != 5:
+            raise AssertionError("Every canonical model must contain all six blocks")
+        if missing_summary["case_categories"].get("CASE_001") != "governance":
+            raise AssertionError("CASE_001 must map to governance")
+        if missing_summary["case_statuses"].get("CASE_001") != "pending_manual_review":
+            raise AssertionError("CASE_001 must remain pending manual review")
+        if missing_summary["case_categories"].get("CASE_002") != "employment":
+            raise AssertionError("CASE_002 must map to employment")
+        if missing_summary["case_categories"].get("CASE_006") != "health":
+            raise AssertionError("CASE_006 must map to health")
+        if missing_summary["approved_evidence"] != 0:
+            raise AssertionError("Canonical model lane must not approve evidence")
+        if (
+            missing_summary["public_ready"]
+            or missing_summary["institutional_ready"]
+            or missing_summary["report_ready"]
+        ):
+            raise AssertionError("Canonical model lane must not mark readiness")
+        missing_models_payload = json.loads(
+            Path(missing_summary["models_output"]).read_text(encoding="utf-8")
+        )
+        missing_models = {
+            item["case_id"]: item
+            for item in missing_models_payload["case_models"]
+        }
+        for model in missing_models.values():
+            validate_canonical_case_model(model)
+            if not has_six_blocks(model):
+                raise AssertionError("Generated canonical model missed a six-block field")
+        if (
+            missing_models["CASE_002"]["source_ownership"]["ownership_type"]
+            != "official_party_source"
+        ):
+            raise AssertionError("CASE_002 must classify UDC source as party-owned")
+        if (
+            missing_models["CASE_006"]["source_ownership"]["ownership_type"]
+            != "independent_media"
+        ):
+            raise AssertionError("CASE_006 must classify Reuters as independent media")
+
+        source_verification_path = temp_path / "source_content_verification_status.json"
+        source_verification_path.write_text(
+            json.dumps(
+                {
+                    "records": [
+                        {
+                            "original_evidence_id": "VID_JOBS_001",
+                            "selected_recovery_candidate_id": (
+                                "RECOVERY_VID_JOBS_001_UDC_HOME"
+                            ),
+                            "source_url": "https://www.udc.org.bw/",
+                            "extraction_status": "extracted_candidate",
+                            "verification_status": (
+                                "verified_candidate_for_content_review"
+                            ),
+                            "content_review_status": "keyword_match",
+                            "extracted_text_candidate": (
+                                "The manifesto commits to create 500,000 jobs."
+                            ),
+                            "extracted_quote_candidate": (
+                                "The manifesto commits to create 500,000 jobs."
+                            ),
+                            "verification_notes": "Fixture diagnostic only.",
+                            "verified_for_content_review": True,
+                            "approved_evidence": False,
+                            "public_ready": False,
+                            "institutional_ready": False,
+                            "report_ready": False,
+                            "requires_manual_review": True,
+                        }
+                    ]
+                },
+                indent=2,
+            ),
+            encoding="utf-8",
+        )
+        health_fallback_path = temp_path / "health_fallback_source_status.json"
+        health_fallback_path.write_text(
+            json.dumps(
+                {
+                    "records": [
+                        {
+                            "original_evidence_id": "VID_HEALTH_001",
+                            "blocked_selected_candidate_id": (
+                                "RECOVERY_VID_HEALTH_001_REUTERS"
+                            ),
+                            "fallback_candidate_id": (
+                                "RECOVERY_VID_HEALTH_001_AL_JAZEERA"
+                            ),
+                            "fallback_source_url": (
+                                "https://www.aljazeera.com/news/2025/8/26/"
+                                "botswana-declares-public-health-emergency-over-"
+                                "medicine-shortage"
+                            ),
+                            "fallback_source_type": "secondary_corroboration",
+                            "fallback_reason": "Fixture fallback diagnostic.",
+                            "fallback_status": "fallback_selected",
+                            "extraction_status": "extracted_candidate",
+                            "verification_status": (
+                                "verified_candidate_for_content_review"
+                            ),
+                            "content_review_status": "keyword_match",
+                            "extracted_text_candidate": (
+                                "Botswana declared a public health emergency over "
+                                "medicine shortage."
+                            ),
+                            "extracted_quote_candidate": (
+                                "Botswana declared a public health emergency."
+                            ),
+                            "verified_for_content_review": True,
+                            "approved_evidence": False,
+                            "public_ready": False,
+                            "institutional_ready": False,
+                            "report_ready": False,
+                            "requires_manual_review": True,
+                            "notes": "Fixture fallback diagnostic only.",
+                        }
+                    ]
+                },
+                indent=2,
+            ),
+            encoding="utf-8",
+        )
+        diagnostic_summary = build_canonical_case_models(
+            no_network=True,
+            source_verification_path=source_verification_path,
+            health_fallback_path=health_fallback_path,
+            output_dir=temp_path / "canonical_output_with_diagnostics",
+        )
+        if diagnostic_summary["case_statuses"].get("CASE_002") != "content_review_candidate":
+            raise AssertionError("CASE_002 diagnostic candidate status was not applied")
+        if diagnostic_summary["case_statuses"].get("CASE_006") != "content_review_candidate":
+            raise AssertionError("CASE_006 fallback candidate status was not applied")
+        if diagnostic_summary["content_review_candidate_count"] != 2:
+            raise AssertionError("Expected two content-review candidate models")
+        diagnostic_models_payload = json.loads(
+            Path(diagnostic_summary["models_output"]).read_text(encoding="utf-8")
+        )
+        diagnostic_models = {
+            item["case_id"]: item
+            for item in diagnostic_models_payload["case_models"]
+        }
+        if (
+            diagnostic_models["CASE_006"]["source_details"]["source_type"]
+            != "news_article"
+        ):
+            raise AssertionError("CASE_006 fallback must map to news_article source")
+        if (
+            diagnostic_models["CASE_006"]["contradiction_analysis"][
+                "divergence_status"
+            ]
+            != "partial_verification"
+        ):
+            raise AssertionError("CASE_006 fallback must map to partial verification")
+
+        filtered_summary = build_canonical_case_models(
+            case_id="CASE_002",
+            no_network=True,
+            source_verification_path=source_verification_path,
+            health_fallback_path=health_fallback_path,
+            output_dir=temp_path / "canonical_case_002",
+        )
+        if filtered_summary["case_ids"] != ["CASE_002"]:
+            raise AssertionError("Canonical model case-id filter failed")
+
+    after = {path: path.read_text(encoding="utf-8") for path in protected_paths}
+    if before != after:
+        raise AssertionError("Canonical model lane must not modify protected files")
+
+    for command in (
+        "python scripts/build_canonical_case_models.py --no-network",
+        "python scripts/build_canonical_case_models.py --case-id CASE_001 --no-network",
+        "python scripts/build_canonical_case_models.py --case-id CASE_002 --no-network",
+    ):
+        exit_code, output = run_command(command)
+        if exit_code != 0:
+            raise AssertionError(f"Canonical model command failed: {command}")
+        if "approved_evidence: 0" not in output:
+            raise AssertionError("Canonical model CLI must not approve evidence")
+        if "public_ready: False" not in output:
+            raise AssertionError("Canonical model CLI must not mark readiness")
+
+    print("✓ Canonical 6-Block Case Model v1 lane validation OK")
+
+
 def validate_real_evidence_approval_lane() -> None:
     blocked = RealEvidenceApprovalRecord(
         approval_id="APPROVAL_TEST_BLOCKED",
@@ -3423,6 +3782,7 @@ def main() -> int:
     validate_source_content_extraction_lane()
     validate_source_content_verification_lane()
     validate_health_fallback_source_lane()
+    validate_canonical_case_model_lane()
     validate_real_evidence_approval_lane()
     validate_final_approved_packet_lane()
     validate_gate_rejections()
