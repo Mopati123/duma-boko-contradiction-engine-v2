@@ -179,6 +179,14 @@ from evidence.template_update_from_content_review import (
     update_templates_from_content_review,
     validate_template_update_record,
 )
+from evidence.manual_review_promotion import (
+    APPROVAL_REVIEW_STATUS,
+    CURRENT_REVIEW_STATUS,
+    PROMOTION_REVIEWER,
+    build_manual_review_promotion_record,
+    promote_manual_review,
+    validate_manual_review_promotion_record,
+)
 from evidence.final_approved_packet import (
     DEFAULT_FINAL_APPROVED_PACKET_RECORD,
     DEFAULT_FINAL_APPROVED_PACKET_SUMMARY,
@@ -3575,6 +3583,198 @@ def validate_template_update_from_content_review_lane() -> None:
     print("✓ Template Update From Content Review v1 lane validation OK")
 
 
+def _complete_manual_review_template_fixture(evidence_id: str) -> dict:
+    template = build_template_update(_pending_real_evidence_template_fixture(evidence_id))
+    template.update(
+        {
+            "transcript_text": "Human-entered transcript excerpt for manual review.",
+            "timestamp_start": "00:01:00",
+            "timestamp_end": "00:01:10",
+            "quote_text": "Human-entered quote excerpt for manual review.",
+            "reviewer": PROMOTION_REVIEWER,
+            "reviewer_notes": "Human reviewer confirmed required fields for approval review.",
+        }
+    )
+    return template
+
+
+def validate_manual_review_promotion_lane() -> None:
+    protected_paths = [
+        Path("data/evidence_seed/videos.yaml"),
+        Path("data/real_evidence_inputs/VID_JOBS_001.template.json"),
+        Path("data/real_evidence_inputs/VID_HEALTH_001.template.json"),
+        Path("data/source_recovery/selected_recovery_sources.json"),
+    ]
+    before = {path: path.read_text(encoding="utf-8") for path in protected_paths}
+
+    jobs_incomplete = build_template_update(
+        _pending_real_evidence_template_fixture(JOBS_EVIDENCE_ID)
+    )
+    blocked_record = build_manual_review_promotion_record(
+        jobs_incomplete,
+        Path("data/real_evidence_inputs/VID_JOBS_001.template.json"),
+    )
+    validate_manual_review_promotion_record(blocked_record)
+    if blocked_record.promotion_status != "blocked_missing_required_fields":
+        raise AssertionError("Incomplete template must block promotion")
+    if blocked_record.proposed_verification_status != CURRENT_REVIEW_STATUS:
+        raise AssertionError("Blocked promotion must keep entered_pending_review")
+    for field_name in (
+        "transcript_text",
+        "timestamp_start",
+        "timestamp_end",
+        "quote_text",
+    ):
+        if field_name not in blocked_record.missing_required_fields:
+            raise AssertionError(f"Promotion blocker must list {field_name}")
+
+    complete_record = build_manual_review_promotion_record(
+        _complete_manual_review_template_fixture(JOBS_EVIDENCE_ID),
+        Path("data/real_evidence_inputs/VID_JOBS_001.template.json"),
+    )
+    validate_manual_review_promotion_record(complete_record)
+    if complete_record.promotion_status != "promotion_ready":
+        raise AssertionError("Complete template should be eligible for promotion")
+    if complete_record.proposed_verification_status != APPROVAL_REVIEW_STATUS:
+        raise AssertionError("Complete template should propose approval-review status")
+
+    assert_value_error(
+        lambda: build_manual_review_promotion_record(
+            {**jobs_incomplete, "source_url": ""},
+            Path("data/real_evidence_inputs/VID_JOBS_001.template.json"),
+        ),
+        "source_url must be a non-empty string",
+    )
+    assert_value_error(
+        lambda: validate_manual_review_promotion_record(
+            {**blocked_record.to_dict(), "approved_evidence": True}
+        ),
+        "approved_evidence must be false",
+    )
+    assert_value_error(
+        lambda: validate_manual_review_promotion_record(
+            {**blocked_record.to_dict(), "public_ready": True}
+        ),
+        "public_ready must be false",
+    )
+    assert_value_error(
+        lambda: validate_manual_review_promotion_record(
+            {**blocked_record.to_dict(), "institutional_ready": True}
+        ),
+        "institutional_ready must be false",
+    )
+    assert_value_error(
+        lambda: validate_manual_review_promotion_record(
+            {**blocked_record.to_dict(), "report_ready": True}
+        ),
+        "report_ready must be false",
+    )
+    assert_value_error(
+        lambda: validate_manual_review_promotion_record(
+            {**blocked_record.to_dict(), "verified_for_approval_review": True}
+        ),
+        "verified_for_approval_review boolean field",
+    )
+
+    with tempfile.TemporaryDirectory() as temp_dir:
+        temp_path = Path(temp_dir)
+        output_dir = temp_path / "outputs"
+        dry_summary = promote_manual_review(output_dir=output_dir / "dry_run")
+        if dry_summary["promoted_template_count"] != 0:
+            raise AssertionError("Dry-run must not promote real templates")
+        if dry_summary["blocked_missing_required_fields_count"] != 2:
+            raise AssertionError("Dry-run must block both incomplete real templates")
+        if dry_summary["verified_for_approval_review"] != 0:
+            raise AssertionError("Dry-run must not set approval-review status")
+        if (
+            dry_summary["public_ready"]
+            or dry_summary["institutional_ready"]
+            or dry_summary["report_ready"]
+        ):
+            raise AssertionError("Promotion dry-run must not mark readiness")
+
+        fixture_dir = temp_path / "templates"
+        fixture_dir.mkdir()
+        for evidence_id in (JOBS_EVIDENCE_ID, HEALTH_EVIDENCE_ID):
+            (fixture_dir / f"{evidence_id}.template.json").write_text(
+                json.dumps(
+                    build_template_update(
+                        _pending_real_evidence_template_fixture(evidence_id)
+                    ),
+                    indent=2,
+                )
+                + "\n",
+                encoding="utf-8",
+            )
+        write_summary = promote_manual_review(
+            write=True,
+            template_dir=fixture_dir,
+            output_dir=output_dir / "write_blocked",
+        )
+        if write_summary["write_count"] != 0 or write_summary["backup_count"] != 0:
+            raise AssertionError("Write mode must not promote incomplete records")
+        for evidence_id in (JOBS_EVIDENCE_ID, HEALTH_EVIDENCE_ID):
+            updated = json.loads(
+                (fixture_dir / f"{evidence_id}.template.json").read_text(
+                    encoding="utf-8"
+                )
+            )
+            if updated["verification_status"] != CURRENT_REVIEW_STATUS:
+                raise AssertionError("Incomplete write must keep entered_pending_review")
+            if (fixture_dir / f"{evidence_id}.template.json.bak").exists():
+                raise AssertionError("Blocked write must not create backups")
+
+        complete_dir = temp_path / "complete_templates"
+        complete_dir.mkdir()
+        complete_template = _complete_manual_review_template_fixture(JOBS_EVIDENCE_ID)
+        (complete_dir / f"{JOBS_EVIDENCE_ID}.template.json").write_text(
+            json.dumps(complete_template, indent=2) + "\n",
+            encoding="utf-8",
+        )
+        promote_summary = promote_manual_review(
+            evidence_id=JOBS_EVIDENCE_ID,
+            write=True,
+            template_dir=complete_dir,
+            output_dir=output_dir / "write_promoted",
+        )
+        if promote_summary["promoted_template_count"] != 1:
+            raise AssertionError("Complete fixture should promote in write mode")
+        promoted = json.loads(
+            (complete_dir / f"{JOBS_EVIDENCE_ID}.template.json").read_text(
+                encoding="utf-8"
+            )
+        )
+        if promoted["verification_status"] != APPROVAL_REVIEW_STATUS:
+            raise AssertionError("Complete fixture must be approval-review status")
+        if not (complete_dir / f"{JOBS_EVIDENCE_ID}.template.json.bak").exists():
+            raise AssertionError("Promoted write must create a backup")
+
+    after = {path: path.read_text(encoding="utf-8") for path in protected_paths}
+    if before != after:
+        raise AssertionError("Manual review promotion tests must not modify real files")
+    if "outputs/manual_review_promotion/" not in Path(".gitignore").read_text(
+        encoding="utf-8"
+    ):
+        raise AssertionError("Manual review promotion outputs must be ignored")
+
+    for command in (
+        "python scripts/promote_manual_review.py --dry-run",
+        "python scripts/promote_manual_review.py --evidence-id VID_JOBS_001 --dry-run",
+        "python scripts/promote_manual_review.py --evidence-id VID_HEALTH_001 --dry-run",
+    ):
+        exit_code, output = run_command(command)
+        if exit_code != 0:
+            raise AssertionError(f"Manual review promotion command failed: {command}")
+        if "promoted_template_count: 0" not in output:
+            raise AssertionError("Manual review promotion dry-run must not promote")
+        if "verified_for_approval_review: 0" not in output:
+            raise AssertionError("Manual review promotion CLI must not approval-verify")
+        if "public_ready: False" not in output:
+            raise AssertionError("Manual review promotion CLI must not mark readiness")
+
+    print("✓ Manual Review Promotion v1 lane validation OK")
+
+
 def validate_real_evidence_approval_lane() -> None:
     blocked = RealEvidenceApprovalRecord(
         approval_id="APPROVAL_TEST_BLOCKED",
@@ -3986,6 +4186,7 @@ def main() -> int:
     validate_health_fallback_source_lane()
     validate_canonical_case_model_lane()
     validate_template_update_from_content_review_lane()
+    validate_manual_review_promotion_lane()
     validate_real_evidence_approval_lane()
     validate_final_approved_packet_lane()
     validate_gate_rejections()

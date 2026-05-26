@@ -85,6 +85,7 @@ outputs/source_content_verification/
 outputs/health_fallback_source/
 outputs/canonical_case_models/
 outputs/template_update_from_content_review/
+outputs/manual_review_promotion/
 outputs/real_evidence_approval/
 outputs/final_approved_packet/
 outputs/reports/*_generated*.docx
