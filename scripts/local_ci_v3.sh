@@ -118,6 +118,11 @@ echo "== Validating exact evidence field completion dry-run =="
 python scripts/complete_exact_evidence_fields.py --dry-run
 
 echo
+echo "== Validating exact quote manual entry examples reject =="
+python scripts/apply_exact_quote_manual_entry.py --entry-file data/manual_evidence_entries/VID_JOBS_001.entry.example.json --dry-run --expect-rejected
+python scripts/apply_exact_quote_manual_entry.py --entry-file data/manual_evidence_entries/VID_HEALTH_001.entry.example.json --dry-run --expect-rejected
+
+echo
 echo "== Validating real evidence approval dry-run =="
 python scripts/approve_real_evidence.py --dry-run
 
@@ -260,6 +265,12 @@ echo
 echo "== Removing ignored exact evidence field completion artifacts =="
 if [ -d outputs/exact_evidence_field_completion ]; then
   git clean -fX outputs/exact_evidence_field_completion/
+fi
+
+echo
+echo "== Removing ignored exact quote manual entry artifacts =="
+if [ -d outputs/exact_quote_manual_entry ]; then
+  git clean -fX outputs/exact_quote_manual_entry/
 fi
 
 echo
