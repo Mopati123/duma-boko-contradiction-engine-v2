@@ -7,6 +7,7 @@ It does not validate the legacy semantic pipeline.
 """
 
 import json
+import shutil
 import subprocess
 import sys
 import tempfile
@@ -169,6 +170,14 @@ from evidence.canonical_case_model import (
     build_canonical_case_models,
     has_six_blocks,
     validate_canonical_case_model,
+)
+from evidence.template_update_from_content_review import (
+    HEALTH_EVIDENCE_ID,
+    JOBS_EVIDENCE_ID,
+    REVIEWER as TEMPLATE_UPDATE_REVIEWER,
+    build_template_update,
+    update_templates_from_content_review,
+    validate_template_update_record,
 )
 from evidence.final_approved_packet import (
     DEFAULT_FINAL_APPROVED_PACKET_RECORD,
@@ -2002,30 +2011,40 @@ def validate_real_evidence_inputs_lane() -> None:
     if len(templates) != 2:
         raise AssertionError("Real Evidence Population v1 must provide 2 templates")
     for record in templates:
-        if record.verification_status != "pending_human_entry":
-            raise AssertionError("Real Evidence Population v1 templates must be pending")
+        if record.verification_status not in {
+            "pending_human_entry",
+            "entered_pending_review",
+        }:
+            raise AssertionError(
+                "Real Evidence Population v1 templates must remain candidate-only"
+            )
+        if record.verification_status == "verified_for_approval_review":
+            raise AssertionError(
+                "Real Evidence Population v1 templates must not be approval-ready"
+            )
         for field_name in (
             "transcript_text",
             "timestamp_start",
             "timestamp_end",
             "quote_text",
-            "speaker",
-            "context_summary",
-            "case_relevance_note",
-            "reviewer",
-            "reviewer_notes",
         ):
             if getattr(record, field_name) != "":
                 raise AssertionError(
-                    "Real Evidence Population v1 templates must keep human "
-                    f"entry field empty: {field_name}"
+                    "Real Evidence Population v1 templates must not contain "
+                    f"fabricated transcript, timestamp, or quote field: {field_name}"
                 )
 
     summary = validate_real_evidence_inputs_dry_run()
     if summary["total_input_records"] != 2:
         raise AssertionError("Real Evidence Population v1 dry-run must validate 2 records")
-    if summary["pending_human_entry"] != 2:
-        raise AssertionError("Real Evidence Population v1 templates must remain pending")
+    if summary["pending_human_entry"] + summary["entered_pending_review"] != 2:
+        raise AssertionError(
+            "Real Evidence Population v1 templates must remain candidate-only"
+        )
+    if summary["verified_for_approval_review"] != 0:
+        raise AssertionError(
+            "Real Evidence Population v1 templates must not be approval-ready"
+        )
     if summary["records_ready_for_approval_review"] != 0:
         raise AssertionError("Real Evidence Population v1 must not auto-approve inputs")
 
@@ -3373,6 +3392,189 @@ def validate_canonical_case_model_lane() -> None:
     print("✓ Canonical 6-Block Case Model v1 lane validation OK")
 
 
+def _pending_real_evidence_template_fixture(evidence_id: str) -> dict:
+    case_id = "CASE_002" if evidence_id == JOBS_EVIDENCE_ID else "CASE_006"
+    source_url = (
+        "https://www.youtube.com/watch?v=e0MLzB5nGDc"
+        if evidence_id == JOBS_EVIDENCE_ID
+        else "https://www.youtube.com/watch?v=ZsxLObyHUYE"
+    )
+    return {
+        "evidence_id": evidence_id,
+        "case_id": case_id,
+        "source_url": source_url,
+        "transcript_text": "",
+        "timestamp_start": "",
+        "timestamp_end": "",
+        "quote_text": "",
+        "speaker": "",
+        "context_summary": "",
+        "case_relevance_note": "",
+        "reviewer": "",
+        "reviewer_notes": "",
+        "verification_status": "pending_human_entry",
+    }
+
+
+def validate_template_update_from_content_review_lane() -> None:
+    protected_paths = [
+        Path("data/evidence_seed/videos.yaml"),
+        Path("data/real_evidence_inputs/VID_JOBS_001.template.json"),
+        Path("data/real_evidence_inputs/VID_HEALTH_001.template.json"),
+        Path("data/source_recovery/selected_recovery_sources.json"),
+    ]
+    before = {path: path.read_text(encoding="utf-8") for path in protected_paths}
+
+    jobs_template = _pending_real_evidence_template_fixture(JOBS_EVIDENCE_ID)
+    jobs_update = build_template_update(jobs_template)
+    validate_template_update_record(jobs_update)
+    if jobs_update["verification_status"] != "entered_pending_review":
+        raise AssertionError("Template update must set entered_pending_review")
+    if jobs_update["source_url"] != "https://www.udc.org.bw/":
+        raise AssertionError("Jobs template update must use the UDC source")
+    if jobs_update["speaker"] != "Duma Boko":
+        raise AssertionError("Jobs template update must set the known speaker")
+    for field_name in (
+        "transcript_text",
+        "timestamp_start",
+        "timestamp_end",
+        "quote_text",
+    ):
+        if jobs_update[field_name] != "":
+            raise AssertionError(f"Template update must not invent {field_name}")
+
+    assert_value_error(
+        lambda: validate_template_update_record(
+            {**jobs_update, "verification_status": "verified_for_approval_review"}
+        ),
+        "must not set verified_for_approval_review",
+    )
+    assert_value_error(
+        lambda: validate_template_update_record(
+            {**jobs_update, "verified_for_approval_review": True}
+        ),
+        "must not contain verified_for_approval_review",
+    )
+    assert_value_error(
+        lambda: validate_template_update_record(
+            {**jobs_update, "approved_evidence": True}
+        ),
+        "approved_evidence=true",
+    )
+    assert_value_error(
+        lambda: validate_template_update_record({**jobs_update, "public_ready": True}),
+        "public_ready=true",
+    )
+    assert_value_error(
+        lambda: validate_template_update_record(
+            {**jobs_update, "institutional_ready": True}
+        ),
+        "institutional_ready=true",
+    )
+    assert_value_error(
+        lambda: validate_template_update_record({**jobs_update, "report_ready": True}),
+        "report_ready=true",
+    )
+    assert_value_error(
+        lambda: validate_template_update_record({**jobs_update, "source_url": ""}),
+        "source_url must be a non-empty string",
+    )
+
+    with tempfile.TemporaryDirectory() as temp_dir:
+        temp_path = Path(temp_dir)
+        output_dir = temp_path / "outputs"
+        dry_summary = update_templates_from_content_review(
+            output_dir=output_dir / "dry_run",
+        )
+        if dry_summary["write_count"] != 0 or dry_summary["backup_count"] != 0:
+            raise AssertionError("Template update dry-run must not write or backup")
+        if dry_summary["entered_pending_review_count"] != 2:
+            raise AssertionError("Template update dry-run must propose both records")
+        if dry_summary["verified_for_approval_review"] != 0:
+            raise AssertionError("Template update dry-run must not approval-verify")
+        if (
+            dry_summary["public_ready"]
+            or dry_summary["institutional_ready"]
+            or dry_summary["report_ready"]
+        ):
+            raise AssertionError("Template update dry-run must not mark readiness")
+
+        fixture_dir = temp_path / "templates"
+        fixture_dir.mkdir()
+        for evidence_id in (JOBS_EVIDENCE_ID, HEALTH_EVIDENCE_ID):
+            (fixture_dir / f"{evidence_id}.template.json").write_text(
+                json.dumps(
+                    _pending_real_evidence_template_fixture(evidence_id),
+                    indent=2,
+                )
+                + "\n",
+                encoding="utf-8",
+            )
+        write_summary = update_templates_from_content_review(
+            write=True,
+            template_dir=fixture_dir,
+            output_dir=output_dir / "write",
+        )
+        if write_summary["write_count"] != 2 or write_summary["backup_count"] != 2:
+            raise AssertionError("Template update write mode must update both fixtures")
+        for evidence_id in (JOBS_EVIDENCE_ID, HEALTH_EVIDENCE_ID):
+            updated = json.loads(
+                (fixture_dir / f"{evidence_id}.template.json").read_text(
+                    encoding="utf-8"
+                )
+            )
+            validate_template_update_record(updated)
+            if updated["verification_status"] != "entered_pending_review":
+                raise AssertionError("Written template must be entered_pending_review")
+            if updated["reviewer"] != TEMPLATE_UPDATE_REVIEWER:
+                raise AssertionError("Written template must record the update reviewer")
+            for field_name in (
+                "transcript_text",
+                "timestamp_start",
+                "timestamp_end",
+                "quote_text",
+            ):
+                if updated[field_name] != "":
+                    raise AssertionError(f"Write mode must not invent {field_name}")
+            backup_path = fixture_dir / f"{evidence_id}.template.json.bak"
+            if not backup_path.exists():
+                raise AssertionError("Write mode must create .bak backups")
+        health_updated = json.loads(
+            (fixture_dir / f"{HEALTH_EVIDENCE_ID}.template.json").read_text(
+                encoding="utf-8"
+            )
+        )
+        if "Reuters preferred source remains blocked" not in health_updated["reviewer_notes"]:
+            raise AssertionError("Health template notes must preserve blocked Reuters")
+        if "RECOVERY_VID_HEALTH_001_AL_JAZEERA" not in health_updated["reviewer_notes"]:
+            raise AssertionError("Health template notes must preserve Al Jazeera fallback")
+
+    after = {path: path.read_text(encoding="utf-8") for path in protected_paths}
+    if before != after:
+        raise AssertionError("Template update dry-run tests must not modify real files")
+    if "data/real_evidence_inputs/*.template.json.bak" not in Path(
+        ".gitignore"
+    ).read_text(encoding="utf-8"):
+        raise AssertionError("Template update backups must be ignored")
+
+    for command in (
+        "python scripts/update_templates_from_content_review.py --dry-run",
+        "python scripts/update_templates_from_content_review.py --evidence-id VID_JOBS_001 --dry-run",
+        "python scripts/update_templates_from_content_review.py --evidence-id VID_HEALTH_001 --dry-run",
+    ):
+        exit_code, output = run_command(command)
+        if exit_code != 0:
+            raise AssertionError(f"Template update command failed: {command}")
+        if "write_count: 0" not in output:
+            raise AssertionError("Template update dry-run CLI must not write")
+        if "verified_for_approval_review: 0" not in output:
+            raise AssertionError("Template update CLI must not approval-verify")
+        if "public_ready: False" not in output:
+            raise AssertionError("Template update CLI must not mark readiness")
+
+    print("✓ Template Update From Content Review v1 lane validation OK")
+
+
 def validate_real_evidence_approval_lane() -> None:
     blocked = RealEvidenceApprovalRecord(
         approval_id="APPROVAL_TEST_BLOCKED",
@@ -3783,6 +3985,7 @@ def main() -> int:
     validate_source_content_verification_lane()
     validate_health_fallback_source_lane()
     validate_canonical_case_model_lane()
+    validate_template_update_from_content_review_lane()
     validate_real_evidence_approval_lane()
     validate_final_approved_packet_lane()
     validate_gate_rejections()
