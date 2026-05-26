@@ -84,6 +84,7 @@ outputs/source_content_extraction/
 outputs/source_content_verification/
 outputs/health_fallback_source/
 outputs/canonical_case_models/
+outputs/template_update_from_content_review/
 outputs/real_evidence_approval/
 outputs/final_approved_packet/
 outputs/reports/*_generated*.docx
@@ -91,3 +92,4 @@ outputs/reports/*_generated*.pdf
 
 # Local run backups
 duma-boko-run-backups/
+data/real_evidence_inputs/*.template.json.bak

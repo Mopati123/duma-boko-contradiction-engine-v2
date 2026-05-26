@@ -1,15 +1,15 @@
 {
   "evidence_id": "VID_JOBS_001",
   "case_id": "CASE_002",
-  "source_url": "https://www.youtube.com/watch?v=e0MLzB5nGDc",
+  "source_url": "https://www.udc.org.bw/",
   "transcript_text": "",
   "timestamp_start": "",
   "timestamp_end": "",
   "quote_text": "",
-  "speaker": "",
-  "context_summary": "",
-  "case_relevance_note": "",
-  "reviewer": "",
-  "reviewer_notes": "",
-  "verification_status": "pending_human_entry"
+  "speaker": "Duma Boko",
+  "context_summary": "Candidate-reviewed official-party source for jobs promise. Manual review required.",
+  "case_relevance_note": "Supports employment/jobs promise review. Candidate-only, not approved evidence.",
+  "reviewer": "content-review-template-update-v1",
+  "reviewer_notes": "Updated from content-review candidate RECOVERY_VID_JOBS_001_UDC_HOME. Original unavailable YouTube source preserved for audit: https://www.youtube.com/watch?v=e0MLzB5nGDc. Candidate-only entry requires manual verification before approval.",
+  "verification_status": "entered_pending_review"
 }

@@ -106,6 +106,10 @@ echo "== Validating canonical six-block case models no-network =="
 python scripts/build_canonical_case_models.py --no-network
 
 echo
+echo "== Validating template update from content review dry-run =="
+python scripts/update_templates_from_content_review.py --dry-run
+
+echo
 echo "== Validating real evidence approval dry-run =="
 python scripts/approve_real_evidence.py --dry-run
 
@@ -230,6 +234,12 @@ echo
 echo "== Removing ignored canonical case model artifacts =="
 if [ -d outputs/canonical_case_models ]; then
   git clean -fX outputs/canonical_case_models/
+fi
+
+echo
+echo "== Removing ignored template update artifacts =="
+if [ -d outputs/template_update_from_content_review ]; then
+  git clean -fX outputs/template_update_from_content_review/
 fi
 
 echo
