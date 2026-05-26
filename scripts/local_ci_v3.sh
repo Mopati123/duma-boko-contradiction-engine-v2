@@ -110,6 +110,10 @@ echo "== Validating template update from content review dry-run =="
 python scripts/update_templates_from_content_review.py --dry-run
 
 echo
+echo "== Validating manual review promotion dry-run =="
+python scripts/promote_manual_review.py --dry-run
+
+echo
 echo "== Validating real evidence approval dry-run =="
 python scripts/approve_real_evidence.py --dry-run
 
@@ -240,6 +244,12 @@ echo
 echo "== Removing ignored template update artifacts =="
 if [ -d outputs/template_update_from_content_review ]; then
   git clean -fX outputs/template_update_from_content_review/
+fi
+
+echo
+echo "== Removing ignored manual review promotion artifacts =="
+if [ -d outputs/manual_review_promotion ]; then
+  git clean -fX outputs/manual_review_promotion/
 fi
 
 echo
