@@ -1,0 +1,20 @@
+{
+  "evidence_id": "VID_HEALTH_001",
+  "reviewer": "",
+  "review_date": "",
+  "source_url": "",
+  "evidence_location_type": "article_reference",
+  "quote_text": "",
+  "excerpt_text": "",
+  "transcript_text": "",
+  "page_reference": "",
+  "section_reference": "",
+  "paragraph_reference": "",
+  "quote_location": "",
+  "reviewer_notes": "",
+  "attestation": {
+    "human_entered": true,
+    "no_fabrication": true,
+    "source_checked": false
+  }
+}

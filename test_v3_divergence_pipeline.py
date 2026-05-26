@@ -196,6 +196,12 @@ from scripts.complete_exact_evidence_fields import (
     build_completion_record,
     validate_completion_record,
 )
+from evidence.exact_quote_manual_entry import (
+    apply_exact_quote_manual_entry,
+    build_exact_quote_manual_entry_record,
+    load_manual_entry,
+    validate_exact_quote_manual_entry_record,
+)
 from evidence.final_approved_packet import (
     DEFAULT_FINAL_APPROVED_PACKET_RECORD,
     DEFAULT_FINAL_APPROVED_PACKET_SUMMARY,
@@ -3861,6 +3867,332 @@ def validate_exact_evidence_field_completion_lane() -> None:
     print("✓ Exact Evidence Field Completion v1 lane validation OK")
 
 
+def _manual_entry_fixture(
+    evidence_id: str,
+    source_url: str,
+    evidence_location_type: str,
+    source_checked: bool = True,
+) -> dict:
+    entry = {
+        "evidence_id": evidence_id,
+        "reviewer": "exact-quote-manual-entry-v1-test",
+        "review_date": "2026-05-26",
+        "source_url": source_url,
+        "evidence_location_type": evidence_location_type,
+        "quote_text": "Exact quote entered by a human reviewer for test coverage.",
+        "excerpt_text": "Exact excerpt entered by a human reviewer for test coverage.",
+        "transcript_text": "",
+        "page_reference": "",
+        "section_reference": "",
+        "paragraph_reference": "",
+        "quote_location": "",
+        "reviewer_notes": "Synthetic unit-test fixture only.",
+        "attestation": {
+            "human_entered": True,
+            "no_fabrication": True,
+            "source_checked": source_checked,
+        },
+    }
+    if evidence_location_type == "document_reference":
+        entry["section_reference"] = "employment commitments section"
+    elif evidence_location_type == "article_reference":
+        entry["paragraph_reference"] = "paragraph 6"
+    elif evidence_location_type == "video_timestamp":
+        entry["timestamp_start"] = "00:01:00"
+        entry["timestamp_end"] = "00:01:10"
+    return entry
+
+
+def validate_exact_quote_manual_entry_lane() -> None:
+    protected_paths = [
+        Path("data/evidence_seed/videos.yaml"),
+        Path("data/real_evidence_inputs/VID_JOBS_001.template.json"),
+        Path("data/real_evidence_inputs/VID_HEALTH_001.template.json"),
+        Path("data/source_recovery/selected_recovery_sources.json"),
+    ]
+    before = {path: path.read_text(encoding="utf-8") for path in protected_paths}
+
+    jobs_example_path = Path(
+        "data/manual_evidence_entries/VID_JOBS_001.entry.example.json"
+    )
+    health_example_path = Path(
+        "data/manual_evidence_entries/VID_HEALTH_001.entry.example.json"
+    )
+
+    jobs_example_record = build_exact_quote_manual_entry_record(
+        load_manual_entry(jobs_example_path),
+        jobs_example_path,
+    )
+    validate_exact_quote_manual_entry_record(jobs_example_record)
+    if jobs_example_record.entry_status != "rejected":
+        raise AssertionError("Jobs example manual entry must be rejected")
+    for expected_error in ("source_url", "quote_text", "excerpt_text"):
+        if not any(expected_error in error for error in jobs_example_record.validation_errors):
+            raise AssertionError(f"Jobs example rejection must mention {expected_error}")
+
+    health_example_record = build_exact_quote_manual_entry_record(
+        load_manual_entry(health_example_path),
+        health_example_path,
+    )
+    validate_exact_quote_manual_entry_record(health_example_record)
+    if health_example_record.entry_status != "rejected":
+        raise AssertionError("Health example manual entry must be rejected")
+    if not any("paragraph_reference" in error for error in health_example_record.validation_errors):
+        raise AssertionError("Health example rejection must mention article location")
+
+    assert_value_error(
+        lambda: validate_exact_quote_manual_entry_record(
+            {**jobs_example_record.to_dict(), "approved_evidence": True}
+        ),
+        "must not approve evidence",
+    )
+    assert_value_error(
+        lambda: validate_exact_quote_manual_entry_record(
+            {**jobs_example_record.to_dict(), "public_ready": True}
+        ),
+        "must not set public_ready",
+    )
+    assert_value_error(
+        lambda: validate_exact_quote_manual_entry_record(
+            {**jobs_example_record.to_dict(), "institutional_ready": True}
+        ),
+        "must not set institutional_ready",
+    )
+    assert_value_error(
+        lambda: validate_exact_quote_manual_entry_record(
+            {**jobs_example_record.to_dict(), "report_ready": True}
+        ),
+        "must not set report_ready",
+    )
+    assert_value_error(
+        lambda: validate_exact_quote_manual_entry_record(
+            {**jobs_example_record.to_dict(), "verified_for_approval_review": True}
+        ),
+        "must not approval-verify",
+    )
+
+    with tempfile.TemporaryDirectory() as temp_dir:
+        temp_path = Path(temp_dir)
+        fixture_dir = temp_path / "templates"
+        entry_dir = temp_path / "entries"
+        output_dir = temp_path / "outputs"
+        fixture_dir.mkdir()
+        entry_dir.mkdir()
+
+        for evidence_id in (JOBS_EVIDENCE_ID, HEALTH_EVIDENCE_ID):
+            source_template = Path(
+                f"data/real_evidence_inputs/{evidence_id}.template.json"
+            )
+            (fixture_dir / f"{evidence_id}.template.json").write_text(
+                source_template.read_text(encoding="utf-8"),
+                encoding="utf-8",
+            )
+
+        jobs_template = json.loads(
+            (fixture_dir / f"{JOBS_EVIDENCE_ID}.template.json").read_text(
+                encoding="utf-8"
+            )
+        )
+        health_template = json.loads(
+            (fixture_dir / f"{HEALTH_EVIDENCE_ID}.template.json").read_text(
+                encoding="utf-8"
+            )
+        )
+        jobs_entry = _manual_entry_fixture(
+            JOBS_EVIDENCE_ID,
+            jobs_template["source_url"].rstrip("/"),
+            "document_reference",
+        )
+        health_entry = _manual_entry_fixture(
+            HEALTH_EVIDENCE_ID,
+            health_template["source_url"],
+            "article_reference",
+        )
+        jobs_entry_path = entry_dir / "jobs.entry.json"
+        health_entry_path = entry_dir / "health.entry.json"
+        jobs_entry_path.write_text(json.dumps(jobs_entry, indent=2) + "\n", encoding="utf-8")
+        health_entry_path.write_text(
+            json.dumps(health_entry, indent=2) + "\n",
+            encoding="utf-8",
+        )
+
+        jobs_dry = apply_exact_quote_manual_entry(
+            jobs_entry_path,
+            template_dir=fixture_dir,
+            output_dir=output_dir / "jobs_dry",
+        )
+        if jobs_dry["accepted_count"] != 1 or jobs_dry["write_count"] != 0:
+            raise AssertionError("Valid synthetic document entry must dry-run accept")
+        health_dry = apply_exact_quote_manual_entry(
+            health_entry_path,
+            template_dir=fixture_dir,
+            output_dir=output_dir / "health_dry",
+        )
+        if health_dry["accepted_count"] != 1 or health_dry["write_count"] != 0:
+            raise AssertionError("Valid synthetic article entry must dry-run accept")
+
+        mismatch_entry = dict(health_entry)
+        mismatch_entry["source_url"] = "https://example.com/mismatch"
+        mismatch_path = entry_dir / "mismatch.entry.json"
+        mismatch_path.write_text(
+            json.dumps(mismatch_entry, indent=2) + "\n",
+            encoding="utf-8",
+        )
+        mismatch_summary = apply_exact_quote_manual_entry(
+            mismatch_path,
+            template_dir=fixture_dir,
+            output_dir=output_dir / "mismatch",
+        )
+        if mismatch_summary["rejected_count"] != 1:
+            raise AssertionError("Source URL mismatch must be rejected")
+
+        type_mismatch_entry = dict(health_entry)
+        type_mismatch_entry["evidence_location_type"] = "document_reference"
+        type_mismatch_path = entry_dir / "type_mismatch.entry.json"
+        type_mismatch_path.write_text(
+            json.dumps(type_mismatch_entry, indent=2) + "\n",
+            encoding="utf-8",
+        )
+        type_mismatch_summary = apply_exact_quote_manual_entry(
+            type_mismatch_path,
+            template_dir=fixture_dir,
+            output_dir=output_dir / "type_mismatch",
+        )
+        if type_mismatch_summary["rejected_count"] != 1:
+            raise AssertionError("Evidence location type mismatch must be rejected")
+
+        missing_attestation_entry = dict(jobs_entry)
+        missing_attestation_entry.pop("attestation")
+        missing_attestation_path = entry_dir / "missing_attestation.entry.json"
+        missing_attestation_path.write_text(
+            json.dumps(missing_attestation_entry, indent=2) + "\n",
+            encoding="utf-8",
+        )
+        missing_attestation_summary = apply_exact_quote_manual_entry(
+            missing_attestation_path,
+            template_dir=fixture_dir,
+            output_dir=output_dir / "missing_attestation",
+        )
+        if missing_attestation_summary["rejected_count"] != 1:
+            raise AssertionError("Missing attestation must be rejected")
+
+        source_unchecked_entry = _manual_entry_fixture(
+            HEALTH_EVIDENCE_ID,
+            health_template["source_url"],
+            "article_reference",
+            source_checked=False,
+        )
+        source_unchecked_path = entry_dir / "source_unchecked.entry.json"
+        source_unchecked_path.write_text(
+            json.dumps(source_unchecked_entry, indent=2) + "\n",
+            encoding="utf-8",
+        )
+        source_unchecked_summary = apply_exact_quote_manual_entry(
+            source_unchecked_path,
+            write=True,
+            template_dir=fixture_dir,
+            output_dir=output_dir / "source_unchecked",
+        )
+        if source_unchecked_summary["write_blocked_count"] != 1:
+            raise AssertionError("source_checked=false must block write")
+        if source_unchecked_summary["write_count"] != 0:
+            raise AssertionError("source_checked=false must not write")
+
+        forbidden_entry = dict(jobs_entry)
+        forbidden_entry["public_ready"] = True
+        forbidden_path = entry_dir / "forbidden.entry.json"
+        forbidden_path.write_text(
+            json.dumps(forbidden_entry, indent=2) + "\n",
+            encoding="utf-8",
+        )
+        forbidden_summary = apply_exact_quote_manual_entry(
+            forbidden_path,
+            template_dir=fixture_dir,
+            output_dir=output_dir / "forbidden",
+        )
+        if forbidden_summary["rejected_count"] != 1:
+            raise AssertionError("Approval/readiness fields must be rejected")
+
+        jobs_write = apply_exact_quote_manual_entry(
+            jobs_entry_path,
+            write=True,
+            template_dir=fixture_dir,
+            output_dir=output_dir / "jobs_write",
+        )
+        health_write = apply_exact_quote_manual_entry(
+            health_entry_path,
+            write=True,
+            template_dir=fixture_dir,
+            output_dir=output_dir / "health_write",
+        )
+        if jobs_write["applied_count"] != 1 or health_write["applied_count"] != 1:
+            raise AssertionError("Valid synthetic entries must apply in temp fixtures")
+        for evidence_id in (JOBS_EVIDENCE_ID, HEALTH_EVIDENCE_ID):
+            if not (fixture_dir / f"{evidence_id}.template.json.bak").exists():
+                raise AssertionError("Manual entry write must create backups")
+            updated = json.loads(
+                (fixture_dir / f"{evidence_id}.template.json").read_text(
+                    encoding="utf-8"
+                )
+            )
+            if updated["verification_status"] != CURRENT_REVIEW_STATUS:
+                raise AssertionError("Manual entry write must keep pending review")
+            if not updated["quote_text"]:
+                raise AssertionError("Manual entry write must fill quote_text")
+            if not (updated.get("excerpt_text") or updated.get("transcript_text")):
+                raise AssertionError("Manual entry write must fill excerpt/transcript")
+            if updated.get("approved_evidence") is True:
+                raise AssertionError("Manual entry write must not approve evidence")
+            for key in ("public_ready", "institutional_ready", "report_ready"):
+                if updated.get(key) is True:
+                    raise AssertionError("Manual entry write must not mark readiness")
+        jobs_updated = json.loads(
+            (fixture_dir / f"{JOBS_EVIDENCE_ID}.template.json").read_text(
+                encoding="utf-8"
+            )
+        )
+        health_updated = json.loads(
+            (fixture_dir / f"{HEALTH_EVIDENCE_ID}.template.json").read_text(
+                encoding="utf-8"
+            )
+        )
+        if not jobs_updated["section_reference"]:
+            raise AssertionError("Document entry must write a document reference")
+        if not health_updated["paragraph_reference"]:
+            raise AssertionError("Article entry must write an article reference")
+
+        promotion_summary = promote_manual_review(
+            template_dir=fixture_dir,
+            output_dir=output_dir / "promotion",
+        )
+        if promotion_summary["promotion_ready_count"] != 2:
+            raise AssertionError("Completed exact fields should be promotion-ready")
+        if promotion_summary["promoted_template_count"] != 0:
+            raise AssertionError("Manual entry lane must not run promotion write")
+
+    after = {path: path.read_text(encoding="utf-8") for path in protected_paths}
+    if before != after:
+        raise AssertionError("Exact quote manual entry tests must not modify real files")
+    if "outputs/exact_quote_manual_entry/" not in Path(".gitignore").read_text(
+        encoding="utf-8"
+    ):
+        raise AssertionError("Exact quote manual entry outputs must be ignored")
+
+    for command in (
+        "python scripts/apply_exact_quote_manual_entry.py --entry-file data/manual_evidence_entries/VID_JOBS_001.entry.example.json --dry-run --expect-rejected",
+        "python scripts/apply_exact_quote_manual_entry.py --entry-file data/manual_evidence_entries/VID_HEALTH_001.entry.example.json --dry-run --expect-rejected",
+    ):
+        exit_code, output = run_command(command)
+        if exit_code != 0:
+            raise AssertionError(f"Manual entry expected-rejection command failed: {command}")
+        if "rejected_count: 1" not in output:
+            raise AssertionError("Example manual entries must be rejected")
+        if "write_count: 0" not in output:
+            raise AssertionError("Example manual entries must not write")
+
+    print("✓ Exact Quote Manual Entry v1 lane validation OK")
+
+
 def validate_manual_review_promotion_lane() -> None:
     protected_paths = [
         Path("data/evidence_seed/videos.yaml"),
@@ -4455,6 +4787,7 @@ def main() -> int:
     validate_canonical_case_model_lane()
     validate_template_update_from_content_review_lane()
     validate_exact_evidence_field_completion_lane()
+    validate_exact_quote_manual_entry_lane()
     validate_manual_review_promotion_lane()
     validate_real_evidence_approval_lane()
     validate_final_approved_packet_lane()

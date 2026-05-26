@@ -87,6 +87,7 @@ outputs/canonical_case_models/
 outputs/template_update_from_content_review/
 outputs/manual_review_promotion/
 outputs/exact_evidence_field_completion/
+outputs/exact_quote_manual_entry/
 outputs/real_evidence_approval/
 outputs/final_approved_packet/
 outputs/reports/*_generated*.docx
