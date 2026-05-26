@@ -114,6 +114,10 @@ echo "== Validating manual review promotion dry-run =="
 python scripts/promote_manual_review.py --dry-run
 
 echo
+echo "== Validating exact evidence field completion dry-run =="
+python scripts/complete_exact_evidence_fields.py --dry-run
+
+echo
 echo "== Validating real evidence approval dry-run =="
 python scripts/approve_real_evidence.py --dry-run
 
@@ -250,6 +254,12 @@ echo
 echo "== Removing ignored manual review promotion artifacts =="
 if [ -d outputs/manual_review_promotion ]; then
   git clean -fX outputs/manual_review_promotion/
+fi
+
+echo
+echo "== Removing ignored exact evidence field completion artifacts =="
+if [ -d outputs/exact_evidence_field_completion ]; then
+  git clean -fX outputs/exact_evidence_field_completion/
 fi
 
 echo

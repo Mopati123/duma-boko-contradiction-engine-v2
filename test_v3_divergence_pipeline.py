@@ -104,6 +104,10 @@ from evidence.real_evidence_inputs import (
     validate_real_evidence_input_record,
     validate_real_evidence_inputs_dry_run,
 )
+from evidence.evidence_location_model import (
+    missing_location_required_fields,
+    validate_evidence_location_for_promotion,
+)
 from scripts.auto_collect_real_evidence import (
     AUTO_CONTEXT_SUMMARY,
     AUTO_REVIEWER_NOTES,
@@ -186,6 +190,11 @@ from evidence.manual_review_promotion import (
     build_manual_review_promotion_record,
     promote_manual_review,
     validate_manual_review_promotion_record,
+)
+from scripts.complete_exact_evidence_fields import (
+    complete_exact_evidence_fields,
+    build_completion_record,
+    validate_completion_record,
 )
 from evidence.final_approved_packet import (
     DEFAULT_FINAL_APPROVED_PACKET_RECORD,
@@ -1990,6 +1999,7 @@ def validate_real_evidence_inputs_lane() -> None:
         reviewer="real-evidence-population-v1-test",
         reviewer_notes="Human reviewer notes for approval review.",
         verification_status="verified_for_approval_review",
+        evidence_location_type="video_timestamp",
     )
     validate_real_evidence_input_record(verified)
 
@@ -2001,12 +2011,24 @@ def validate_real_evidence_inputs_lane() -> None:
         "speaker",
         "reviewer",
     ):
+        expected_message = (
+            f"{field_name} must be a non-empty string"
+            if field_name in {"speaker", "reviewer"}
+            else field_name
+        )
         assert_value_error(
             lambda field_name=field_name: validate_real_evidence_input_record(
                 {**verified.to_dict(), field_name: ""}
             ),
-            f"{field_name} must be a non-empty string",
+            expected_message,
         )
+
+    assert_value_error(
+        lambda: validate_real_evidence_input_record(
+            {**verified.to_dict(), "evidence_location_type": ""}
+        ),
+        "evidence_location_type is required",
+    )
 
     assert_value_error(
         lambda: validate_real_evidence_input_record(
@@ -3587,6 +3609,7 @@ def _complete_manual_review_template_fixture(evidence_id: str) -> dict:
     template = build_template_update(_pending_real_evidence_template_fixture(evidence_id))
     template.update(
         {
+            "evidence_location_type": "video_timestamp",
             "transcript_text": "Human-entered transcript excerpt for manual review.",
             "timestamp_start": "00:01:00",
             "timestamp_end": "00:01:10",
@@ -3596,6 +3619,246 @@ def _complete_manual_review_template_fixture(evidence_id: str) -> dict:
         }
     )
     return template
+
+
+def validate_exact_evidence_field_completion_lane() -> None:
+    protected_paths = [
+        Path("data/evidence_seed/videos.yaml"),
+        Path("data/real_evidence_inputs/VID_JOBS_001.template.json"),
+        Path("data/real_evidence_inputs/VID_HEALTH_001.template.json"),
+        Path("data/source_recovery/selected_recovery_sources.json"),
+    ]
+    before = {path: path.read_text(encoding="utf-8") for path in protected_paths}
+
+    jobs_pending = build_template_update(
+        _pending_real_evidence_template_fixture(JOBS_EVIDENCE_ID)
+    )
+    jobs_record = build_completion_record(
+        jobs_pending,
+        Path("data/real_evidence_inputs/VID_JOBS_001.template.json"),
+    )
+    validate_completion_record(jobs_record)
+    if jobs_record.proposed_evidence_location_type != "document_reference":
+        raise AssertionError("Jobs evidence must use document_reference metadata")
+    expected_jobs_missing = {
+        "quote_text",
+        "excerpt_text_or_transcript_text",
+        "page_reference_or_section_reference_or_paragraph_reference",
+    }
+    if set(jobs_record.missing_exact_fields) != expected_jobs_missing:
+        raise AssertionError("Jobs blockers must be document-reference exact fields")
+    if "timestamp_start" in jobs_record.missing_exact_fields:
+        raise AssertionError("Document evidence must not require video timestamps")
+
+    health_pending = build_template_update(
+        _pending_real_evidence_template_fixture(HEALTH_EVIDENCE_ID)
+    )
+    health_record = build_completion_record(
+        health_pending,
+        Path("data/real_evidence_inputs/VID_HEALTH_001.template.json"),
+    )
+    validate_completion_record(health_record)
+    if health_record.proposed_evidence_location_type != "article_reference":
+        raise AssertionError("Health evidence must use article_reference metadata")
+    expected_health_missing = {
+        "quote_text",
+        "excerpt_text_or_transcript_text",
+        "paragraph_reference_or_quote_location",
+    }
+    if set(health_record.missing_exact_fields) != expected_health_missing:
+        raise AssertionError("Health blockers must be article-reference exact fields")
+    if "timestamp_start" in health_record.missing_exact_fields:
+        raise AssertionError("Article evidence must not require video timestamps")
+
+    article_ready = dict(health_pending)
+    article_ready.update(
+        {
+            "evidence_location_type": "article_reference",
+            "excerpt_text": "Exact article excerpt entered by a human reviewer.",
+            "quote_text": "Exact article quote entered by a human reviewer.",
+            "paragraph_reference": "paragraph 4",
+            "verification_status": APPROVAL_REVIEW_STATUS,
+        }
+    )
+    validate_evidence_location_for_promotion(article_ready)
+    validate_real_evidence_input_record(article_ready)
+    if "timestamp_start" in missing_location_required_fields(article_ready):
+        raise AssertionError("Article reference must not require timestamp_start")
+    assert_value_error(
+        lambda: validate_evidence_location_for_promotion(
+            {**article_ready, "timestamp_start": "00:01:00"}
+        ),
+        "must not use video timestamp fields",
+    )
+
+    document_ready = dict(jobs_pending)
+    document_ready.update(
+        {
+            "evidence_location_type": "document_reference",
+            "excerpt_text": "Exact document excerpt entered by a human reviewer.",
+            "quote_text": "Exact document quote entered by a human reviewer.",
+            "section_reference": "employment commitments section",
+            "verification_status": APPROVAL_REVIEW_STATUS,
+        }
+    )
+    validate_evidence_location_for_promotion(document_ready)
+    validate_real_evidence_input_record(document_ready)
+    if "timestamp_end" in missing_location_required_fields(document_ready):
+        raise AssertionError("Document reference must not require timestamp_end")
+
+    video_missing_timestamps = _complete_manual_review_template_fixture(JOBS_EVIDENCE_ID)
+    video_missing_timestamps["timestamp_start"] = ""
+    video_missing_timestamps["timestamp_end"] = ""
+    assert_value_error(
+        lambda: validate_evidence_location_for_promotion(video_missing_timestamps),
+        "timestamp_start",
+    )
+    assert_value_error(
+        lambda: validate_evidence_location_for_promotion(
+            {**article_ready, "quote_text": "TBD"}
+        ),
+        "placeholder text",
+    )
+
+    assert_value_error(
+        lambda: validate_completion_record(
+            {**jobs_record.to_dict(), "approved_evidence": True}
+        ),
+        "must not approve evidence",
+    )
+    assert_value_error(
+        lambda: validate_completion_record(
+            {**jobs_record.to_dict(), "public_ready": True}
+        ),
+        "must not set public_ready",
+    )
+    assert_value_error(
+        lambda: validate_completion_record(
+            {**jobs_record.to_dict(), "institutional_ready": True}
+        ),
+        "must not set institutional_ready",
+    )
+    assert_value_error(
+        lambda: validate_completion_record(
+            {**jobs_record.to_dict(), "report_ready": True}
+        ),
+        "must not set report_ready",
+    )
+    assert_value_error(
+        lambda: validate_completion_record(
+            {**jobs_record.to_dict(), "verified_for_approval_review": True}
+        ),
+        "must not approval-verify",
+    )
+
+    with tempfile.TemporaryDirectory() as temp_dir:
+        temp_path = Path(temp_dir)
+        output_dir = temp_path / "outputs"
+        dry_summary = complete_exact_evidence_fields(output_dir=output_dir / "dry")
+        if dry_summary["write_count"] != 0 or dry_summary["backup_count"] != 0:
+            raise AssertionError("Exact completion dry-run must not write templates")
+        if dry_summary["verified_for_approval_review"] != 0:
+            raise AssertionError("Exact completion must not approval-verify")
+        if (
+            dry_summary["public_ready"]
+            or dry_summary["institutional_ready"]
+            or dry_summary["report_ready"]
+        ):
+            raise AssertionError("Exact completion must not mark readiness")
+
+        fixture_dir = temp_path / "templates"
+        fixture_dir.mkdir()
+        originals = {}
+        for evidence_id in (JOBS_EVIDENCE_ID, HEALTH_EVIDENCE_ID):
+            original = build_template_update(
+                _pending_real_evidence_template_fixture(evidence_id)
+            )
+            originals[evidence_id] = dict(original)
+            (fixture_dir / f"{evidence_id}.template.json").write_text(
+                json.dumps(original, indent=2) + "\n",
+                encoding="utf-8",
+            )
+        write_summary = complete_exact_evidence_fields(
+            write=True,
+            template_dir=fixture_dir,
+            output_dir=output_dir / "write",
+        )
+        if write_summary["write_count"] != 2 or write_summary["backup_count"] != 2:
+            raise AssertionError("Exact completion write must update both fixtures")
+        for record in write_summary["records"]:
+            if record.changed_fields != ["evidence_location_type"]:
+                raise AssertionError("Exact completion may only set location metadata")
+
+        jobs_written = json.loads(
+            (fixture_dir / f"{JOBS_EVIDENCE_ID}.template.json").read_text(
+                encoding="utf-8"
+            )
+        )
+        health_written = json.loads(
+            (fixture_dir / f"{HEALTH_EVIDENCE_ID}.template.json").read_text(
+                encoding="utf-8"
+            )
+        )
+        if jobs_written["evidence_location_type"] != "document_reference":
+            raise AssertionError("Jobs write must set document_reference")
+        if health_written["evidence_location_type"] != "article_reference":
+            raise AssertionError("Health write must set article_reference")
+        for evidence_id, written in (
+            (JOBS_EVIDENCE_ID, jobs_written),
+            (HEALTH_EVIDENCE_ID, health_written),
+        ):
+            original = originals[evidence_id]
+            for field_name, value in original.items():
+                if written.get(field_name) != value:
+                    raise AssertionError(
+                        "Exact completion write must not alter existing field: "
+                        f"{field_name}"
+                    )
+            for field_name in ("quote_text", "transcript_text", "timestamp_start", "timestamp_end"):
+                if written[field_name] != "":
+                    raise AssertionError(f"Exact completion must not invent {field_name}")
+            if (fixture_dir / f"{evidence_id}.template.json.bak").exists() is not True:
+                raise AssertionError("Exact completion write must create backups")
+
+        promotion_summary = promote_manual_review(
+            template_dir=fixture_dir,
+            output_dir=output_dir / "promotion",
+        )
+        if promotion_summary["promoted_template_count"] != 0:
+            raise AssertionError("Location metadata alone must not promote templates")
+        promotion_missing = {
+            record.evidence_id: set(record.missing_required_fields)
+            for record in promotion_summary["records"]
+        }
+        if promotion_missing[JOBS_EVIDENCE_ID] != expected_jobs_missing:
+            raise AssertionError("Jobs promotion blockers must be location-specific")
+        if promotion_missing[HEALTH_EVIDENCE_ID] != expected_health_missing:
+            raise AssertionError("Health promotion blockers must be location-specific")
+
+    after = {path: path.read_text(encoding="utf-8") for path in protected_paths}
+    if before != after:
+        raise AssertionError("Exact completion tests must not modify protected files")
+    if "outputs/exact_evidence_field_completion/" not in Path(".gitignore").read_text(
+        encoding="utf-8"
+    ):
+        raise AssertionError("Exact completion outputs must be ignored")
+
+    for command in (
+        "python scripts/complete_exact_evidence_fields.py --dry-run",
+        "python scripts/complete_exact_evidence_fields.py --evidence-id VID_JOBS_001 --dry-run",
+        "python scripts/complete_exact_evidence_fields.py --evidence-id VID_HEALTH_001 --dry-run",
+    ):
+        exit_code, output = run_command(command)
+        if exit_code != 0:
+            raise AssertionError(f"Exact completion command failed: {command}")
+        if "write_count: 0" not in output:
+            raise AssertionError("Exact completion dry-run CLI must not write")
+        if "verified_for_approval_review: 0" not in output:
+            raise AssertionError("Exact completion CLI must not approval-verify")
+        if "placeholders_treated_as_final_evidence: False" not in output:
+            raise AssertionError("Exact completion must not accept placeholders")
+
+    print("✓ Exact Evidence Field Completion v1 lane validation OK")
 
 
 def validate_manual_review_promotion_lane() -> None:
@@ -3610,6 +3873,7 @@ def validate_manual_review_promotion_lane() -> None:
     jobs_incomplete = build_template_update(
         _pending_real_evidence_template_fixture(JOBS_EVIDENCE_ID)
     )
+    jobs_incomplete["evidence_location_type"] = "document_reference"
     blocked_record = build_manual_review_promotion_record(
         jobs_incomplete,
         Path("data/real_evidence_inputs/VID_JOBS_001.template.json"),
@@ -3619,14 +3883,15 @@ def validate_manual_review_promotion_lane() -> None:
         raise AssertionError("Incomplete template must block promotion")
     if blocked_record.proposed_verification_status != CURRENT_REVIEW_STATUS:
         raise AssertionError("Blocked promotion must keep entered_pending_review")
-    for field_name in (
-        "transcript_text",
-        "timestamp_start",
-        "timestamp_end",
+    expected_location_missing = {
         "quote_text",
-    ):
-        if field_name not in blocked_record.missing_required_fields:
-            raise AssertionError(f"Promotion blocker must list {field_name}")
+        "excerpt_text_or_transcript_text",
+        "page_reference_or_section_reference_or_paragraph_reference",
+    }
+    if set(blocked_record.missing_required_fields) != expected_location_missing:
+        raise AssertionError("Promotion blockers must follow document-reference rules")
+    if "timestamp_start" in blocked_record.missing_required_fields:
+        raise AssertionError("Document-reference promotion must not require timestamps")
 
     complete_record = build_manual_review_promotion_record(
         _complete_manual_review_template_fixture(JOBS_EVIDENCE_ID),
@@ -3696,13 +3961,16 @@ def validate_manual_review_promotion_lane() -> None:
         fixture_dir = temp_path / "templates"
         fixture_dir.mkdir()
         for evidence_id in (JOBS_EVIDENCE_ID, HEALTH_EVIDENCE_ID):
+            incomplete = build_template_update(
+                _pending_real_evidence_template_fixture(evidence_id)
+            )
+            incomplete["evidence_location_type"] = (
+                "document_reference"
+                if evidence_id == JOBS_EVIDENCE_ID
+                else "article_reference"
+            )
             (fixture_dir / f"{evidence_id}.template.json").write_text(
-                json.dumps(
-                    build_template_update(
-                        _pending_real_evidence_template_fixture(evidence_id)
-                    ),
-                    indent=2,
-                )
+                json.dumps(incomplete, indent=2)
                 + "\n",
                 encoding="utf-8",
             )
@@ -4186,6 +4454,7 @@ def main() -> int:
     validate_health_fallback_source_lane()
     validate_canonical_case_model_lane()
     validate_template_update_from_content_review_lane()
+    validate_exact_evidence_field_completion_lane()
     validate_manual_review_promotion_lane()
     validate_real_evidence_approval_lane()
     validate_final_approved_packet_lane()

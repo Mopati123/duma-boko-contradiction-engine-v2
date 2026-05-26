@@ -14,6 +14,11 @@ from evidence.real_evidence_inputs import (
     HUMAN_ENTRY_FIELDS,
     validate_real_evidence_input_record,
 )
+from evidence.evidence_location_model import (
+    LOCATION_FIELDS,
+    missing_location_required_fields,
+    validate_evidence_location_for_promotion,
+)
 
 
 DEFAULT_MANUAL_REVIEW_PROMOTION_OUTPUT_DIR = Path("outputs/manual_review_promotion")
@@ -50,6 +55,7 @@ TEMPLATE_FIELDS = (
     "case_id",
     "source_url",
     *HUMAN_ENTRY_FIELDS,
+    *LOCATION_FIELDS,
     "verification_status",
 )
 
@@ -141,12 +147,20 @@ def load_promotion_templates(
 
 
 def missing_required_fields(template_record: Dict[str, str]) -> List[str]:
-    required_fields = ("evidence_id", "case_id", "source_url", *HUMAN_ENTRY_FIELDS)
-    return [
-        field_name
-        for field_name in required_fields
-        if not str(template_record.get(field_name, "")).strip()
-    ]
+    missing = missing_location_required_fields(
+        template_record,
+        require_location_type=True,
+    )
+    for field_name in (
+        "speaker",
+        "context_summary",
+        "case_relevance_note",
+        "reviewer",
+        "reviewer_notes",
+    ):
+        if not str(template_record.get(field_name, "")).strip():
+            missing.append(field_name)
+    return missing
 
 
 def _reject_forbidden_template_fields(data: Dict[str, Any]) -> None:
@@ -189,13 +203,15 @@ def build_manual_review_promotion_record(
 
     missing = missing_required_fields(template_record)
     if promotion_status == "promotion_ready":
+        validate_evidence_location_for_promotion(proposed)
         validate_real_evidence_input_record(proposed)
     else:
         proposed["verification_status"] = current_status
 
     notes = (
-        "Promotion gate inspected existing template fields only; no transcript, "
-        "quote, timestamp, approval, or readiness value was created."
+        "Promotion gate inspected existing template fields with location-aware "
+        "rules only; no transcript, excerpt, quote, timestamp, approval, or "
+        "readiness value was created."
     )
 
     record = ManualReviewPromotionRecord(

@@ -11,5 +11,6 @@
   "case_relevance_note": "Supports employment/jobs promise review. Candidate-only, not approved evidence.",
   "reviewer": "content-review-template-update-v1",
   "reviewer_notes": "Updated from content-review candidate RECOVERY_VID_JOBS_001_UDC_HOME. Original unavailable YouTube source preserved for audit: https://www.youtube.com/watch?v=e0MLzB5nGDc. Candidate-only entry requires manual verification before approval.",
-  "verification_status": "entered_pending_review"
+  "verification_status": "entered_pending_review",
+  "evidence_location_type": "document_reference"
 }

@@ -11,5 +11,6 @@
   "case_relevance_note": "Supports health/medicine shortage review. Candidate-only, not approved evidence.",
   "reviewer": "content-review-template-update-v1",
   "reviewer_notes": "Updated from fallback content-review candidate RECOVERY_VID_HEALTH_001_AL_JAZEERA. Reuters preferred source remains blocked: https://www.reuters.com/business/healthcare-pharmaceuticals/botswana-declares-public-health-emergency-clinics-run-out-medicine-2025-08-25/. Original YouTube source preserved for audit: https://www.youtube.com/watch?v=ZsxLObyHUYE. Candidate-only entry requires manual verification before approval.",
-  "verification_status": "entered_pending_review"
+  "verification_status": "entered_pending_review",
+  "evidence_location_type": "article_reference"
 }

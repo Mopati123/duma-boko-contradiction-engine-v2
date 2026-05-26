@@ -9,6 +9,10 @@ from typing import Any, Dict, Iterable, List
 import json
 
 from evidence.evidence_schema import save_json
+from evidence.evidence_location_model import (
+    LOCATION_FIELDS,
+    validate_evidence_location_for_promotion,
+)
 
 
 DEFAULT_REAL_EVIDENCE_INPUT_DIR = Path("data/real_evidence_inputs")
@@ -68,6 +72,13 @@ class RealEvidenceInputRecord:
     reviewer: str
     reviewer_notes: str
     verification_status: str
+    evidence_location_type: str = ""
+    excerpt_text: str = ""
+    publication_date: str = ""
+    paragraph_reference: str = ""
+    quote_location: str = ""
+    page_reference: str = ""
+    section_reference: str = ""
 
     def to_dict(self) -> Dict[str, Any]:
         return asdict(self)
@@ -130,6 +141,9 @@ def validate_real_evidence_input_record(record: Any) -> None:
         "verification_status",
     ):
         _require_string_field(data, field_name)
+    for field_name in LOCATION_FIELDS:
+        if field_name in data and not isinstance(data[field_name], str):
+            raise ValueError(f"RealEvidenceInputRecord.{field_name} must be a string")
 
     for field_name in ("evidence_id", "case_id", "source_url", "verification_status"):
         _require_nonempty_string(data, field_name)
@@ -141,8 +155,15 @@ def validate_real_evidence_input_record(record: Any) -> None:
         )
 
     if data["verification_status"] == "verified_for_approval_review":
-        for field_name in HUMAN_ENTRY_FIELDS:
+        for field_name in (
+            "speaker",
+            "context_summary",
+            "case_relevance_note",
+            "reviewer",
+            "reviewer_notes",
+        ):
             _require_nonempty_string(data, field_name)
+        validate_evidence_location_for_promotion(data)
 
     _reject_readiness_claims(data)
 
@@ -162,6 +183,13 @@ def _record_from_dict(data: Dict[str, Any]) -> RealEvidenceInputRecord:
         reviewer=str(data.get("reviewer", "")),
         reviewer_notes=str(data.get("reviewer_notes", "")),
         verification_status=str(data.get("verification_status", "")),
+        evidence_location_type=str(data.get("evidence_location_type", "")),
+        excerpt_text=str(data.get("excerpt_text", "")),
+        publication_date=str(data.get("publication_date", "")),
+        paragraph_reference=str(data.get("paragraph_reference", "")),
+        quote_location=str(data.get("quote_location", "")),
+        page_reference=str(data.get("page_reference", "")),
+        section_reference=str(data.get("section_reference", "")),
     )
 
 
