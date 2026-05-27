@@ -4321,12 +4321,16 @@ def validate_manual_review_promotion_lane() -> None:
         dry_summary = promote_manual_review(output_dir=output_dir / "dry_run")
         if dry_summary["promoted_template_count"] != 0:
             raise AssertionError("Dry-run must not promote real templates")
-        if dry_summary["promotion_ready_count"] != 2:
-            raise AssertionError("Dry-run must identify both real templates as promotion-ready")
+        if dry_summary["promotion_ready_count"] != 0:
+            raise AssertionError("Post-promotion dry-run must not re-promote templates")
         if dry_summary["blocked_missing_required_fields_count"] != 0:
-            raise AssertionError("Dry-run must not block completed real templates")
+            raise AssertionError("Dry-run must not miss required fields")
+        if dry_summary["blocked_invalid_status_count"] != 2:
+            raise AssertionError(
+                "Post-promotion dry-run must block both already-promoted templates"
+            )
         if dry_summary["verified_for_approval_review"] != 0:
-            raise AssertionError("Dry-run must not set approval-review status")
+            raise AssertionError("Dry-run must not write approval-review status")
         if (
             dry_summary["public_ready"]
             or dry_summary["institutional_ready"]
