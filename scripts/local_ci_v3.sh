@@ -106,6 +106,10 @@ echo "== Validating canonical six-block case models no-network =="
 python scripts/build_canonical_case_models.py --no-network
 
 echo
+echo "== Validating governance authority registry dry-run =="
+python scripts/verify_governance_authority.py --dry-run
+
+echo
 echo "== Validating template update from content review dry-run =="
 python scripts/update_templates_from_content_review.py --dry-run
 
@@ -247,6 +251,12 @@ echo
 echo "== Removing ignored canonical case model artifacts =="
 if [ -d outputs/canonical_case_models ]; then
   git clean -fX outputs/canonical_case_models/
+fi
+
+echo
+echo "== Removing ignored governance authority registry artifacts =="
+if [ -d outputs/governance_authority_registry ]; then
+  git clean -fX outputs/governance_authority_registry/
 fi
 
 echo
