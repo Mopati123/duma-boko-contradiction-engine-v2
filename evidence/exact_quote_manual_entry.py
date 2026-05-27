@@ -199,6 +199,22 @@ def _attestation_errors(entry: Dict[str, Any]) -> List[str]:
     return errors
 
 
+MANUAL_ENTRY_PLACEHOLDER_FRAGMENTS = (
+    "paste exact",
+    "paste longer",
+    "paste section",
+    "paste paragraph",
+    "paste document",
+    "paste source",
+    "paste quote",
+    "paste excerpt",
+    "paste transcript",
+    "paste location",
+    "article body, paragraph x",
+    "paragraph x",
+)
+
+
 def _placeholder_errors(entry: Dict[str, Any]) -> List[str]:
     errors: List[str] = []
     for field_name in (
@@ -216,8 +232,21 @@ def _placeholder_errors(entry: Dict[str, Any]) -> List[str]:
         "timestamp_end",
     ):
         value = entry.get(field_name)
-        if isinstance(value, str) and value.strip() and is_placeholder_value(value):
+        if not isinstance(value, str) or not value.strip():
+            continue
+
+        normalized_value = value.strip().casefold()
+
+        if is_placeholder_value(value):
             errors.append(f"{field_name} contains placeholder text")
+            continue
+
+        if any(
+            placeholder_fragment in normalized_value
+            for placeholder_fragment in MANUAL_ENTRY_PLACEHOLDER_FRAGMENTS
+        ):
+            errors.append(f"{field_name} contains manual-entry placeholder text")
+
     return errors
 
 
