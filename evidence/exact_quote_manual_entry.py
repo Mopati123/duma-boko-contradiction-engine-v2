@@ -210,6 +210,10 @@ MANUAL_ENTRY_PLACEHOLDER_FRAGMENTS = (
     "paste excerpt",
     "paste transcript",
     "paste location",
+    "requires_exact",
+    "requires_longer",
+    "requires_source",
+    "requires_al_jazeera",
     "article body, paragraph x",
     "paragraph x",
 )
