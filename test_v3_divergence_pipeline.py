@@ -2050,13 +2050,11 @@ def validate_real_evidence_inputs_lane() -> None:
         if record.verification_status not in {
             "pending_human_entry",
             "entered_pending_review",
+            "verified_for_approval_review",
         }:
             raise AssertionError(
-                "Real Evidence Population v1 templates must remain candidate-only"
-            )
-        if record.verification_status == "verified_for_approval_review":
-            raise AssertionError(
-                "Real Evidence Population v1 templates must not be approval-ready"
+                "Real Evidence Population v1 templates must remain in a lawful "
+                "pre-approval state"
             )
         for field_name in (
             "transcript_text",
@@ -2106,16 +2104,24 @@ def validate_real_evidence_inputs_lane() -> None:
     summary = validate_real_evidence_inputs_dry_run()
     if summary["total_input_records"] != 2:
         raise AssertionError("Real Evidence Population v1 dry-run must validate 2 records")
-    if summary["pending_human_entry"] + summary["entered_pending_review"] != 2:
+    if (
+        summary["pending_human_entry"]
+        + summary["entered_pending_review"]
+        + summary["verified_for_approval_review"]
+        != 2
+    ):
         raise AssertionError(
-            "Real Evidence Population v1 templates must remain candidate-only"
+            "Real Evidence Population v1 templates must remain in lawful "
+            "pre-approval states"
         )
-    if summary["verified_for_approval_review"] != 0:
+    if summary["verified_for_approval_review"] != 2:
         raise AssertionError(
-            "Real Evidence Population v1 templates must not be approval-ready"
+            "Real Evidence Population v1 must expose both records for approval review"
         )
-    if summary["records_ready_for_approval_review"] != 0:
-        raise AssertionError("Real Evidence Population v1 must not auto-approve inputs")
+    if summary["records_ready_for_approval_review"] != 2:
+        raise AssertionError(
+            "Real Evidence Population v1 must count both approval-review-ready inputs"
+        )
 
     approval_summary = approve_real_evidence_dry_run()
     if approval_summary["approved_evidence_candidate"] != 0:
