@@ -2062,12 +2062,45 @@ def validate_real_evidence_inputs_lane() -> None:
             "transcript_text",
             "timestamp_start",
             "timestamp_end",
-            "quote_text",
         ):
             if getattr(record, field_name) != "":
                 raise AssertionError(
                     "Real Evidence Population v1 templates must not contain "
-                    f"fabricated transcript, timestamp, or quote field: {field_name}"
+                    f"fabricated transcript or timestamp field: {field_name}"
+                )
+
+        if record.quote_text:
+            if record.verification_status != "entered_pending_review":
+                raise AssertionError(
+                    "Real Evidence Population v1 quote_text requires "
+                    "entered_pending_review status"
+                )
+            if record.evidence_location_type not in {
+                "article_reference",
+                "document_reference",
+            }:
+                raise AssertionError(
+                    "Real Evidence Population v1 quote_text requires article "
+                    "or document reference evidence"
+                )
+            if record.quote_text.startswith("REQUIRES_") or "PASTE " in record.quote_text.upper():
+                raise AssertionError(
+                    "Real Evidence Population v1 quote_text must not contain "
+                    "placeholder evidence"
+                )
+            if not (record.excerpt_text or record.transcript_text):
+                raise AssertionError(
+                    "Real Evidence Population v1 quote_text requires excerpt_text "
+                    "or transcript_text"
+                )
+            if not (
+                record.page_reference
+                or record.section_reference
+                or record.paragraph_reference
+                or record.quote_location
+            ):
+                raise AssertionError(
+                    "Real Evidence Population v1 quote_text requires location metadata"
                 )
 
     summary = validate_real_evidence_inputs_dry_run()
