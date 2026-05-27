@@ -2068,10 +2068,13 @@ def validate_real_evidence_inputs_lane() -> None:
                 )
 
         if record.quote_text:
-            if record.verification_status != "entered_pending_review":
+            if record.verification_status not in {
+                "entered_pending_review",
+                "verified_for_approval_review",
+            }:
                 raise AssertionError(
-                    "Real Evidence Population v1 quote_text requires "
-                    "entered_pending_review status"
+                    "Real Evidence Population v1 quote_text requires a lawful "
+                    "manual-entry or approval-review status"
                 )
             if record.evidence_location_type not in {
                 "article_reference",
