@@ -106,6 +106,10 @@ echo "== Validating canonical six-block case models no-network =="
 python scripts/build_canonical_case_models.py --no-network
 
 echo
+echo "== Validating reconciliation Merkle anchor dry-run =="
+python scripts/build_reconciliation_merkle_anchor.py --dry-run
+
+echo
 echo "== Validating template update from content review dry-run =="
 python scripts/update_templates_from_content_review.py --dry-run
 
@@ -247,6 +251,12 @@ echo
 echo "== Removing ignored canonical case model artifacts =="
 if [ -d outputs/canonical_case_models ]; then
   git clean -fX outputs/canonical_case_models/
+fi
+
+echo
+echo "== Removing ignored reconciliation Merkle anchor artifacts =="
+if [ -d outputs/reconciliation_merkle_anchor ]; then
+  git clean -fX outputs/reconciliation_merkle_anchor/
 fi
 
 echo

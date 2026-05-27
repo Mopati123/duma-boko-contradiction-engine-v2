@@ -96,3 +96,6 @@ outputs/reports/*_generated*.pdf
 # Local run backups
 duma-boko-run-backups/
 data/real_evidence_inputs/*.template.json.bak
+
+outputs/reconciliation_merkle_anchor/
+
