@@ -11,9 +11,12 @@
   "case_relevance_note": "Supports employment/jobs promise review. Candidate-only, not approved evidence.",
   "reviewer": "content-review-template-update-v1",
   "reviewer_notes": "Updated from content-review candidate RECOVERY_VID_JOBS_001_UDC_HOME. Original unavailable YouTube source preserved for audit: https://www.youtube.com/watch?v=e0MLzB5nGDc. Candidate-only entry requires manual verification before approval.",
-  "verification_status": "entered_pending_review",
   "evidence_location_type": "document_reference",
   "excerpt_text": "Jobs & Economy: Create 450,000 – 500,000 jobs",
+  "publication_date": "",
+  "paragraph_reference": "UDC homepage, Snapshot of Top Manifesto Commitments, Jobs & Economy commitment",
+  "quote_location": "",
+  "page_reference": "",
   "section_reference": "Snapshot of Top Manifesto Commitments / Jobs & Economy",
-  "paragraph_reference": "UDC homepage, Snapshot of Top Manifesto Commitments, Jobs & Economy commitment"
+  "verification_status": "verified_for_approval_review"
 }
