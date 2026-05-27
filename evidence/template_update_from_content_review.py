@@ -51,6 +51,13 @@ TEMPLATE_FIELDS = (
     "case_relevance_note",
     "reviewer",
     "reviewer_notes",
+    "evidence_location_type",
+    "excerpt_text",
+    "publication_date",
+    "page_reference",
+    "section_reference",
+    "paragraph_reference",
+    "quote_location",
     "verification_status",
 )
 
