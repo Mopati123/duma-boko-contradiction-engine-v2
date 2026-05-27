@@ -1,0 +1,20 @@
+{
+  "evidence_id": "VID_HEALTH_001",
+  "reviewer": "Mopati Ramaologa",
+  "review_date": "2026-05-27",
+  "source_url": "https://www.aljazeera.com/news/2025/8/26/botswana-declares-public-health-emergency-over-medicine-shortage",
+  "evidence_location_type": "article_reference",
+  "quote_text": "The medical supply chain, as run by central medical stores, has failed",
+  "excerpt_text": "This failure has led to a severe disruption to health supplies countrywide.",
+  "transcript_text": "",
+  "page_reference": "",
+  "section_reference": "",
+  "paragraph_reference": "Article body, paragraph containing President Boko's televised-address quote",
+  "quote_location": "Al Jazeera article body, paragraph containing President Boko's medical supply chain quote",
+  "reviewer_notes": "Human-reviewed article entry. Exact quote and excerpt copied from the Al Jazeera article body.",
+  "attestation": {
+    "human_entered": true,
+    "no_fabrication": true,
+    "source_checked": true
+  }
+}
