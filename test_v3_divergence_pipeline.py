@@ -2062,12 +2062,45 @@ def validate_real_evidence_inputs_lane() -> None:
             "transcript_text",
             "timestamp_start",
             "timestamp_end",
-            "quote_text",
         ):
             if getattr(record, field_name) != "":
                 raise AssertionError(
                     "Real Evidence Population v1 templates must not contain "
-                    f"fabricated transcript, timestamp, or quote field: {field_name}"
+                    f"fabricated transcript or timestamp field: {field_name}"
+                )
+
+        if record.quote_text:
+            if record.verification_status != "entered_pending_review":
+                raise AssertionError(
+                    "Real Evidence Population v1 quote_text requires "
+                    "entered_pending_review status"
+                )
+            if record.evidence_location_type not in {
+                "article_reference",
+                "document_reference",
+            }:
+                raise AssertionError(
+                    "Real Evidence Population v1 quote_text requires article "
+                    "or document reference evidence"
+                )
+            if record.quote_text.startswith("REQUIRES_") or "PASTE " in record.quote_text.upper():
+                raise AssertionError(
+                    "Real Evidence Population v1 quote_text must not contain "
+                    "placeholder evidence"
+                )
+            if not (record.excerpt_text or record.transcript_text):
+                raise AssertionError(
+                    "Real Evidence Population v1 quote_text requires excerpt_text "
+                    "or transcript_text"
+                )
+            if not (
+                record.page_reference
+                or record.section_reference
+                or record.paragraph_reference
+                or record.quote_location
+            ):
+                raise AssertionError(
+                    "Real Evidence Population v1 quote_text requires location metadata"
                 )
 
     summary = validate_real_evidence_inputs_dry_run()
@@ -4279,8 +4312,10 @@ def validate_manual_review_promotion_lane() -> None:
         dry_summary = promote_manual_review(output_dir=output_dir / "dry_run")
         if dry_summary["promoted_template_count"] != 0:
             raise AssertionError("Dry-run must not promote real templates")
-        if dry_summary["blocked_missing_required_fields_count"] != 2:
-            raise AssertionError("Dry-run must block both incomplete real templates")
+        if dry_summary["promotion_ready_count"] != 2:
+            raise AssertionError("Dry-run must identify both real templates as promotion-ready")
+        if dry_summary["blocked_missing_required_fields_count"] != 0:
+            raise AssertionError("Dry-run must not block completed real templates")
         if dry_summary["verified_for_approval_review"] != 0:
             raise AssertionError("Dry-run must not set approval-review status")
         if (
