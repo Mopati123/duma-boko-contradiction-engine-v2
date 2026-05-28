@@ -120,3 +120,5 @@ outputs/canonical_evidence_resolution/
 
 outputs/canonical_evidence_injection/
 outputs/local_ci_v3.log
+
+outputs/evidence_snapshot_sealing/

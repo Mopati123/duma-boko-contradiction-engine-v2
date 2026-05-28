@@ -126,6 +126,14 @@ echo "== Validating canonical evidence resolution dry-run =="
 python scripts/build_canonical_evidence_resolution.py --dry-run
 
 echo
+echo "== Validating canonical evidence injection dry-run =="
+python scripts/build_canonical_evidence_injection.py --dry-run
+
+echo
+echo "== Validating evidence snapshot sealing dry-run =="
+python scripts/build_evidence_snapshot_sealing.py --dry-run
+
+echo
 echo "== Validating governance signatures dry-run =="
 python scripts/build_governance_signatures.py --dry-run
 
@@ -337,6 +345,18 @@ echo
 echo "== Removing ignored canonical evidence resolution artifacts =="
 if [ -d outputs/canonical_evidence_resolution ]; then
   git clean -fX outputs/canonical_evidence_resolution/
+fi
+
+echo
+echo "== Removing ignored canonical evidence injection artifacts =="
+if [ -d outputs/canonical_evidence_injection ]; then
+  git clean -fX outputs/canonical_evidence_injection/
+fi
+
+echo
+echo "== Removing ignored evidence snapshot sealing artifacts =="
+if [ -d outputs/evidence_snapshot_sealing ]; then
+  git clean -fX outputs/evidence_snapshot_sealing/
 fi
 
 echo
