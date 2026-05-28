@@ -106,6 +106,10 @@ echo "== Validating canonical six-block case models no-network =="
 python scripts/build_canonical_case_models.py --no-network
 
 echo
+echo "== Validating canonical evidence hydration dry-run =="
+python scripts/build_canonical_evidence_hydration.py --dry-run
+
+echo
 echo "== Validating governance signatures dry-run =="
 python scripts/build_governance_signatures.py --dry-run
 
@@ -287,6 +291,12 @@ echo
 echo "== Removing ignored canonical case model artifacts =="
 if [ -d outputs/canonical_case_models ]; then
   git clean -fX outputs/canonical_case_models/
+fi
+
+echo
+echo "== Removing ignored canonical evidence hydration artifacts =="
+if [ -d outputs/canonical_evidence_hydration ]; then
+  git clean -fX outputs/canonical_evidence_hydration/
 fi
 
 echo
