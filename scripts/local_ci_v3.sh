@@ -106,6 +106,46 @@ echo "== Validating canonical six-block case models no-network =="
 python scripts/build_canonical_case_models.py --no-network
 
 echo
+echo "== Validating governance signatures dry-run =="
+python scripts/build_governance_signatures.py --dry-run
+
+echo
+echo "== Validating deterministic replay proof dry-run =="
+python scripts/build_deterministic_replay_proof.py --dry-run
+
+echo
+echo "== Validating governance authority registry dry-run =="
+python scripts/verify_governance_authority.py --dry-run
+
+echo
+echo "== Validating governance quorum dry-run =="
+python scripts/verify_governance_quorum.py --dry-run
+
+echo
+echo "== Validating governance epoch dry-run =="
+python scripts/verify_governance_epoch.py --dry-run
+
+echo
+echo "== Validating governance rotation dry-run =="
+python scripts/verify_governance_rotation.py --dry-run
+
+echo
+echo "== Validating governance replay audit dry-run =="
+python scripts/build_governance_replay_audit.py --dry-run
+
+echo
+echo "== Validating governance finalization dry-run =="
+python scripts/build_governance_finalization.py --dry-run
+
+echo
+echo "== Validating governance freeze dry-run =="
+python scripts/build_governance_freeze.py --dry-run
+
+echo
+echo "== Validating governance rollback dry-run =="
+python scripts/build_governance_rollback.py --dry-run
+
+echo
 echo "== Validating template update from content review dry-run =="
 python scripts/update_templates_from_content_review.py --dry-run
 
@@ -247,6 +287,66 @@ echo
 echo "== Removing ignored canonical case model artifacts =="
 if [ -d outputs/canonical_case_models ]; then
   git clean -fX outputs/canonical_case_models/
+fi
+
+echo
+echo "== Removing ignored governance signature artifacts =="
+if [ -d outputs/governance_signatures ]; then
+  git clean -fX outputs/governance_signatures/
+fi
+
+echo
+echo "== Removing ignored deterministic replay proof artifacts =="
+if [ -d outputs/deterministic_replay_proof ]; then
+  git clean -fX outputs/deterministic_replay_proof/
+fi
+
+echo
+echo "== Removing ignored governance authority registry artifacts =="
+if [ -d outputs/governance_authority_registry ]; then
+  git clean -fX outputs/governance_authority_registry/
+fi
+
+echo
+echo "== Removing ignored governance quorum artifacts =="
+if [ -d outputs/governance_quorum_engine ]; then
+  git clean -fX outputs/governance_quorum_engine/
+fi
+
+echo
+echo "== Removing ignored governance epoch artifacts =="
+if [ -d outputs/governance_epoch_engine ]; then
+  git clean -fX outputs/governance_epoch_engine/
+fi
+
+echo
+echo "== Removing ignored governance rotation artifacts =="
+if [ -d outputs/governance_rotation_engine ]; then
+  git clean -fX outputs/governance_rotation_engine/
+fi
+
+echo
+echo "== Removing ignored governance replay audit artifacts =="
+if [ -d outputs/governance_replay_audit_engine ]; then
+  git clean -fX outputs/governance_replay_audit_engine/
+fi
+
+echo
+echo "== Removing ignored governance finalization artifacts =="
+if [ -d outputs/governance_finalization_engine ]; then
+  git clean -fX outputs/governance_finalization_engine/
+fi
+
+echo
+echo "== Removing ignored governance freeze artifacts =="
+if [ -d outputs/governance_freeze_engine ]; then
+  git clean -fX outputs/governance_freeze_engine/
+fi
+
+echo
+echo "== Removing ignored governance rollback artifacts =="
+if [ -d outputs/governance_rollback_engine ]; then
+  git clean -fX outputs/governance_rollback_engine/
 fi
 
 echo
