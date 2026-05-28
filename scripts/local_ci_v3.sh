@@ -122,6 +122,10 @@ echo "== Validating canonical evidence URL closure dry-run =="
 python scripts/build_canonical_evidence_url_closure.py --dry-run
 
 echo
+echo "== Validating canonical evidence resolution dry-run =="
+python scripts/build_canonical_evidence_resolution.py --dry-run
+
+echo
 echo "== Validating governance signatures dry-run =="
 python scripts/build_governance_signatures.py --dry-run
 
@@ -327,6 +331,12 @@ echo
 echo "== Removing ignored canonical evidence URL closure artifacts =="
 if [ -d outputs/canonical_evidence_url_closure ]; then
   git clean -fX outputs/canonical_evidence_url_closure/
+fi
+
+echo
+echo "== Removing ignored canonical evidence resolution artifacts =="
+if [ -d outputs/canonical_evidence_resolution ]; then
+  git clean -fX outputs/canonical_evidence_resolution/
 fi
 
 echo
