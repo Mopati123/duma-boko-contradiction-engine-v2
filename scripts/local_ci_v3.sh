@@ -118,6 +118,10 @@ echo "== Validating proof-carrying report assembly dry-run =="
 python scripts/build_proof_carrying_report_assembly.py --dry-run
 
 echo
+echo "== Validating canonical evidence URL closure dry-run =="
+python scripts/build_canonical_evidence_url_closure.py --dry-run
+
+echo
 echo "== Validating governance signatures dry-run =="
 python scripts/build_governance_signatures.py --dry-run
 
@@ -317,6 +321,12 @@ echo
 echo "== Removing ignored proof-carrying report assembly artifacts =="
 if [ -d outputs/proof_carrying_report_assembly ]; then
   git clean -fX outputs/proof_carrying_report_assembly/
+fi
+
+echo
+echo "== Removing ignored canonical evidence URL closure artifacts =="
+if [ -d outputs/canonical_evidence_url_closure ]; then
+  git clean -fX outputs/canonical_evidence_url_closure/
 fi
 
 echo

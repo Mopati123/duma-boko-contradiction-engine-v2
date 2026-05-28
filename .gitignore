@@ -113,3 +113,5 @@ outputs/canonical_evidence_hydration/
 outputs/proof_carrying_report_assembly/
 
 outputs/case_graph_normalization/
+
+outputs/canonical_evidence_url_closure/
