@@ -98,3 +98,12 @@ duma-boko-run-backups/
 data/real_evidence_inputs/*.template.json.bak
 
 outputs/governance_signatures/
+outputs/deterministic_replay_proof/
+outputs/governance_authority_registry/
+outputs/governance_epoch_engine/
+outputs/governance_finalization_engine/
+outputs/governance_freeze_engine/
+outputs/governance_quorum_engine/
+outputs/governance_replay_audit_engine/
+outputs/governance_rollback_engine/
+outputs/governance_rotation_engine/
