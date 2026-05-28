@@ -106,6 +106,10 @@ echo "== Validating canonical six-block case models no-network =="
 python scripts/build_canonical_case_models.py --no-network
 
 echo
+echo "== Validating case graph normalization dry-run =="
+python scripts/build_case_graph_normalization.py --dry-run
+
+echo
 echo "== Validating governance signatures dry-run =="
 python scripts/build_governance_signatures.py --dry-run
 
@@ -287,6 +291,12 @@ echo
 echo "== Removing ignored canonical case model artifacts =="
 if [ -d outputs/canonical_case_models ]; then
   git clean -fX outputs/canonical_case_models/
+fi
+
+echo
+echo "== Removing ignored case graph normalization artifacts =="
+if [ -d outputs/case_graph_normalization ]; then
+  git clean -fX outputs/case_graph_normalization/
 fi
 
 echo
