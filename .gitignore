@@ -117,3 +117,6 @@ outputs/case_graph_normalization/
 outputs/canonical_evidence_url_closure/
 
 outputs/canonical_evidence_resolution/
+
+outputs/canonical_evidence_injection/
+outputs/local_ci_v3.log
