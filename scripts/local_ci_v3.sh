@@ -110,6 +110,14 @@ echo "== Validating canonical evidence hydration dry-run =="
 python scripts/build_canonical_evidence_hydration.py --dry-run
 
 echo
+echo "== Validating case graph normalization dry-run =="
+python scripts/build_case_graph_normalization.py --dry-run
+
+echo
+echo "== Validating proof-carrying report assembly dry-run =="
+python scripts/build_proof_carrying_report_assembly.py --dry-run
+
+echo
 echo "== Validating governance signatures dry-run =="
 python scripts/build_governance_signatures.py --dry-run
 
@@ -297,6 +305,18 @@ echo
 echo "== Removing ignored canonical evidence hydration artifacts =="
 if [ -d outputs/canonical_evidence_hydration ]; then
   git clean -fX outputs/canonical_evidence_hydration/
+fi
+
+echo
+echo "== Removing ignored case graph normalization artifacts =="
+if [ -d outputs/case_graph_normalization ]; then
+  git clean -fX outputs/case_graph_normalization/
+fi
+
+echo
+echo "== Removing ignored proof-carrying report assembly artifacts =="
+if [ -d outputs/proof_carrying_report_assembly ]; then
+  git clean -fX outputs/proof_carrying_report_assembly/
 fi
 
 echo
