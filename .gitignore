@@ -134,3 +134,5 @@ outputs/final_report_sealing/
 outputs/anchor_publication/
 
 outputs/anchor_verification_engine/
+outputs/public_anchor_engine/
+outputs/verification_certificate/
