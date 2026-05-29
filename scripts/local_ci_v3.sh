@@ -150,6 +150,10 @@ echo "== Validating governance anchor bundle dry-run =="
 python scripts/build_governance_anchor_bundle.py --dry-run
 
 echo
+echo "== Validating final report sealing dry-run =="
+python scripts/build_final_report_sealing.py --dry-run
+
+echo
 echo "== Validating deterministic replay proof dry-run =="
 python scripts/build_deterministic_replay_proof.py --dry-run
 
@@ -393,6 +397,12 @@ echo
 echo "== Removing ignored governance anchor bundle artifacts =="
 if [ -d outputs/governance_anchor_bundle ]; then
   git clean -fX outputs/governance_anchor_bundle/
+fi
+
+echo
+echo "== Removing ignored final report sealing artifacts =="
+if [ -d outputs/final_report_sealing ]; then
+  git clean -fX outputs/final_report_sealing/
 fi
 
 echo
