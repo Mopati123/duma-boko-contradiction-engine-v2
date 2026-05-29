@@ -136,3 +136,9 @@ outputs/anchor_publication/
 outputs/anchor_verification_engine/
 outputs/public_anchor_engine/
 outputs/verification_certificate/
+outputs/replay_certification/
+outputs/cross_machine_proof/
+outputs/production_freeze/
+outputs/adversarial_falsification_suite/
+outputs/real_machine_b_proof/
+outputs/signature_authority/
