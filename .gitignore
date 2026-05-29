@@ -57,7 +57,6 @@ temp_*.mp3
 temp_*.mp4
 
 # Large media files
-downloads/
 outputs/evidence_videos/
 
 # Runtime-generated report artifacts
@@ -142,3 +141,6 @@ outputs/production_freeze/
 outputs/adversarial_falsification_suite/
 outputs/real_machine_b_proof/
 outputs/signature_authority/
+machine_b_result/
+machine_b_result.zip
+outputs/real_machine_b_verification/
