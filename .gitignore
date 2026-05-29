@@ -132,3 +132,5 @@ outputs/governance_anchor_bundle/
 outputs/final_report_sealing/
 
 outputs/anchor_publication/
+
+outputs/anchor_verification_engine/
