@@ -138,6 +138,10 @@ echo "== Validating canonical graph mutation dry-run =="
 python scripts/build_canonical_graph_mutation.py --dry-run
 
 echo
+echo "== Validating final report collapse dry-run =="
+python scripts/build_final_report_collapse.py --dry-run
+
+echo
 echo "== Validating governance signatures dry-run =="
 python scripts/build_governance_signatures.py --dry-run
 
@@ -367,6 +371,12 @@ echo
 echo "== Removing ignored canonical graph mutation artifacts =="
 if [ -d outputs/canonical_graph_mutation ]; then
   git clean -fX outputs/canonical_graph_mutation/
+fi
+
+echo
+echo "== Removing ignored final report collapse artifacts =="
+if [ -d outputs/final_report_collapse_engine ]; then
+  git clean -fX outputs/final_report_collapse_engine/
 fi
 
 echo

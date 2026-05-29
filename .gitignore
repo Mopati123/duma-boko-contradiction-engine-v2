@@ -124,3 +124,5 @@ outputs/local_ci_v3.log
 outputs/evidence_snapshot_sealing/
 
 outputs/canonical_graph_mutation/
+
+outputs/final_report_collapse_engine/
