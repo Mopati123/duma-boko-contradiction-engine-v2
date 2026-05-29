@@ -144,3 +144,5 @@ outputs/signature_authority/
 machine_b_result/
 machine_b_result.zip
 outputs/real_machine_b_verification/
+outputs/scale_certification_suite/
+outputs/real_scale_execution/
