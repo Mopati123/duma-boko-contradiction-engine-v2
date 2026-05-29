@@ -126,3 +126,5 @@ outputs/evidence_snapshot_sealing/
 outputs/canonical_graph_mutation/
 
 outputs/final_report_collapse_engine/
+
+outputs/governance_anchor_bundle/
