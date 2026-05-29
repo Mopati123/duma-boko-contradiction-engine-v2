@@ -134,6 +134,10 @@ echo "== Validating evidence snapshot sealing dry-run =="
 python scripts/build_evidence_snapshot_sealing.py --dry-run
 
 echo
+echo "== Validating canonical graph mutation dry-run =="
+python scripts/build_canonical_graph_mutation.py --dry-run
+
+echo
 echo "== Validating governance signatures dry-run =="
 python scripts/build_governance_signatures.py --dry-run
 
@@ -357,6 +361,12 @@ echo
 echo "== Removing ignored evidence snapshot sealing artifacts =="
 if [ -d outputs/evidence_snapshot_sealing ]; then
   git clean -fX outputs/evidence_snapshot_sealing/
+fi
+
+echo
+echo "== Removing ignored canonical graph mutation artifacts =="
+if [ -d outputs/canonical_graph_mutation ]; then
+  git clean -fX outputs/canonical_graph_mutation/
 fi
 
 echo
