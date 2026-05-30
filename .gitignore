@@ -148,3 +148,5 @@ outputs/scale_certification_suite/
 outputs/real_scale_execution/
 outputs/production_readiness_assessment/
 outputs/real_world_evidence_scale_execution/
+outputs/real_governance_key_management/
+outputs/deployment_package/
