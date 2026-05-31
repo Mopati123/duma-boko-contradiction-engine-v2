@@ -159,3 +159,4 @@ outputs/final_hardening_audit/
 outputs/manual_release_artifact/
 outputs/manual_release_execution_plan/
 outputs/real_tag_evidence/
+outputs/external_signing_evidence_template/
