@@ -161,3 +161,4 @@ outputs/manual_release_execution_plan/
 outputs/real_tag_evidence/
 outputs/external_signing_evidence_template/
 outputs/shadow_deployment_plan/
+outputs/shadow_deployment_execution_dry_run/
