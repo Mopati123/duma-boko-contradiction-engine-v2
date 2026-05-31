@@ -153,3 +153,4 @@ outputs/deployment_package/
 outputs/operator_runbook/
 outputs/recovery_runbook/
 outputs/release_tag_and_signed_notes/
+outputs/release_execution_checklist/
