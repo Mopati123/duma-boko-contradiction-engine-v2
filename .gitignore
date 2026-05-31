@@ -158,3 +158,4 @@ outputs/final_release_approval_gate/
 outputs/final_hardening_audit/
 outputs/manual_release_artifact/
 outputs/manual_release_execution_plan/
+outputs/real_tag_evidence/
