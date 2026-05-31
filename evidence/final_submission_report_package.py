@@ -744,9 +744,14 @@ def _build_markdown_files(
             }
         ),
     )
-    files["final_submission_report.md"] = "\n\n".join(
-        files[name].rstrip() for name in REPORT_FILES if name != "final_submission_report.md"
-    ) + "\n"
+    files["final_submission_report.md"] = (
+        _front_matter()
+        + "\n\n"
+        + "\n\n".join(
+            files[name].rstrip() for name in REPORT_FILES if name != "final_submission_report.md"
+        )
+        + "\n"
+    )
     return files
 
 
