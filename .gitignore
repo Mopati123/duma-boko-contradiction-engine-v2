@@ -156,3 +156,4 @@ outputs/release_tag_and_signed_notes/
 outputs/release_execution_checklist/
 outputs/final_release_approval_gate/
 outputs/final_hardening_audit/
+outputs/manual_release_artifact/
