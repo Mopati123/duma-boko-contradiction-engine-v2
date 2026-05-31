@@ -163,3 +163,4 @@ outputs/external_signing_evidence_template/
 outputs/shadow_deployment_plan/
 outputs/shadow_deployment_execution_dry_run/
 outputs/shadow_runtime_evidence/
+outputs/shadow_runtime_stress_suite/
