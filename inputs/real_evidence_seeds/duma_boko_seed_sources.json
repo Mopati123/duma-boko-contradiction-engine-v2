@@ -1,0 +1,17 @@
+{
+  "seed_sources": [
+    {
+      "seed_id": "SEED_001",
+      "case_id": "REAL_CASE_001",
+      "source_type": "video",
+      "source_url": "",
+      "source_title": "",
+      "speaker_name": "Duma Boko",
+      "speaker_party": "",
+      "expected_topic": "",
+      "expected_claim_keywords": [],
+      "manual_timestamp_hint": "",
+      "notes": ""
+    }
+  ]
+}
