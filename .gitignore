@@ -191,3 +191,4 @@ outputs/source_harvester_engine/
 outputs/transcript_localization_engine/
 outputs/registry_real_url_bootstrap/
 outputs/registry_source_discovery_engine/
+outputs/registry_source_discovery_strategy_upgrade/
