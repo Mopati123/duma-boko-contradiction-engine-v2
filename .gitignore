@@ -195,3 +195,5 @@ outputs/registry_source_discovery_strategy_upgrade/
 outputs/manual_review_endpoint_promotion_engine/
 
 outputs/registry_discovery_to_bootstrap_bridge/
+
+outputs/apply_verified_registry_updates/
