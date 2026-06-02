@@ -58,7 +58,16 @@ REGISTRY_SOURCE_FIELDS = (
     "notes",
 )
 
+APPLIED_REGISTRY_OPTIONAL_FIELDS = (
+    "resolved_url",
+    "verification_status",
+    "source_origin",
+    "verified_endpoints",
+)
+
 VALIDATED_SOURCE_FIELDS = REGISTRY_SOURCE_FIELDS + ("registry_source_root",)
+APPLIED_VERIFICATION_STATUS = "VERIFIED_REACHABLE_PUBLIC_ENDPOINT"
+APPLIED_SOURCE_ORIGIN = "registry_discovery_to_bootstrap_bridge"
 
 VERIFIED_URL_FIELDS = (
     "verified_url_id",
@@ -150,6 +159,40 @@ def _is_public_url(value: str) -> bool:
     return parsed.scheme in ("http", "https") and bool(parsed.netloc)
 
 
+def _validate_registry_source_keys(source: Dict[str, Any]) -> None:
+    if "registry_source_root" in source:
+        if set(source.keys()) != set(VALIDATED_SOURCE_FIELDS):
+            raise ValueError("Registry source fields changed unexpectedly")
+        return
+    required_fields = set(REGISTRY_SOURCE_FIELDS)
+    optional_fields = set(APPLIED_REGISTRY_OPTIONAL_FIELDS)
+    source_fields = set(source.keys())
+    if not required_fields <= source_fields or source_fields - required_fields - optional_fields:
+        raise ValueError("Registry source fields changed unexpectedly")
+
+
+def _validate_applied_registry_fields(source: Dict[str, Any]) -> None:
+    if "resolved_url" in source:
+        _require_nonempty_string(source, "resolved_url", "RegistrySource")
+        if not _is_public_url(source["resolved_url"]):
+            raise ValueError("RegistrySource.resolved_url must be public HTTP(S)")
+    if "verification_status" in source and source["verification_status"] != APPLIED_VERIFICATION_STATUS:
+        raise ValueError("RegistrySource.verification_status changed")
+    if "source_origin" in source and source["source_origin"] != APPLIED_SOURCE_ORIGIN:
+        raise ValueError("RegistrySource.source_origin changed")
+    if "verified_endpoints" in source:
+        endpoints = source["verified_endpoints"]
+        if not isinstance(endpoints, list) or not endpoints:
+            raise ValueError("RegistrySource.verified_endpoints must be a non-empty list")
+        for endpoint in endpoints:
+            if not isinstance(endpoint, dict):
+                raise ValueError("RegistrySource.verified_endpoints entries must be objects")
+            if not _is_public_url(str(endpoint.get("base_url", ""))):
+                raise ValueError("RegistrySource.verified_endpoints base_url must be public HTTP(S)")
+            if not _is_public_url(str(endpoint.get("resolved_url", ""))):
+                raise ValueError("RegistrySource.verified_endpoints resolved_url must be public HTTP(S)")
+
+
 def _metadata_material(record: Dict[str, Any]) -> Dict[str, Any]:
     return {
         "verified_url_id": record["verified_url_id"],
@@ -236,8 +279,7 @@ def _make_verified_url(
 
 
 def validate_registry_source(source: Dict[str, Any]) -> None:
-    if set(source.keys()) not in (set(REGISTRY_SOURCE_FIELDS), set(VALIDATED_SOURCE_FIELDS)):
-        raise ValueError("Registry source fields changed unexpectedly")
+    _validate_registry_source_keys(source)
     for field_name in (
         "registry_source_id",
         "source_name",
@@ -262,6 +304,8 @@ def validate_registry_source(source: Dict[str, Any]) -> None:
         raise ValueError("RegistrySource.manual_review_required must remain true")
     if "registry_source_root" in source and not _is_nonzero_hash(source["registry_source_root"]):
         raise ValueError("Validated RegistrySource.registry_source_root must be non-zero")
+    if "registry_source_root" not in source:
+        _validate_applied_registry_fields(source)
 
 
 def _validate_inputs(

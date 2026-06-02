@@ -1,361 +1,576 @@
 {
   "generated_on": "2026-06-02",
-  "registry_version": "canonical_source_registry_engine_v2",
-  "registry_scope": "Duma Boko public source-family registry for evidence acquisition",
-  "speaker_focus": "Duma Boko",
   "geographic_context": "Botswana",
+  "registry_scope": "Duma Boko public source-family registry for evidence acquisition",
   "registry_sources": [
     {
+      "base_url": "UNSPECIFIED",
+      "expected_source_types": [
+        "official_statement",
+        "document",
+        "video"
+      ],
+      "geographic_context": "Botswana",
+      "manual_review_required": true,
+      "notes": "Source family only. Exact public URLs must be manually verified before harvesting.",
+      "platform": "party_public_communications",
       "registry_source_id": "REGISTRY_SOURCE_001_OFFICIAL_PARTY_UDC",
+      "search_url_template": "UNSPECIFIED",
+      "source_category": "official_party",
       "source_name": "Umbrella for Democratic Change public communications",
-      "source_category": "official_party",
-      "platform": "party_public_communications",
-      "base_url": "UNSPECIFIED",
-      "search_url_template": "UNSPECIFIED",
       "speaker_focus": "Duma Boko",
-      "geographic_context": "Botswana",
-      "trust_tier": 1,
+      "trust_tier": 1
+    },
+    {
+      "base_url": "UNSPECIFIED",
       "expected_source_types": [
         "official_statement",
         "document",
         "video"
       ],
+      "geographic_context": "Botswana",
       "manual_review_required": true,
-      "notes": "Source family only. Exact public URLs must be manually verified before harvesting."
-    },
-    {
+      "notes": "Source family only. Exact public URLs must be manually verified before harvesting.",
+      "platform": "party_public_communications",
       "registry_source_id": "REGISTRY_SOURCE_002_OFFICIAL_PARTY_BNF",
-      "source_name": "Botswana National Front public communications",
+      "search_url_template": "UNSPECIFIED",
       "source_category": "official_party",
-      "platform": "party_public_communications",
-      "base_url": "UNSPECIFIED",
-      "search_url_template": "UNSPECIFIED",
+      "source_name": "Botswana National Front public communications",
       "speaker_focus": "Duma Boko",
-      "geographic_context": "Botswana",
-      "trust_tier": 1,
+      "trust_tier": 1
+    },
+    {
+      "base_url": "https://gov.bw/",
       "expected_source_types": [
         "official_statement",
         "document",
         "video"
       ],
+      "geographic_context": "Botswana",
       "manual_review_required": true,
-      "notes": "Source family only. Exact public URLs must be manually verified before harvesting."
-    },
-    {
+      "notes": "Source family only. Exact public URLs must be manually verified before harvesting.",
+      "platform": "government_public_communications",
       "registry_source_id": "REGISTRY_SOURCE_003_OFFICIAL_GOVERNMENT_PRESIDENCY",
+      "resolved_url": "https://gov.bw/",
+      "search_url_template": "UNSPECIFIED",
+      "source_category": "official_government",
       "source_name": "Botswana presidency and state communications",
-      "source_category": "official_government",
-      "platform": "government_public_communications",
-      "base_url": "UNSPECIFIED",
-      "search_url_template": "UNSPECIFIED",
+      "source_origin": "registry_discovery_to_bootstrap_bridge",
       "speaker_focus": "Duma Boko",
-      "geographic_context": "Botswana",
       "trust_tier": 1,
+      "verification_status": "VERIFIED_REACHABLE_PUBLIC_ENDPOINT",
+      "verified_endpoints": [
+        {
+          "base_url": "https://gov.bw/",
+          "content_type": "text/html; charset=UTF-8",
+          "http_status": 200,
+          "manual_review_required": true,
+          "metadata_hash": "ffd20e0a5f3bfaceeaa1a7052b710494eaa6bf8e2c623a18f4c9a659884ae167",
+          "promoted_endpoint_id": "PROMOTED_ENDPOINT_005",
+          "registry_update_candidate_id": "REGISTRY_UPDATE_CANDIDATE_001",
+          "resolved_url": "https://gov.bw/",
+          "source_origin": "registry_discovery_to_bootstrap_bridge",
+          "verification_status": "VERIFIED_REACHABLE_PUBLIC_ENDPOINT"
+        }
+      ]
+    },
+    {
+      "base_url": "https://gov.bw/",
       "expected_source_types": [
         "official_statement",
         "document",
         "video"
       ],
+      "geographic_context": "Botswana",
       "manual_review_required": true,
-      "notes": "Source family only. Exact public URLs must be manually verified before harvesting."
-    },
-    {
+      "notes": "Source family only. Exact public URLs must be manually verified before harvesting.",
+      "platform": "government_public_communications",
       "registry_source_id": "REGISTRY_SOURCE_004_OFFICIAL_GOVERNMENT_MINISTRIES",
-      "source_name": "Botswana ministry public communications",
+      "resolved_url": "https://gov.bw/",
+      "search_url_template": "UNSPECIFIED",
       "source_category": "official_government",
-      "platform": "government_public_communications",
-      "base_url": "UNSPECIFIED",
-      "search_url_template": "UNSPECIFIED",
+      "source_name": "Botswana ministry public communications",
+      "source_origin": "registry_discovery_to_bootstrap_bridge",
       "speaker_focus": "Duma Boko",
-      "geographic_context": "Botswana",
       "trust_tier": 1,
-      "expected_source_types": [
-        "official_statement",
-        "document",
-        "video"
-      ],
-      "manual_review_required": true,
-      "notes": "Source family only. Exact public URLs must be manually verified before harvesting."
+      "verification_status": "VERIFIED_REACHABLE_PUBLIC_ENDPOINT",
+      "verified_endpoints": [
+        {
+          "base_url": "https://gov.bw/",
+          "content_type": "text/html; charset=UTF-8",
+          "http_status": 200,
+          "manual_review_required": true,
+          "metadata_hash": "999adbf59b2981e7a190283d479c6573dd8520aab0bbbf2fc3fddd5f3eb49e2b",
+          "promoted_endpoint_id": "PROMOTED_ENDPOINT_008",
+          "registry_update_candidate_id": "REGISTRY_UPDATE_CANDIDATE_002",
+          "resolved_url": "https://gov.bw/",
+          "source_origin": "registry_discovery_to_bootstrap_bridge",
+          "verification_status": "VERIFIED_REACHABLE_PUBLIC_ENDPOINT"
+        }
+      ]
     },
     {
+      "base_url": "UNSPECIFIED",
+      "expected_source_types": [
+        "parliament_record",
+        "document"
+      ],
+      "geographic_context": "Botswana",
+      "manual_review_required": true,
+      "notes": "Source family only. Exact public URLs must be manually verified before harvesting.",
+      "platform": "parliament_record_search",
       "registry_source_id": "REGISTRY_SOURCE_005_PARLIAMENT_HANSARD",
+      "search_url_template": "UNSPECIFIED",
+      "source_category": "parliament_record",
       "source_name": "Botswana parliament Hansard and plenary records",
-      "source_category": "parliament_record",
-      "platform": "parliament_record_search",
-      "base_url": "UNSPECIFIED",
-      "search_url_template": "UNSPECIFIED",
       "speaker_focus": "Duma Boko",
-      "geographic_context": "Botswana",
-      "trust_tier": 1,
+      "trust_tier": 1
+    },
+    {
+      "base_url": "UNSPECIFIED",
       "expected_source_types": [
         "parliament_record",
         "document"
       ],
+      "geographic_context": "Botswana",
       "manual_review_required": true,
-      "notes": "Source family only. Exact public URLs must be manually verified before harvesting."
-    },
-    {
+      "notes": "Source family only. Exact public URLs must be manually verified before harvesting.",
+      "platform": "parliament_record_search",
       "registry_source_id": "REGISTRY_SOURCE_006_PARLIAMENT_COMMITTEE",
-      "source_name": "Botswana parliament committee and question records",
+      "search_url_template": "UNSPECIFIED",
       "source_category": "parliament_record",
-      "platform": "parliament_record_search",
-      "base_url": "UNSPECIFIED",
-      "search_url_template": "UNSPECIFIED",
+      "source_name": "Botswana parliament committee and question records",
       "speaker_focus": "Duma Boko",
-      "geographic_context": "Botswana",
-      "trust_tier": 1,
-      "expected_source_types": [
-        "parliament_record",
-        "document"
-      ],
-      "manual_review_required": true,
-      "notes": "Source family only. Exact public URLs must be manually verified before harvesting."
+      "trust_tier": 1
     },
     {
+      "base_url": "UNSPECIFIED",
+      "expected_source_types": [
+        "video"
+      ],
+      "geographic_context": "Botswana",
+      "manual_review_required": true,
+      "notes": "Source family only. Exact channel or video URLs must be manually verified before harvesting.",
+      "platform": "youtube",
       "registry_source_id": "REGISTRY_SOURCE_007_YOUTUBE_PUBLIC_SPEECHES",
+      "search_url_template": "UNSPECIFIED",
+      "source_category": "youtube_channel",
       "source_name": "YouTube public videos of Duma Boko speeches",
-      "source_category": "youtube_channel",
-      "platform": "youtube",
-      "base_url": "UNSPECIFIED",
-      "search_url_template": "UNSPECIFIED",
       "speaker_focus": "Duma Boko",
-      "geographic_context": "Botswana",
-      "trust_tier": 2,
+      "trust_tier": 2
+    },
+    {
+      "base_url": "UNSPECIFIED",
       "expected_source_types": [
         "video"
       ],
+      "geographic_context": "Botswana",
       "manual_review_required": true,
-      "notes": "Source family only. Exact channel or video URLs must be manually verified before harvesting."
-    },
-    {
+      "notes": "Source family only. Exact channel or video URLs must be manually verified before harvesting.",
+      "platform": "youtube",
       "registry_source_id": "REGISTRY_SOURCE_008_YOUTUBE_BROADCASTER_ARCHIVES",
-      "source_name": "YouTube broadcaster archives covering Botswana politics",
+      "search_url_template": "UNSPECIFIED",
       "source_category": "youtube_channel",
-      "platform": "youtube",
-      "base_url": "UNSPECIFIED",
-      "search_url_template": "UNSPECIFIED",
+      "source_name": "YouTube broadcaster archives covering Botswana politics",
       "speaker_focus": "Duma Boko",
-      "geographic_context": "Botswana",
-      "trust_tier": 2,
-      "expected_source_types": [
-        "video"
-      ],
-      "manual_review_required": true,
-      "notes": "Source family only. Exact channel or video URLs must be manually verified before harvesting."
+      "trust_tier": 2
     },
     {
+      "base_url": "UNSPECIFIED",
+      "expected_source_types": [
+        "social_media",
+        "video",
+        "official_statement"
+      ],
+      "geographic_context": "Botswana",
+      "manual_review_required": true,
+      "notes": "Source family only. Exact public page URLs must be manually verified before harvesting.",
+      "platform": "facebook",
       "registry_source_id": "REGISTRY_SOURCE_009_FACEBOOK_DUMA_BOKO",
+      "search_url_template": "UNSPECIFIED",
+      "source_category": "facebook_page",
       "source_name": "Public Facebook pages associated with Duma Boko",
-      "source_category": "facebook_page",
-      "platform": "facebook",
-      "base_url": "UNSPECIFIED",
-      "search_url_template": "UNSPECIFIED",
       "speaker_focus": "Duma Boko",
-      "geographic_context": "Botswana",
-      "trust_tier": 2,
+      "trust_tier": 2
+    },
+    {
+      "base_url": "UNSPECIFIED",
       "expected_source_types": [
         "social_media",
         "video",
         "official_statement"
       ],
+      "geographic_context": "Botswana",
       "manual_review_required": true,
-      "notes": "Source family only. Exact public page URLs must be manually verified before harvesting."
-    },
-    {
+      "notes": "Source family only. Exact public page URLs must be manually verified before harvesting.",
+      "platform": "facebook",
       "registry_source_id": "REGISTRY_SOURCE_010_FACEBOOK_PARTY_COMMUNICATIONS",
-      "source_name": "Public Facebook pages for party communications",
+      "search_url_template": "UNSPECIFIED",
       "source_category": "facebook_page",
-      "platform": "facebook",
-      "base_url": "UNSPECIFIED",
-      "search_url_template": "UNSPECIFIED",
+      "source_name": "Public Facebook pages for party communications",
       "speaker_focus": "Duma Boko",
-      "geographic_context": "Botswana",
-      "trust_tier": 2,
-      "expected_source_types": [
-        "social_media",
-        "video",
-        "official_statement"
-      ],
-      "manual_review_required": true,
-      "notes": "Source family only. Exact public page URLs must be manually verified before harvesting."
+      "trust_tier": 2
     },
     {
+      "base_url": "UNSPECIFIED",
+      "expected_source_types": [
+        "social_media",
+        "official_statement"
+      ],
+      "geographic_context": "Botswana",
+      "manual_review_required": true,
+      "notes": "Source family only. Exact public account URLs must be manually verified before harvesting.",
+      "platform": "x_twitter",
       "registry_source_id": "REGISTRY_SOURCE_011_X_DUMA_BOKO",
+      "search_url_template": "UNSPECIFIED",
+      "source_category": "x_twitter_account",
       "source_name": "Public X/Twitter accounts associated with Duma Boko",
-      "source_category": "x_twitter_account",
-      "platform": "x_twitter",
-      "base_url": "UNSPECIFIED",
-      "search_url_template": "UNSPECIFIED",
       "speaker_focus": "Duma Boko",
-      "geographic_context": "Botswana",
-      "trust_tier": 2,
+      "trust_tier": 2
+    },
+    {
+      "base_url": "UNSPECIFIED",
       "expected_source_types": [
         "social_media",
         "official_statement"
       ],
+      "geographic_context": "Botswana",
       "manual_review_required": true,
-      "notes": "Source family only. Exact public account URLs must be manually verified before harvesting."
-    },
-    {
+      "notes": "Source family only. Exact public account URLs must be manually verified before harvesting.",
+      "platform": "x_twitter",
       "registry_source_id": "REGISTRY_SOURCE_012_X_GOVERNMENT_PARLIAMENT",
-      "source_name": "Public X/Twitter accounts for Botswana government and parliament",
+      "search_url_template": "UNSPECIFIED",
       "source_category": "x_twitter_account",
-      "platform": "x_twitter",
-      "base_url": "UNSPECIFIED",
-      "search_url_template": "UNSPECIFIED",
+      "source_name": "Public X/Twitter accounts for Botswana government and parliament",
       "speaker_focus": "Duma Boko",
-      "geographic_context": "Botswana",
-      "trust_tier": 2,
-      "expected_source_types": [
-        "social_media",
-        "official_statement"
-      ],
-      "manual_review_required": true,
-      "notes": "Source family only. Exact public account URLs must be manually verified before harvesting."
+      "trust_tier": 2
     },
     {
+      "base_url": "https://mmegi.bw/",
+      "expected_source_types": [
+        "news_article",
+        "document",
+        "video"
+      ],
+      "geographic_context": "Botswana",
+      "manual_review_required": true,
+      "notes": "Source family only. Exact article URLs must be manually verified before harvesting.",
+      "platform": "news_archive_search",
       "registry_source_id": "REGISTRY_SOURCE_013_NEWS_PRINT_ONLINE",
+      "resolved_url": "https://www.mmegi.bw/",
+      "search_url_template": "UNSPECIFIED",
+      "source_category": "news_publisher",
       "source_name": "Botswana print and online news publisher archives",
-      "source_category": "news_publisher",
-      "platform": "news_archive_search",
-      "base_url": "UNSPECIFIED",
-      "search_url_template": "UNSPECIFIED",
+      "source_origin": "registry_discovery_to_bootstrap_bridge",
       "speaker_focus": "Duma Boko",
-      "geographic_context": "Botswana",
       "trust_tier": 3,
+      "verification_status": "VERIFIED_REACHABLE_PUBLIC_ENDPOINT",
+      "verified_endpoints": [
+        {
+          "base_url": "https://mmegi.bw/",
+          "content_type": "text/html; charset=UTF-8",
+          "http_status": 200,
+          "manual_review_required": true,
+          "metadata_hash": "686c60c259ad4c017aba46a41ac2e636615f84e014c95440c12cc703c38c1a71",
+          "promoted_endpoint_id": "PROMOTED_ENDPOINT_021",
+          "registry_update_candidate_id": "REGISTRY_UPDATE_CANDIDATE_003",
+          "resolved_url": "https://www.mmegi.bw/",
+          "source_origin": "registry_discovery_to_bootstrap_bridge",
+          "verification_status": "VERIFIED_REACHABLE_PUBLIC_ENDPOINT"
+        },
+        {
+          "base_url": "https://sundaystandard.info/",
+          "content_type": "text/html; charset=UTF-8",
+          "http_status": 200,
+          "manual_review_required": true,
+          "metadata_hash": "9ad2ab579d559837a76073168bd8c9ff8e49d821a10f491a9f772de06ff372a2",
+          "promoted_endpoint_id": "PROMOTED_ENDPOINT_023",
+          "registry_update_candidate_id": "REGISTRY_UPDATE_CANDIDATE_004",
+          "resolved_url": "https://www.sundaystandard.info/",
+          "source_origin": "registry_discovery_to_bootstrap_bridge",
+          "verification_status": "VERIFIED_REACHABLE_PUBLIC_ENDPOINT"
+        },
+        {
+          "base_url": "https://weekendpost.co.bw/",
+          "content_type": "text/html; charset=UTF-8",
+          "http_status": 200,
+          "manual_review_required": true,
+          "metadata_hash": "2cd9624c592317cfc3155d5c8c4248272511c9d3e757dc7303fd3097851fc6d2",
+          "promoted_endpoint_id": "PROMOTED_ENDPOINT_025",
+          "registry_update_candidate_id": "REGISTRY_UPDATE_CANDIDATE_005",
+          "resolved_url": "https://weekendpost.co.bw/",
+          "source_origin": "registry_discovery_to_bootstrap_bridge",
+          "verification_status": "VERIFIED_REACHABLE_PUBLIC_ENDPOINT"
+        },
+        {
+          "base_url": "https://thegazette.news/",
+          "content_type": "text/html; charset=UTF-8",
+          "http_status": 200,
+          "manual_review_required": true,
+          "metadata_hash": "7dc47540eb7aa37aa9ef88e9e7101b6bee954e52fcde07cc74feadae9d9e4702",
+          "promoted_endpoint_id": "PROMOTED_ENDPOINT_027",
+          "registry_update_candidate_id": "REGISTRY_UPDATE_CANDIDATE_006",
+          "resolved_url": "https://thegazette.news/",
+          "source_origin": "registry_discovery_to_bootstrap_bridge",
+          "verification_status": "VERIFIED_REACHABLE_PUBLIC_ENDPOINT"
+        }
+      ]
+    },
+    {
+      "base_url": "https://mmegi.bw/",
       "expected_source_types": [
         "news_article",
         "document",
         "video"
       ],
+      "geographic_context": "Botswana",
       "manual_review_required": true,
-      "notes": "Source family only. Exact article URLs must be manually verified before harvesting."
-    },
-    {
+      "notes": "Source family only. Exact article URLs must be manually verified before harvesting.",
+      "platform": "news_archive_search",
       "registry_source_id": "REGISTRY_SOURCE_014_NEWS_ELECTION_COVERAGE",
-      "source_name": "Botswana election and governance news coverage archives",
+      "resolved_url": "https://www.mmegi.bw/",
+      "search_url_template": "UNSPECIFIED",
       "source_category": "news_publisher",
-      "platform": "news_archive_search",
-      "base_url": "UNSPECIFIED",
-      "search_url_template": "UNSPECIFIED",
+      "source_name": "Botswana election and governance news coverage archives",
+      "source_origin": "registry_discovery_to_bootstrap_bridge",
       "speaker_focus": "Duma Boko",
-      "geographic_context": "Botswana",
       "trust_tier": 3,
-      "expected_source_types": [
-        "news_article",
-        "document",
-        "video"
-      ],
-      "manual_review_required": true,
-      "notes": "Source family only. Exact article URLs must be manually verified before harvesting."
+      "verification_status": "VERIFIED_REACHABLE_PUBLIC_ENDPOINT",
+      "verified_endpoints": [
+        {
+          "base_url": "https://mmegi.bw/",
+          "content_type": "text/html; charset=UTF-8",
+          "http_status": 200,
+          "manual_review_required": true,
+          "metadata_hash": "d664228e88c7246df1b7ee760cfec4223599d36781232281e923905e5a5c19dc",
+          "promoted_endpoint_id": "PROMOTED_ENDPOINT_031",
+          "registry_update_candidate_id": "REGISTRY_UPDATE_CANDIDATE_007",
+          "resolved_url": "https://www.mmegi.bw/",
+          "source_origin": "registry_discovery_to_bootstrap_bridge",
+          "verification_status": "VERIFIED_REACHABLE_PUBLIC_ENDPOINT"
+        },
+        {
+          "base_url": "https://sundaystandard.info/",
+          "content_type": "text/html; charset=UTF-8",
+          "http_status": 200,
+          "manual_review_required": true,
+          "metadata_hash": "b377be63f1edd4b00e9f3d53e00b39ddfaffc02c68f46a3cbfae031cb90d7951",
+          "promoted_endpoint_id": "PROMOTED_ENDPOINT_033",
+          "registry_update_candidate_id": "REGISTRY_UPDATE_CANDIDATE_008",
+          "resolved_url": "https://www.sundaystandard.info/",
+          "source_origin": "registry_discovery_to_bootstrap_bridge",
+          "verification_status": "VERIFIED_REACHABLE_PUBLIC_ENDPOINT"
+        },
+        {
+          "base_url": "https://weekendpost.co.bw/",
+          "content_type": "text/html; charset=UTF-8",
+          "http_status": 200,
+          "manual_review_required": true,
+          "metadata_hash": "893490db68af52b0ea30f0e959ba0c6a3f406f240d51ffba5e5eb47f4bd6a037",
+          "promoted_endpoint_id": "PROMOTED_ENDPOINT_035",
+          "registry_update_candidate_id": "REGISTRY_UPDATE_CANDIDATE_009",
+          "resolved_url": "https://weekendpost.co.bw/",
+          "source_origin": "registry_discovery_to_bootstrap_bridge",
+          "verification_status": "VERIFIED_REACHABLE_PUBLIC_ENDPOINT"
+        },
+        {
+          "base_url": "https://thegazette.news/",
+          "content_type": "text/html; charset=UTF-8",
+          "http_status": 200,
+          "manual_review_required": true,
+          "metadata_hash": "4923c90147fadfc46e929b8edf7d22fb0aeecb63af27ad63343060edaa3aa93d",
+          "promoted_endpoint_id": "PROMOTED_ENDPOINT_037",
+          "registry_update_candidate_id": "REGISTRY_UPDATE_CANDIDATE_010",
+          "resolved_url": "https://thegazette.news/",
+          "source_origin": "registry_discovery_to_bootstrap_bridge",
+          "verification_status": "VERIFIED_REACHABLE_PUBLIC_ENDPOINT"
+        }
+      ]
     },
     {
+      "base_url": "UNSPECIFIED",
+      "expected_source_types": [
+        "video",
+        "audio",
+        "transcript"
+      ],
+      "geographic_context": "Botswana",
+      "manual_review_required": true,
+      "notes": "Source family only. Exact broadcast URLs must be manually verified before harvesting.",
+      "platform": "broadcast_archive_search",
       "registry_source_id": "REGISTRY_SOURCE_015_RADIO_TV_PUBLIC_BROADCAST",
+      "search_url_template": "UNSPECIFIED",
+      "source_category": "radio_tv_broadcaster",
       "source_name": "Botswana radio and television public broadcaster archives",
-      "source_category": "radio_tv_broadcaster",
-      "platform": "broadcast_archive_search",
-      "base_url": "UNSPECIFIED",
-      "search_url_template": "UNSPECIFIED",
       "speaker_focus": "Duma Boko",
-      "geographic_context": "Botswana",
-      "trust_tier": 2,
+      "trust_tier": 2
+    },
+    {
+      "base_url": "https://dailynews.gov.bw/",
       "expected_source_types": [
         "video",
         "audio",
         "transcript"
       ],
+      "geographic_context": "Botswana",
       "manual_review_required": true,
-      "notes": "Source family only. Exact broadcast URLs must be manually verified before harvesting."
-    },
-    {
+      "notes": "Source family only. Exact broadcast URLs must be manually verified before harvesting.",
+      "platform": "broadcast_archive_search",
       "registry_source_id": "REGISTRY_SOURCE_016_RADIO_TV_PRIVATE_BROADCAST",
-      "source_name": "Private radio and television broadcaster political interviews",
+      "resolved_url": "https://dailynews.gov.bw/",
+      "search_url_template": "UNSPECIFIED",
       "source_category": "radio_tv_broadcaster",
-      "platform": "broadcast_archive_search",
-      "base_url": "UNSPECIFIED",
-      "search_url_template": "UNSPECIFIED",
+      "source_name": "Private radio and television broadcaster political interviews",
+      "source_origin": "registry_discovery_to_bootstrap_bridge",
       "speaker_focus": "Duma Boko",
-      "geographic_context": "Botswana",
       "trust_tier": 3,
-      "expected_source_types": [
-        "video",
-        "audio",
-        "transcript"
-      ],
-      "manual_review_required": true,
-      "notes": "Source family only. Exact broadcast URLs must be manually verified before harvesting."
+      "verification_status": "VERIFIED_REACHABLE_PUBLIC_ENDPOINT",
+      "verified_endpoints": [
+        {
+          "base_url": "https://dailynews.gov.bw/",
+          "content_type": "text/html; charset=UTF-8",
+          "http_status": 200,
+          "manual_review_required": true,
+          "metadata_hash": "323bf76fdb919623064e1622f15dcac9639e3d490788ff96277227866b079ada",
+          "promoted_endpoint_id": "PROMOTED_ENDPOINT_041",
+          "registry_update_candidate_id": "REGISTRY_UPDATE_CANDIDATE_011",
+          "resolved_url": "https://dailynews.gov.bw/",
+          "source_origin": "registry_discovery_to_bootstrap_bridge",
+          "verification_status": "VERIFIED_REACHABLE_PUBLIC_ENDPOINT"
+        }
+      ]
     },
     {
+      "base_url": "https://gov.bw/",
+      "expected_source_types": [
+        "document",
+        "official_statement"
+      ],
+      "geographic_context": "Botswana",
+      "manual_review_required": true,
+      "notes": "Source family only. Exact archive URLs must be manually verified before harvesting.",
+      "platform": "public_archive_search",
       "registry_source_id": "REGISTRY_SOURCE_017_PUBLIC_ARCHIVE_ELECTIONS",
+      "resolved_url": "https://gov.bw/",
+      "search_url_template": "UNSPECIFIED",
+      "source_category": "public_archive",
       "source_name": "Public election and manifesto archives",
-      "source_category": "public_archive",
-      "platform": "public_archive_search",
-      "base_url": "UNSPECIFIED",
-      "search_url_template": "UNSPECIFIED",
+      "source_origin": "registry_discovery_to_bootstrap_bridge",
       "speaker_focus": "Duma Boko",
-      "geographic_context": "Botswana",
       "trust_tier": 2,
+      "verification_status": "VERIFIED_REACHABLE_PUBLIC_ENDPOINT",
+      "verified_endpoints": [
+        {
+          "base_url": "https://gov.bw/",
+          "content_type": "text/html; charset=UTF-8",
+          "http_status": 200,
+          "manual_review_required": true,
+          "metadata_hash": "2a75aae9e27f4d1268b05b9b7bbabce50e444571caa58800075c3411bee03fdb",
+          "promoted_endpoint_id": "PROMOTED_ENDPOINT_042",
+          "registry_update_candidate_id": "REGISTRY_UPDATE_CANDIDATE_012",
+          "resolved_url": "https://gov.bw/",
+          "source_origin": "registry_discovery_to_bootstrap_bridge",
+          "verification_status": "VERIFIED_REACHABLE_PUBLIC_ENDPOINT"
+        },
+        {
+          "base_url": "https://dailynews.gov.bw/",
+          "content_type": "text/html; charset=UTF-8",
+          "http_status": 200,
+          "manual_review_required": true,
+          "metadata_hash": "418ac795749e2644ef851da8e1572fe983cd2161c82a1f8d403226c51c88673d",
+          "promoted_endpoint_id": "PROMOTED_ENDPOINT_043",
+          "registry_update_candidate_id": "REGISTRY_UPDATE_CANDIDATE_013",
+          "resolved_url": "https://dailynews.gov.bw/",
+          "source_origin": "registry_discovery_to_bootstrap_bridge",
+          "verification_status": "VERIFIED_REACHABLE_PUBLIC_ENDPOINT"
+        }
+      ]
+    },
+    {
+      "base_url": "https://gov.bw/",
       "expected_source_types": [
         "document",
         "official_statement"
       ],
+      "geographic_context": "Botswana",
       "manual_review_required": true,
-      "notes": "Source family only. Exact archive URLs must be manually verified before harvesting."
-    },
-    {
+      "notes": "Source family only. Exact archive URLs must be manually verified before harvesting.",
+      "platform": "public_archive_search",
       "registry_source_id": "REGISTRY_SOURCE_018_PUBLIC_ARCHIVE_POLICY",
-      "source_name": "Public policy and government document archives",
+      "resolved_url": "https://gov.bw/",
+      "search_url_template": "UNSPECIFIED",
       "source_category": "public_archive",
-      "platform": "public_archive_search",
-      "base_url": "UNSPECIFIED",
-      "search_url_template": "UNSPECIFIED",
+      "source_name": "Public policy and government document archives",
+      "source_origin": "registry_discovery_to_bootstrap_bridge",
       "speaker_focus": "Duma Boko",
-      "geographic_context": "Botswana",
       "trust_tier": 2,
-      "expected_source_types": [
-        "document",
-        "official_statement"
-      ],
-      "manual_review_required": true,
-      "notes": "Source family only. Exact archive URLs must be manually verified before harvesting."
+      "verification_status": "VERIFIED_REACHABLE_PUBLIC_ENDPOINT",
+      "verified_endpoints": [
+        {
+          "base_url": "https://gov.bw/",
+          "content_type": "text/html; charset=UTF-8",
+          "http_status": 200,
+          "manual_review_required": true,
+          "metadata_hash": "44bd50f91c1600e84af0964b084d877cf374eb189f10285749ff9dac77649763",
+          "promoted_endpoint_id": "PROMOTED_ENDPOINT_045",
+          "registry_update_candidate_id": "REGISTRY_UPDATE_CANDIDATE_014",
+          "resolved_url": "https://gov.bw/",
+          "source_origin": "registry_discovery_to_bootstrap_bridge",
+          "verification_status": "VERIFIED_REACHABLE_PUBLIC_ENDPOINT"
+        },
+        {
+          "base_url": "https://dailynews.gov.bw/",
+          "content_type": "text/html; charset=UTF-8",
+          "http_status": 200,
+          "manual_review_required": true,
+          "metadata_hash": "88df1b1a252d176824ffa67a00eb264a3fc273584dcccbec4a23ec22611ddd1c",
+          "promoted_endpoint_id": "PROMOTED_ENDPOINT_046",
+          "registry_update_candidate_id": "REGISTRY_UPDATE_CANDIDATE_015",
+          "resolved_url": "https://dailynews.gov.bw/",
+          "source_origin": "registry_discovery_to_bootstrap_bridge",
+          "verification_status": "VERIFIED_REACHABLE_PUBLIC_ENDPOINT"
+        }
+      ]
     },
     {
+      "base_url": "UNSPECIFIED",
+      "expected_source_types": [
+        "document",
+        "video",
+        "news_article",
+        "social_media"
+      ],
+      "geographic_context": "Botswana",
+      "manual_review_required": true,
+      "notes": "Manual lead bucket only. It must not be treated as verified evidence.",
+      "platform": "manual_review",
       "registry_source_id": "REGISTRY_SOURCE_019_MANUAL_REVIEW_LEADS",
-      "source_name": "Manual review source leads from discovery seeds",
-      "source_category": "manual_review_source",
-      "platform": "manual_review",
-      "base_url": "UNSPECIFIED",
       "search_url_template": "UNSPECIFIED",
+      "source_category": "manual_review_source",
+      "source_name": "Manual review source leads from discovery seeds",
       "speaker_focus": "Duma Boko",
-      "geographic_context": "Botswana",
-      "trust_tier": 4,
-      "expected_source_types": [
-        "document",
-        "video",
-        "news_article",
-        "social_media"
-      ],
-      "manual_review_required": true,
-      "notes": "Manual lead bucket only. It must not be treated as verified evidence."
+      "trust_tier": 4
     },
     {
-      "registry_source_id": "REGISTRY_SOURCE_020_MANUAL_REVIEW_SUBMISSIONS",
-      "source_name": "Manual review public submissions and researcher-provided links",
-      "source_category": "manual_review_source",
-      "platform": "manual_review",
       "base_url": "UNSPECIFIED",
-      "search_url_template": "UNSPECIFIED",
-      "speaker_focus": "Duma Boko",
-      "geographic_context": "Botswana",
-      "trust_tier": 4,
       "expected_source_types": [
         "document",
         "video",
         "news_article",
         "social_media"
       ],
+      "geographic_context": "Botswana",
       "manual_review_required": true,
-      "notes": "Manual lead bucket only. It must not be treated as verified evidence."
+      "notes": "Manual lead bucket only. It must not be treated as verified evidence.",
+      "platform": "manual_review",
+      "registry_source_id": "REGISTRY_SOURCE_020_MANUAL_REVIEW_SUBMISSIONS",
+      "search_url_template": "UNSPECIFIED",
+      "source_category": "manual_review_source",
+      "source_name": "Manual review public submissions and researcher-provided links",
+      "speaker_focus": "Duma Boko",
+      "trust_tier": 4
     }
-  ]
+  ],
+  "registry_version": "canonical_source_registry_engine_v2",
+  "speaker_focus": "Duma Boko"
 }

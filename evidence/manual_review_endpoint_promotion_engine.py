@@ -139,6 +139,13 @@ REGISTRY_SOURCE_FIELDS = (
     "notes",
 )
 
+APPLIED_REGISTRY_OPTIONAL_FIELDS = (
+    "resolved_url",
+    "verification_status",
+    "source_origin",
+    "verified_endpoints",
+)
+
 VERIFICATION_STATUSES = (
     "PROMOTED_VERIFIED_PUBLIC_ENDPOINT",
     "PROMOTED_SEARCH_ENDPOINT_REVIEW_REQUIRED",
@@ -195,6 +202,13 @@ def _closed_flags(data: Dict[str, Any]) -> bool:
 def _is_public_url(value: str) -> bool:
     parsed = urlparse(value.strip())
     return parsed.scheme in ("http", "https") and bool(parsed.netloc)
+
+
+def _registry_source_fields_are_supported(source: Dict[str, Any]) -> bool:
+    required_fields = set(REGISTRY_SOURCE_FIELDS)
+    optional_fields = set(APPLIED_REGISTRY_OPTIONAL_FIELDS)
+    source_fields = set(source.keys())
+    return required_fields <= source_fields and not source_fields - required_fields - optional_fields
 
 
 def _base_url(value: str) -> str:
@@ -487,7 +501,7 @@ def validate_refusal(refusal: Dict[str, Any]) -> None:
 
 
 def _validate_registry_source(source: Dict[str, Any]) -> None:
-    if set(source.keys()) != set(REGISTRY_SOURCE_FIELDS):
+    if not _registry_source_fields_are_supported(source):
         raise ValueError("Registry source fields changed unexpectedly")
     for field_name in (
         "registry_source_id",

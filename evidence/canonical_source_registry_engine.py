@@ -65,7 +65,16 @@ REGISTRY_SOURCE_FIELDS = (
     "notes",
 )
 
+APPLIED_REGISTRY_OPTIONAL_FIELDS = (
+    "resolved_url",
+    "verification_status",
+    "source_origin",
+    "verified_endpoints",
+)
+
 VALIDATED_SOURCE_FIELDS = REGISTRY_SOURCE_FIELDS + ("registry_source_root",)
+APPLIED_VERIFICATION_STATUS = "VERIFIED_REACHABLE_PUBLIC_ENDPOINT"
+APPLIED_SOURCE_ORIGIN = "registry_discovery_to_bootstrap_bridge"
 
 
 def _sha256_text(text: str) -> str:
@@ -122,6 +131,7 @@ def _schema() -> Dict[str, Any]:
             "search_url_template": UNSPECIFIED,
             "manual_review_required": True,
         },
+        "applied_update_optional_fields": list(APPLIED_REGISTRY_OPTIONAL_FIELDS),
         "prohibited_outputs": {
             "verified_evidence_count": 0,
             "quote_count": 0,
@@ -154,15 +164,61 @@ def validate_schema(schema: Dict[str, Any]) -> None:
         raise ValueError("source_registry_schema validated_source_fields changed")
     if schema.get("source_categories") != list(SOURCE_CATEGORIES):
         raise ValueError("source_registry_schema source_categories changed")
+    if schema.get("applied_update_optional_fields") != list(APPLIED_REGISTRY_OPTIONAL_FIELDS):
+        raise ValueError("source_registry_schema applied_update_optional_fields changed")
 
 
 def _is_real_url(value: Any) -> bool:
     return isinstance(value, str) and value.strip() and value.strip() != UNSPECIFIED
 
 
-def validate_registry_source(source: Dict[str, Any]) -> None:
-    if set(source.keys()) != set(REGISTRY_SOURCE_FIELDS):
+def _is_public_url(value: str) -> bool:
+    return isinstance(value, str) and value.startswith(("http://", "https://"))
+
+
+def _validate_registry_source_keys(source: Dict[str, Any]) -> None:
+    required_fields = set(REGISTRY_SOURCE_FIELDS)
+    optional_fields = set(APPLIED_REGISTRY_OPTIONAL_FIELDS)
+    source_fields = set(source.keys())
+    if not required_fields <= source_fields or source_fields - required_fields - optional_fields:
         raise ValueError("Registry source fields changed unexpectedly")
+
+
+def _validate_applied_registry_fields(source: Dict[str, Any]) -> None:
+    if "resolved_url" in source:
+        _require_nonempty_string(source, "resolved_url", "RegistrySource")
+        if not _is_public_url(source["resolved_url"]):
+            raise ValueError("RegistrySource.resolved_url must be public HTTP(S)")
+    if "verification_status" in source and source["verification_status"] != APPLIED_VERIFICATION_STATUS:
+        raise ValueError("RegistrySource.verification_status changed")
+    if "source_origin" in source and source["source_origin"] != APPLIED_SOURCE_ORIGIN:
+        raise ValueError("RegistrySource.source_origin changed")
+    if "verified_endpoints" in source:
+        endpoints = source["verified_endpoints"]
+        if not isinstance(endpoints, list) or not endpoints:
+            raise ValueError("RegistrySource.verified_endpoints must be a non-empty list")
+        for endpoint in endpoints:
+            if not isinstance(endpoint, dict):
+                raise ValueError("RegistrySource.verified_endpoints entries must be objects")
+            for field_name in (
+                "registry_update_candidate_id",
+                "promoted_endpoint_id",
+                "base_url",
+                "resolved_url",
+                "http_status",
+                "content_type",
+                "metadata_hash",
+            ):
+                if field_name not in endpoint:
+                    raise ValueError(f"RegistrySource.verified_endpoints missing {field_name}")
+            if not _is_public_url(endpoint["base_url"]) or not _is_public_url(endpoint["resolved_url"]):
+                raise ValueError("RegistrySource.verified_endpoints URLs must be public HTTP(S)")
+            if not isinstance(endpoint["http_status"], int) or endpoint["http_status"] < 200 or endpoint["http_status"] >= 400:
+                raise ValueError("RegistrySource.verified_endpoints http_status must be 200-399")
+
+
+def validate_registry_source(source: Dict[str, Any]) -> None:
+    _validate_registry_source_keys(source)
     for field_name in (
         "registry_source_id",
         "source_name",
@@ -194,6 +250,7 @@ def validate_registry_source(source: Dict[str, Any]) -> None:
             raise ValueError("Unspecified registry URLs require manual_review_required=true")
     if source.get("manual_review_required") is not True:
         raise ValueError("Initial registry sources must remain manual review required")
+    _validate_applied_registry_fields(source)
 
 
 def _source_root_material(source: Dict[str, Any]) -> Dict[str, Any]:

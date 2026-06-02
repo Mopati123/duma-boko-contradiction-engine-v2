@@ -102,6 +102,13 @@ REGISTRY_SOURCE_FIELDS = (
     "notes",
 )
 
+APPLIED_REGISTRY_OPTIONAL_FIELDS = (
+    "resolved_url",
+    "verification_status",
+    "source_origin",
+    "verified_endpoints",
+)
+
 REGISTRY_UPDATE_CANDIDATE_FIELDS = (
     "registry_update_candidate_id",
     "promoted_endpoint_id",
@@ -168,6 +175,13 @@ def _is_nonzero_hash(value: Any) -> bool:
 def _is_public_url(value: str) -> bool:
     parsed = urlparse(value.strip())
     return parsed.scheme in ("http", "https") and bool(parsed.netloc)
+
+
+def _registry_source_fields_are_supported(source: Dict[str, Any]) -> bool:
+    required_fields = set(REGISTRY_SOURCE_FIELDS)
+    optional_fields = set(APPLIED_REGISTRY_OPTIONAL_FIELDS)
+    source_fields = set(source.keys())
+    return required_fields <= source_fields and not source_fields - required_fields - optional_fields
 
 
 def _is_generic_search_url(value: str) -> bool:
@@ -347,7 +361,7 @@ def _validate_verified_endpoint_for_bridge(endpoint: Dict[str, Any]) -> str | No
 
 
 def validate_registry_source(source: Dict[str, Any]) -> None:
-    if set(source.keys()) != set(REGISTRY_SOURCE_FIELDS):
+    if not _registry_source_fields_are_supported(source):
         raise ValueError("Registry source fields changed unexpectedly")
     for field_name in (
         "registry_source_id",

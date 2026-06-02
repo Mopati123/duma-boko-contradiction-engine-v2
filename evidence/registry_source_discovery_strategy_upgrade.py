@@ -135,6 +135,13 @@ REGISTRY_SOURCE_FIELDS = (
     "notes",
 )
 
+APPLIED_REGISTRY_OPTIONAL_FIELDS = (
+    "resolved_url",
+    "verification_status",
+    "source_origin",
+    "verified_endpoints",
+)
+
 VALIDATED_SOURCE_FIELDS = REGISTRY_SOURCE_FIELDS + ("registry_source_root",)
 
 
@@ -423,9 +430,15 @@ def validate_strategy_refusal(refusal: Dict[str, Any]) -> None:
 
 
 def _validate_registry_source(source: Dict[str, Any], object_name: str) -> None:
-    expected_fields = VALIDATED_SOURCE_FIELDS if "registry_source_root" in source else REGISTRY_SOURCE_FIELDS
-    if set(source.keys()) != set(expected_fields):
-        raise ValueError(f"{object_name} fields changed unexpectedly")
+    if "registry_source_root" in source:
+        if set(source.keys()) != set(VALIDATED_SOURCE_FIELDS):
+            raise ValueError(f"{object_name} fields changed unexpectedly")
+    else:
+        required_fields = set(REGISTRY_SOURCE_FIELDS)
+        optional_fields = set(APPLIED_REGISTRY_OPTIONAL_FIELDS)
+        source_fields = set(source.keys())
+        if not required_fields <= source_fields or source_fields - required_fields - optional_fields:
+            raise ValueError(f"{object_name} fields changed unexpectedly")
     for field_name in (
         "registry_source_id",
         "source_name",
