@@ -1,0 +1,361 @@
+{
+  "generated_on": "2026-06-02",
+  "registry_version": "canonical_source_registry_engine_v2",
+  "registry_scope": "Duma Boko public source-family registry for evidence acquisition",
+  "speaker_focus": "Duma Boko",
+  "geographic_context": "Botswana",
+  "registry_sources": [
+    {
+      "registry_source_id": "REGISTRY_SOURCE_001_OFFICIAL_PARTY_UDC",
+      "source_name": "Umbrella for Democratic Change public communications",
+      "source_category": "official_party",
+      "platform": "party_public_communications",
+      "base_url": "UNSPECIFIED",
+      "search_url_template": "UNSPECIFIED",
+      "speaker_focus": "Duma Boko",
+      "geographic_context": "Botswana",
+      "trust_tier": 1,
+      "expected_source_types": [
+        "official_statement",
+        "document",
+        "video"
+      ],
+      "manual_review_required": true,
+      "notes": "Source family only. Exact public URLs must be manually verified before harvesting."
+    },
+    {
+      "registry_source_id": "REGISTRY_SOURCE_002_OFFICIAL_PARTY_BNF",
+      "source_name": "Botswana National Front public communications",
+      "source_category": "official_party",
+      "platform": "party_public_communications",
+      "base_url": "UNSPECIFIED",
+      "search_url_template": "UNSPECIFIED",
+      "speaker_focus": "Duma Boko",
+      "geographic_context": "Botswana",
+      "trust_tier": 1,
+      "expected_source_types": [
+        "official_statement",
+        "document",
+        "video"
+      ],
+      "manual_review_required": true,
+      "notes": "Source family only. Exact public URLs must be manually verified before harvesting."
+    },
+    {
+      "registry_source_id": "REGISTRY_SOURCE_003_OFFICIAL_GOVERNMENT_PRESIDENCY",
+      "source_name": "Botswana presidency and state communications",
+      "source_category": "official_government",
+      "platform": "government_public_communications",
+      "base_url": "UNSPECIFIED",
+      "search_url_template": "UNSPECIFIED",
+      "speaker_focus": "Duma Boko",
+      "geographic_context": "Botswana",
+      "trust_tier": 1,
+      "expected_source_types": [
+        "official_statement",
+        "document",
+        "video"
+      ],
+      "manual_review_required": true,
+      "notes": "Source family only. Exact public URLs must be manually verified before harvesting."
+    },
+    {
+      "registry_source_id": "REGISTRY_SOURCE_004_OFFICIAL_GOVERNMENT_MINISTRIES",
+      "source_name": "Botswana ministry public communications",
+      "source_category": "official_government",
+      "platform": "government_public_communications",
+      "base_url": "UNSPECIFIED",
+      "search_url_template": "UNSPECIFIED",
+      "speaker_focus": "Duma Boko",
+      "geographic_context": "Botswana",
+      "trust_tier": 1,
+      "expected_source_types": [
+        "official_statement",
+        "document",
+        "video"
+      ],
+      "manual_review_required": true,
+      "notes": "Source family only. Exact public URLs must be manually verified before harvesting."
+    },
+    {
+      "registry_source_id": "REGISTRY_SOURCE_005_PARLIAMENT_HANSARD",
+      "source_name": "Botswana parliament Hansard and plenary records",
+      "source_category": "parliament_record",
+      "platform": "parliament_record_search",
+      "base_url": "UNSPECIFIED",
+      "search_url_template": "UNSPECIFIED",
+      "speaker_focus": "Duma Boko",
+      "geographic_context": "Botswana",
+      "trust_tier": 1,
+      "expected_source_types": [
+        "parliament_record",
+        "document"
+      ],
+      "manual_review_required": true,
+      "notes": "Source family only. Exact public URLs must be manually verified before harvesting."
+    },
+    {
+      "registry_source_id": "REGISTRY_SOURCE_006_PARLIAMENT_COMMITTEE",
+      "source_name": "Botswana parliament committee and question records",
+      "source_category": "parliament_record",
+      "platform": "parliament_record_search",
+      "base_url": "UNSPECIFIED",
+      "search_url_template": "UNSPECIFIED",
+      "speaker_focus": "Duma Boko",
+      "geographic_context": "Botswana",
+      "trust_tier": 1,
+      "expected_source_types": [
+        "parliament_record",
+        "document"
+      ],
+      "manual_review_required": true,
+      "notes": "Source family only. Exact public URLs must be manually verified before harvesting."
+    },
+    {
+      "registry_source_id": "REGISTRY_SOURCE_007_YOUTUBE_PUBLIC_SPEECHES",
+      "source_name": "YouTube public videos of Duma Boko speeches",
+      "source_category": "youtube_channel",
+      "platform": "youtube",
+      "base_url": "UNSPECIFIED",
+      "search_url_template": "UNSPECIFIED",
+      "speaker_focus": "Duma Boko",
+      "geographic_context": "Botswana",
+      "trust_tier": 2,
+      "expected_source_types": [
+        "video"
+      ],
+      "manual_review_required": true,
+      "notes": "Source family only. Exact channel or video URLs must be manually verified before harvesting."
+    },
+    {
+      "registry_source_id": "REGISTRY_SOURCE_008_YOUTUBE_BROADCASTER_ARCHIVES",
+      "source_name": "YouTube broadcaster archives covering Botswana politics",
+      "source_category": "youtube_channel",
+      "platform": "youtube",
+      "base_url": "UNSPECIFIED",
+      "search_url_template": "UNSPECIFIED",
+      "speaker_focus": "Duma Boko",
+      "geographic_context": "Botswana",
+      "trust_tier": 2,
+      "expected_source_types": [
+        "video"
+      ],
+      "manual_review_required": true,
+      "notes": "Source family only. Exact channel or video URLs must be manually verified before harvesting."
+    },
+    {
+      "registry_source_id": "REGISTRY_SOURCE_009_FACEBOOK_DUMA_BOKO",
+      "source_name": "Public Facebook pages associated with Duma Boko",
+      "source_category": "facebook_page",
+      "platform": "facebook",
+      "base_url": "UNSPECIFIED",
+      "search_url_template": "UNSPECIFIED",
+      "speaker_focus": "Duma Boko",
+      "geographic_context": "Botswana",
+      "trust_tier": 2,
+      "expected_source_types": [
+        "social_media",
+        "video",
+        "official_statement"
+      ],
+      "manual_review_required": true,
+      "notes": "Source family only. Exact public page URLs must be manually verified before harvesting."
+    },
+    {
+      "registry_source_id": "REGISTRY_SOURCE_010_FACEBOOK_PARTY_COMMUNICATIONS",
+      "source_name": "Public Facebook pages for party communications",
+      "source_category": "facebook_page",
+      "platform": "facebook",
+      "base_url": "UNSPECIFIED",
+      "search_url_template": "UNSPECIFIED",
+      "speaker_focus": "Duma Boko",
+      "geographic_context": "Botswana",
+      "trust_tier": 2,
+      "expected_source_types": [
+        "social_media",
+        "video",
+        "official_statement"
+      ],
+      "manual_review_required": true,
+      "notes": "Source family only. Exact public page URLs must be manually verified before harvesting."
+    },
+    {
+      "registry_source_id": "REGISTRY_SOURCE_011_X_DUMA_BOKO",
+      "source_name": "Public X/Twitter accounts associated with Duma Boko",
+      "source_category": "x_twitter_account",
+      "platform": "x_twitter",
+      "base_url": "UNSPECIFIED",
+      "search_url_template": "UNSPECIFIED",
+      "speaker_focus": "Duma Boko",
+      "geographic_context": "Botswana",
+      "trust_tier": 2,
+      "expected_source_types": [
+        "social_media",
+        "official_statement"
+      ],
+      "manual_review_required": true,
+      "notes": "Source family only. Exact public account URLs must be manually verified before harvesting."
+    },
+    {
+      "registry_source_id": "REGISTRY_SOURCE_012_X_GOVERNMENT_PARLIAMENT",
+      "source_name": "Public X/Twitter accounts for Botswana government and parliament",
+      "source_category": "x_twitter_account",
+      "platform": "x_twitter",
+      "base_url": "UNSPECIFIED",
+      "search_url_template": "UNSPECIFIED",
+      "speaker_focus": "Duma Boko",
+      "geographic_context": "Botswana",
+      "trust_tier": 2,
+      "expected_source_types": [
+        "social_media",
+        "official_statement"
+      ],
+      "manual_review_required": true,
+      "notes": "Source family only. Exact public account URLs must be manually verified before harvesting."
+    },
+    {
+      "registry_source_id": "REGISTRY_SOURCE_013_NEWS_PRINT_ONLINE",
+      "source_name": "Botswana print and online news publisher archives",
+      "source_category": "news_publisher",
+      "platform": "news_archive_search",
+      "base_url": "UNSPECIFIED",
+      "search_url_template": "UNSPECIFIED",
+      "speaker_focus": "Duma Boko",
+      "geographic_context": "Botswana",
+      "trust_tier": 3,
+      "expected_source_types": [
+        "news_article",
+        "document",
+        "video"
+      ],
+      "manual_review_required": true,
+      "notes": "Source family only. Exact article URLs must be manually verified before harvesting."
+    },
+    {
+      "registry_source_id": "REGISTRY_SOURCE_014_NEWS_ELECTION_COVERAGE",
+      "source_name": "Botswana election and governance news coverage archives",
+      "source_category": "news_publisher",
+      "platform": "news_archive_search",
+      "base_url": "UNSPECIFIED",
+      "search_url_template": "UNSPECIFIED",
+      "speaker_focus": "Duma Boko",
+      "geographic_context": "Botswana",
+      "trust_tier": 3,
+      "expected_source_types": [
+        "news_article",
+        "document",
+        "video"
+      ],
+      "manual_review_required": true,
+      "notes": "Source family only. Exact article URLs must be manually verified before harvesting."
+    },
+    {
+      "registry_source_id": "REGISTRY_SOURCE_015_RADIO_TV_PUBLIC_BROADCAST",
+      "source_name": "Botswana radio and television public broadcaster archives",
+      "source_category": "radio_tv_broadcaster",
+      "platform": "broadcast_archive_search",
+      "base_url": "UNSPECIFIED",
+      "search_url_template": "UNSPECIFIED",
+      "speaker_focus": "Duma Boko",
+      "geographic_context": "Botswana",
+      "trust_tier": 2,
+      "expected_source_types": [
+        "video",
+        "audio",
+        "transcript"
+      ],
+      "manual_review_required": true,
+      "notes": "Source family only. Exact broadcast URLs must be manually verified before harvesting."
+    },
+    {
+      "registry_source_id": "REGISTRY_SOURCE_016_RADIO_TV_PRIVATE_BROADCAST",
+      "source_name": "Private radio and television broadcaster political interviews",
+      "source_category": "radio_tv_broadcaster",
+      "platform": "broadcast_archive_search",
+      "base_url": "UNSPECIFIED",
+      "search_url_template": "UNSPECIFIED",
+      "speaker_focus": "Duma Boko",
+      "geographic_context": "Botswana",
+      "trust_tier": 3,
+      "expected_source_types": [
+        "video",
+        "audio",
+        "transcript"
+      ],
+      "manual_review_required": true,
+      "notes": "Source family only. Exact broadcast URLs must be manually verified before harvesting."
+    },
+    {
+      "registry_source_id": "REGISTRY_SOURCE_017_PUBLIC_ARCHIVE_ELECTIONS",
+      "source_name": "Public election and manifesto archives",
+      "source_category": "public_archive",
+      "platform": "public_archive_search",
+      "base_url": "UNSPECIFIED",
+      "search_url_template": "UNSPECIFIED",
+      "speaker_focus": "Duma Boko",
+      "geographic_context": "Botswana",
+      "trust_tier": 2,
+      "expected_source_types": [
+        "document",
+        "official_statement"
+      ],
+      "manual_review_required": true,
+      "notes": "Source family only. Exact archive URLs must be manually verified before harvesting."
+    },
+    {
+      "registry_source_id": "REGISTRY_SOURCE_018_PUBLIC_ARCHIVE_POLICY",
+      "source_name": "Public policy and government document archives",
+      "source_category": "public_archive",
+      "platform": "public_archive_search",
+      "base_url": "UNSPECIFIED",
+      "search_url_template": "UNSPECIFIED",
+      "speaker_focus": "Duma Boko",
+      "geographic_context": "Botswana",
+      "trust_tier": 2,
+      "expected_source_types": [
+        "document",
+        "official_statement"
+      ],
+      "manual_review_required": true,
+      "notes": "Source family only. Exact archive URLs must be manually verified before harvesting."
+    },
+    {
+      "registry_source_id": "REGISTRY_SOURCE_019_MANUAL_REVIEW_LEADS",
+      "source_name": "Manual review source leads from discovery seeds",
+      "source_category": "manual_review_source",
+      "platform": "manual_review",
+      "base_url": "UNSPECIFIED",
+      "search_url_template": "UNSPECIFIED",
+      "speaker_focus": "Duma Boko",
+      "geographic_context": "Botswana",
+      "trust_tier": 4,
+      "expected_source_types": [
+        "document",
+        "video",
+        "news_article",
+        "social_media"
+      ],
+      "manual_review_required": true,
+      "notes": "Manual lead bucket only. It must not be treated as verified evidence."
+    },
+    {
+      "registry_source_id": "REGISTRY_SOURCE_020_MANUAL_REVIEW_SUBMISSIONS",
+      "source_name": "Manual review public submissions and researcher-provided links",
+      "source_category": "manual_review_source",
+      "platform": "manual_review",
+      "base_url": "UNSPECIFIED",
+      "search_url_template": "UNSPECIFIED",
+      "speaker_focus": "Duma Boko",
+      "geographic_context": "Botswana",
+      "trust_tier": 4,
+      "expected_source_types": [
+        "document",
+        "video",
+        "news_article",
+        "social_media"
+      ],
+      "manual_review_required": true,
+      "notes": "Manual lead bucket only. It must not be treated as verified evidence."
+    }
+  ]
+}
