@@ -187,3 +187,4 @@ outputs/discovery_seed_pack_loader/
 outputs/evidence_discovery_execution_engine/
 outputs/web_source_discovery_engine/
 outputs/canonical_source_registry_engine/
+outputs/source_harvester_engine/
