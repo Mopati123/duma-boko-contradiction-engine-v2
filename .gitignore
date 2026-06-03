@@ -197,3 +197,5 @@ outputs/manual_review_endpoint_promotion_engine/
 outputs/registry_discovery_to_bootstrap_bridge/
 
 outputs/apply_verified_registry_updates/
+
+outputs/real_evidence_packets_to_claims/
