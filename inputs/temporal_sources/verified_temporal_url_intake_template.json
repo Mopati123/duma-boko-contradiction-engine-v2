@@ -1,0 +1,141 @@
+{
+  "generated_by": "verified_temporal_url_intake_v2",
+  "intake_scope": "Duma Boko temporal verified URL intake placeholders",
+  "intake_version": "verified_temporal_url_intake_v2",
+  "manual_review_required": true,
+  "production_ready": false,
+  "verified_temporal_url_intake": [
+    {
+      "linked_claim_id": "UNSPECIFIED",
+      "published_date": "UNSPECIFIED",
+      "publisher": "UNSPECIFIED",
+      "source_id": "CURATED_TEMPORAL_SOURCE_BEFORE_001_MANIFESTO",
+      "source_type": "MANIFESTO",
+      "time_direction": "BEFORE",
+      "title": "UNSPECIFIED",
+      "topic": "Duma Boko before-election manifesto comparison evidence",
+      "url": "UNSPECIFIED",
+      "verification_notes": "UNSPECIFIED"
+    },
+    {
+      "linked_claim_id": "UNSPECIFIED",
+      "published_date": "UNSPECIFIED",
+      "publisher": "UNSPECIFIED",
+      "source_id": "CURATED_TEMPORAL_SOURCE_BEFORE_002_PARTY_WEBSITE",
+      "source_type": "PARTY_WEBSITE",
+      "time_direction": "BEFORE",
+      "title": "UNSPECIFIED",
+      "topic": "Duma Boko before-election party website comparison evidence",
+      "url": "UNSPECIFIED",
+      "verification_notes": "UNSPECIFIED"
+    },
+    {
+      "linked_claim_id": "UNSPECIFIED",
+      "published_date": "UNSPECIFIED",
+      "publisher": "UNSPECIFIED",
+      "source_id": "CURATED_TEMPORAL_SOURCE_BEFORE_003_RALLY_VIDEO",
+      "source_type": "RALLY_VIDEO",
+      "time_direction": "BEFORE",
+      "title": "UNSPECIFIED",
+      "topic": "Duma Boko before-election rally speech comparison evidence",
+      "url": "UNSPECIFIED",
+      "verification_notes": "UNSPECIFIED"
+    },
+    {
+      "linked_claim_id": "UNSPECIFIED",
+      "published_date": "UNSPECIFIED",
+      "publisher": "UNSPECIFIED",
+      "source_id": "CURATED_TEMPORAL_SOURCE_BEFORE_004_INTERVIEW",
+      "source_type": "INTERVIEW",
+      "time_direction": "BEFORE",
+      "title": "UNSPECIFIED",
+      "topic": "Duma Boko before-election interview comparison evidence",
+      "url": "UNSPECIFIED",
+      "verification_notes": "UNSPECIFIED"
+    },
+    {
+      "linked_claim_id": "UNSPECIFIED",
+      "published_date": "UNSPECIFIED",
+      "publisher": "UNSPECIFIED",
+      "source_id": "CURATED_TEMPORAL_SOURCE_BEFORE_005_SOCIAL_MEDIA_POST",
+      "source_type": "SOCIAL_MEDIA_POST",
+      "time_direction": "BEFORE",
+      "title": "UNSPECIFIED",
+      "topic": "Duma Boko before-election social media comparison evidence",
+      "url": "UNSPECIFIED",
+      "verification_notes": "UNSPECIFIED"
+    },
+    {
+      "linked_claim_id": "UNSPECIFIED",
+      "published_date": "UNSPECIFIED",
+      "publisher": "UNSPECIFIED",
+      "source_id": "CURATED_TEMPORAL_SOURCE_AFTER_001_OFFICIAL_STATEMENT",
+      "source_type": "OFFICIAL_STATEMENT",
+      "time_direction": "AFTER",
+      "title": "UNSPECIFIED",
+      "topic": "Duma Boko after-election official statement comparison evidence",
+      "url": "UNSPECIFIED",
+      "verification_notes": "UNSPECIFIED"
+    },
+    {
+      "linked_claim_id": "UNSPECIFIED",
+      "published_date": "UNSPECIFIED",
+      "publisher": "UNSPECIFIED",
+      "source_id": "CURATED_TEMPORAL_SOURCE_AFTER_002_GOVERNMENT_UPDATE",
+      "source_type": "GOVERNMENT_UPDATE",
+      "time_direction": "AFTER",
+      "title": "UNSPECIFIED",
+      "topic": "Duma Boko after-election government update comparison evidence",
+      "url": "UNSPECIFIED",
+      "verification_notes": "UNSPECIFIED"
+    },
+    {
+      "linked_claim_id": "UNSPECIFIED",
+      "published_date": "UNSPECIFIED",
+      "publisher": "UNSPECIFIED",
+      "source_id": "CURATED_TEMPORAL_SOURCE_AFTER_003_MINISTRY_UPDATE",
+      "source_type": "MINISTRY_UPDATE",
+      "time_direction": "AFTER",
+      "title": "UNSPECIFIED",
+      "topic": "Duma Boko after-election ministry update comparison evidence",
+      "url": "UNSPECIFIED",
+      "verification_notes": "UNSPECIFIED"
+    },
+    {
+      "linked_claim_id": "UNSPECIFIED",
+      "published_date": "UNSPECIFIED",
+      "publisher": "UNSPECIFIED",
+      "source_id": "CURATED_TEMPORAL_SOURCE_AFTER_004_BUDGET_DOCUMENT",
+      "source_type": "BUDGET_DOCUMENT",
+      "time_direction": "AFTER",
+      "title": "UNSPECIFIED",
+      "topic": "Duma Boko after-election budget action comparison evidence",
+      "url": "UNSPECIFIED",
+      "verification_notes": "UNSPECIFIED"
+    },
+    {
+      "linked_claim_id": "UNSPECIFIED",
+      "published_date": "UNSPECIFIED",
+      "publisher": "UNSPECIFIED",
+      "source_id": "CURATED_TEMPORAL_SOURCE_AFTER_005_PARLIAMENT_RECORD",
+      "source_type": "PARLIAMENT_RECORD",
+      "time_direction": "AFTER",
+      "title": "UNSPECIFIED",
+      "topic": "Duma Boko after-election parliament record comparison evidence",
+      "url": "UNSPECIFIED",
+      "verification_notes": "UNSPECIFIED"
+    },
+    {
+      "linked_claim_id": "UNSPECIFIED",
+      "published_date": "UNSPECIFIED",
+      "publisher": "UNSPECIFIED",
+      "source_id": "CURATED_TEMPORAL_SOURCE_AFTER_006_NEWS_FOLLOWUP",
+      "source_type": "NEWS_FOLLOWUP",
+      "time_direction": "AFTER",
+      "title": "UNSPECIFIED",
+      "topic": "Duma Boko after-election news follow-up comparison evidence",
+      "url": "UNSPECIFIED",
+      "verification_notes": "UNSPECIFIED"
+    }
+  ]
+}
