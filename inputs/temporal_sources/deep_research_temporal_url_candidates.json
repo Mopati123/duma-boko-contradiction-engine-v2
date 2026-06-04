@@ -1,0 +1,125 @@
+{
+  "candidates": [
+    {
+      "published_date": "unspecified",
+      "publisher": "Umbrella for Democratic Change",
+      "source_id": "CURATED_TEMPORAL_SOURCE_BEFORE_001_MANIFESTO",
+      "source_type": "MANIFESTO",
+      "time_direction": "BEFORE",
+      "title": "UDC Manifesto for 2024 Botswana Elections",
+      "topic": "UDC 2024 manifesto",
+      "url": "https://www.udc.org.bw/wp-content/uploads/2025/03/UDC-MANIFESTO-FOR-2024-BOTSWANA-ELECTIONS-short-2.pdf",
+      "verification_notes": "Official UDC manifesto PDF candidate. Must be validated before use."
+    },
+    {
+      "published_date": "unspecified",
+      "publisher": "Umbrella for Democratic Change",
+      "source_id": "CURATED_TEMPORAL_SOURCE_BEFORE_002_PARTY_WEBSITE",
+      "source_type": "PARTY_WEBSITE",
+      "time_direction": "BEFORE",
+      "title": "Umbrella for Democratic Change Official Website",
+      "topic": "UDC official platform",
+      "url": "https://www.udc.org.bw/",
+      "verification_notes": "Official UDC website candidate. Must be validated before use."
+    },
+    {
+      "published_date": "unspecified",
+      "publisher": "Umbrella for Democratic Change",
+      "source_id": "CURATED_TEMPORAL_SOURCE_BEFORE_003_RALLY_VIDEO",
+      "source_type": "RALLY_VIDEO",
+      "time_direction": "BEFORE",
+      "title": "UDC News and Media",
+      "topic": "UDC campaign media and speeches",
+      "url": "https://www.udc.org.bw/news-and-media/",
+      "verification_notes": "Official UDC media page candidate. Must be validated before use."
+    },
+    {
+      "published_date": "unspecified",
+      "publisher": "Duma Boko",
+      "source_id": "CURATED_TEMPORAL_SOURCE_BEFORE_004_INTERVIEW",
+      "source_type": "INTERVIEW",
+      "time_direction": "BEFORE",
+      "title": "Duma Boko Official Website",
+      "topic": "Duma Boko campaign communication",
+      "url": "https://dumaboko.com/",
+      "verification_notes": "Candidate official Duma Boko site. Must be validated before use."
+    },
+    {
+      "published_date": "unspecified",
+      "publisher": "unspecified",
+      "source_id": "CURATED_TEMPORAL_SOURCE_BEFORE_005_SOCIAL_MEDIA_POST",
+      "source_type": "SOCIAL_MEDIA_POST",
+      "time_direction": "BEFORE",
+      "title": "Unresolved official campaign social-media post",
+      "topic": "Official campaign social-media post",
+      "url": "UNSPECIFIED",
+      "verification_notes": "No verified official campaign social-media permalink found yet."
+    },
+    {
+      "published_date": "unspecified",
+      "publisher": "DailyNews Botswana",
+      "source_id": "CURATED_TEMPORAL_SOURCE_AFTER_001_OFFICIAL_STATEMENT",
+      "source_type": "OFFICIAL_STATEMENT",
+      "time_direction": "AFTER",
+      "title": "DailyNews article 82910",
+      "topic": "Post-election public communication",
+      "url": "https://dailynews.gov.bw/news-detail/82910",
+      "verification_notes": "DailyNews candidate URL. Must be validated before use."
+    },
+    {
+      "published_date": "unspecified",
+      "publisher": "Government of Botswana",
+      "source_id": "CURATED_TEMPORAL_SOURCE_AFTER_002_GOVERNMENT_UPDATE",
+      "source_type": "GOVERNMENT_UPDATE",
+      "time_direction": "AFTER",
+      "title": "Botswana Government Leadership",
+      "topic": "Official leadership status",
+      "url": "https://www.gov.bw/leadership",
+      "verification_notes": "Government leadership page candidate. Must be validated before use."
+    },
+    {
+      "published_date": "unspecified",
+      "publisher": "Government of Botswana",
+      "source_id": "CURATED_TEMPORAL_SOURCE_AFTER_003_MINISTRY_UPDATE",
+      "source_type": "MINISTRY_UPDATE",
+      "time_direction": "AFTER",
+      "title": "Botswana breaks ground on landmark 500MW Maun solar project",
+      "topic": "Post-election ministry update",
+      "url": "https://www.gov.bw/botswana-breaks-ground-landmark-500mw-maun-solar-project",
+      "verification_notes": "Government project update candidate. Must be validated before use."
+    },
+    {
+      "published_date": "2026-04-15",
+      "publisher": "Parliament of Botswana",
+      "source_id": "CURATED_TEMPORAL_SOURCE_AFTER_004_BUDGET_DOCUMENT",
+      "source_type": "BUDGET_DOCUMENT",
+      "time_direction": "AFTER",
+      "title": "Daily Hansard - 15th April 2026 - Budget Meeting",
+      "topic": "Budget meeting record",
+      "url": "https://www.parliament.gov.bw/documents/DAILY-HANSARD--15th-APRIL-2026---Budget-Meeting--2nd-meeting-of-the-2nd-session-of-the-13th-Parliament_02_10_59_27_04_2026.pdf",
+      "verification_notes": "Parliament PDF candidate. Must be validated before use."
+    },
+    {
+      "published_date": "2026-04-17",
+      "publisher": "Parliament of Botswana",
+      "source_id": "CURATED_TEMPORAL_SOURCE_AFTER_005_PARLIAMENT_RECORD",
+      "source_type": "PARLIAMENT_RECORD",
+      "time_direction": "AFTER",
+      "title": "Order Paper - 17 April 2026",
+      "topic": "Parliamentary order paper",
+      "url": "https://www.parliament.gov.bw/documents/ORDPAP---17-04-26_01_30_22_17_04_2026.pdf",
+      "verification_notes": "Parliament PDF candidate. Must be validated before use."
+    },
+    {
+      "published_date": "2025-01-23",
+      "publisher": "Reuters",
+      "source_id": "CURATED_TEMPORAL_SOURCE_AFTER_006_NEWS_FOLLOWUP",
+      "source_type": "NEWS_FOLLOWUP",
+      "time_direction": "AFTER",
+      "title": "Botswana president hopes to clinch De Beers diamond pact imminently",
+      "topic": "Post-election economic policy follow-up",
+      "url": "https://www.reuters.com/world/africa/botswana-looking-diversify-its-economy-president-says-2025-01-23/",
+      "verification_notes": "Reuters candidate URL. Must be validated before use."
+    }
+  ]
+}
