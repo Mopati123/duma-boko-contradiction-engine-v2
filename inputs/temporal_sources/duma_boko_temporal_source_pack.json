@@ -87,15 +87,15 @@
     {
       "linked_claim_id": "UNSPECIFIED",
       "manual_review_required": true,
-      "notes": "Government leadership page candidate. Must be validated before use.",
+      "notes": "Official Government of Botswana project update.",
       "published_date": "unspecified",
       "publisher": "Government of Botswana",
       "source_id": "CURATED_TEMPORAL_SOURCE_AFTER_002_GOVERNMENT_UPDATE",
       "source_type": "GOVERNMENT_UPDATE",
       "time_direction": "AFTER",
-      "title": "Botswana Government Leadership",
+      "title": "Botswana breaks ground on landmark 500MW Maun solar project",
       "topic": "Duma Boko after-election government update comparison evidence",
-      "url": "https://www.gov.bw/leadership",
+      "url": "https://www.gov.bw/botswana-breaks-ground-landmark-500mw-maun-solar-project",
       "verification_status": "VERIFIED_REACHABLE_TEMPORAL_SOURCE"
     },
     {
@@ -143,16 +143,16 @@
     {
       "linked_claim_id": "UNSPECIFIED",
       "manual_review_required": true,
-      "notes": "Manual placeholder for an after-election news follow-up source. Exact source URL, title, publisher, and date must be supplied before harvesting.",
-      "published_date": "UNSPECIFIED",
-      "publisher": "UNSPECIFIED",
+      "notes": "Reuters report on Botswana signing De Beers agreement after Boko took office.",
+      "published_date": "2025-02-25",
+      "publisher": "Reuters",
       "source_id": "CURATED_TEMPORAL_SOURCE_AFTER_006_NEWS_FOLLOWUP",
       "source_type": "NEWS_FOLLOWUP",
       "time_direction": "AFTER",
-      "title": "UNSPECIFIED",
+      "title": "Botswana signs long-delayed diamonds deal with De Beers",
       "topic": "Duma Boko after-election news follow-up comparison evidence",
-      "url": "UNSPECIFIED",
-      "verification_status": "UNVERIFIED_SOURCE_ENTRY"
+      "url": "https://www.reuters.com/markets/deals/botswana-signs-long-delayed-diamonds-deal-with-de-beers-2025-02-25/",
+      "verification_status": "VERIFIED_REACHABLE_TEMPORAL_SOURCE"
     }
   ],
   "generated_by": "manually_curated_temporal_source_pack_v2",
