@@ -1,0 +1,64 @@
+{
+  "generated_by": "manual_after_source_snapshot_intake_v2_seed_template",
+  "manual_after_source_snapshots": [
+    {
+      "linked_after_candidate_id": "AFTER_SOURCE_CANDIDATE_000006",
+      "manual_review_required": true,
+      "published_date": "2025-02-25",
+      "publisher": "Reuters",
+      "snapshot_id": "MANUAL_AFTER_SOURCE_SNAPSHOT_000006",
+      "snapshot_text": "UNSPECIFIED",
+      "title": "Botswana signs long-delayed diamonds deal with De Beers",
+      "url": "https://www.reuters.com/markets/deals/botswana-signs-long-delayed-diamonds-deal-with-de-beers-2025-02-25/",
+      "verification_notes": "Reuters report on Botswana signing De Beers agreement after Boko took office."
+    },
+    {
+      "linked_after_candidate_id": "AFTER_SOURCE_CANDIDATE_000016",
+      "manual_review_required": true,
+      "published_date": "2025-01-23",
+      "publisher": "Reuters",
+      "snapshot_id": "MANUAL_AFTER_SOURCE_SNAPSHOT_000016",
+      "snapshot_text": "UNSPECIFIED",
+      "title": "Botswana hopes to clinch De Beers diamond pact imminently",
+      "url": "https://www.reuters.com/world/africa/botswana-looking-diversify-its-economy-president-says-2025-01-23/",
+      "verification_notes": "Reuters interview with President Duma Boko on economic diversification and De Beers policy."
+    },
+    {
+      "linked_after_candidate_id": "AFTER_SOURCE_CANDIDATE_000026",
+      "manual_review_required": true,
+      "published_date": "2025-09-26",
+      "publisher": "Reuters",
+      "snapshot_id": "MANUAL_AFTER_SOURCE_SNAPSHOT_000026",
+      "snapshot_text": "UNSPECIFIED",
+      "title": "Botswana launches citizenship program to boost economy beyond diamonds",
+      "url": "https://www.reuters.com/world/africa/botswana-launches-citizenship-program-boost-economy-beyond-diamonds-2025-09-26/",
+      "verification_notes": "Reuters report on Botswana citizenship program to support economic diversification."
+    },
+    {
+      "linked_after_candidate_id": "AFTER_SOURCE_CANDIDATE_000036",
+      "manual_review_required": true,
+      "published_date": "2025-08-21",
+      "publisher": "Reuters",
+      "snapshot_id": "MANUAL_AFTER_SOURCE_SNAPSHOT_000036",
+      "snapshot_text": "UNSPECIFIED",
+      "title": "Botswana signs $12 billion investment deal with Qatar's Al Mansour Holdings",
+      "url": "https://www.reuters.com/world/middle-east/botswana-signs-12-billion-investment-deal-with-qatars-al-mansour-holdings-2025-08-21/",
+      "verification_notes": "Reuters report on Botswana investment deal under President Duma Boko."
+    },
+    {
+      "linked_after_candidate_id": "AFTER_SOURCE_CANDIDATE_000061",
+      "manual_review_required": true,
+      "published_date": "unspecified",
+      "publisher": "Government of Botswana",
+      "snapshot_id": "MANUAL_AFTER_SOURCE_SNAPSHOT_000061",
+      "snapshot_text": "UNSPECIFIED",
+      "title": "Botswana breaks ground on landmark 500MW Maun solar project",
+      "url": "https://www.gov.bw/botswana-breaks-ground-landmark-500mw-maun-solar-project",
+      "verification_notes": "Official Government of Botswana project update."
+    }
+  ],
+  "manual_review_required": true,
+  "production_ready": false,
+  "template_scope": "Manual human-supplied AFTER source snapshot intake for temporal sources that cannot be live-harvested",
+  "template_version": "manual_after_source_snapshot_template_v2"
+}
