@@ -223,7 +223,12 @@ def _validate_upstream_summary(summary: Dict[str, Any], claim_count: int) -> Non
     for counter_name in (
         "claims_invented",
         "claims_normalized",
+        "claims_rewritten",
+        "claims_normalized_semantically",
         "embeddings_created",
+        "urls_fetched",
+        "live_web_access_performed",
+        "llm_calls",
         "contradictions_created",
         "final_reports_created",
     ):
@@ -548,9 +553,12 @@ def _build_report(
             "",
             "## Guardrails",
             "- URLs Fetched: 0",
+            "- Live Web Access Performed: 0",
+            "- LLM Calls: 0",
             "- Claims Rewritten: 0",
             "- Claims Normalized Semantically: 0",
             "- Contradictions Created: 0",
+            "- Claim Pairs Created: 0",
             "- Embeddings Created: 0",
             "- Proof Chains Created: 0",
             "- Final Reports Created: 0",
@@ -672,9 +680,12 @@ def build_before_temporal_claim_normalization(
         "packet_root_preserved": len(refusals) == 0,
         "source_claim_root_preserved": len(refusals) == 0,
         "urls_fetched": 0,
+        "live_web_access_performed": 0,
+        "llm_calls": 0,
         "claims_rewritten": 0,
         "claims_normalized_semantically": 0,
         "contradictions_created": 0,
+        "claim_pairs_created": 0,
         "embeddings_created": 0,
         "proof_chains_created": 0,
         "final_reports_created": 0,
@@ -686,6 +697,7 @@ def build_before_temporal_claim_normalization(
         "before_temporal_claim_normalization_root": "",
         "deterministic_json": True,
         "sha256_roots": True,
+        "no_generated_outputs_committed": True,
     }
     summary["before_temporal_claim_normalization_root"] = _hash_json(
         _summary_root_material(summary)
@@ -699,6 +711,24 @@ def build_before_temporal_claim_normalization(
         refusals,
         summary["before_temporal_claim_normalization_root"],
     )
+
+    for counter_name in (
+        "urls_fetched",
+        "live_web_access_performed",
+        "llm_calls",
+        "claims_rewritten",
+        "claims_normalized_semantically",
+        "contradictions_created",
+        "claim_pairs_created",
+        "embeddings_created",
+        "proof_chains_created",
+        "final_reports_created",
+        "approved_evidence",
+    ):
+        if summary[counter_name] != 0:
+            raise ValueError(f"{counter_name} must remain 0.")
+    if not _closed_flags(summary):
+        raise ValueError("BEFORE temporal claim normalization guardrails must remain closed.")
 
     output_dir.mkdir(parents=True, exist_ok=True)
     _write_json(output_dir / SUMMARY_OUTPUT.name, summary)
