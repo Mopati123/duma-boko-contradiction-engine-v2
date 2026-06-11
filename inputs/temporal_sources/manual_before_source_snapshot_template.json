@@ -1,0 +1,79 @@
+{
+  "generated_by": "manual_before_source_snapshot_intake_v1_seed_template",
+  "manual_before_source_snapshots": [
+    {
+      "linked_before_source_id": "CURATED_TEMPORAL_SOURCE_BEFORE_001_MANIFESTO",
+      "linked_claim_id": "UNSPECIFIED",
+      "manual_review_required": true,
+      "published_date": "unspecified",
+      "publisher": "Umbrella for Democratic Change",
+      "snapshot_id": "MANUAL_BEFORE_SOURCE_SNAPSHOT_000001",
+      "snapshot_text": "UNSPECIFIED",
+      "source_type": "MANIFESTO",
+      "title": "UDC Manifesto for 2024 Botswana Elections",
+      "topic": "Duma Boko before-election manifesto comparison evidence",
+      "url": "https://www.udc.org.bw/wp-content/uploads/2025/03/UDC-MANIFESTO-FOR-2024-BOTSWANA-ELECTIONS-short-2.pdf",
+      "verification_notes": "Official UDC manifesto PDF candidate. Must be validated before use."
+    },
+    {
+      "linked_before_source_id": "CURATED_TEMPORAL_SOURCE_BEFORE_002_PARTY_WEBSITE",
+      "linked_claim_id": "UNSPECIFIED",
+      "manual_review_required": true,
+      "published_date": "unspecified",
+      "publisher": "Umbrella for Democratic Change",
+      "snapshot_id": "MANUAL_BEFORE_SOURCE_SNAPSHOT_000002",
+      "snapshot_text": "UNSPECIFIED",
+      "source_type": "PARTY_WEBSITE",
+      "title": "Umbrella for Democratic Change Official Website",
+      "topic": "Duma Boko before-election party website comparison evidence",
+      "url": "https://www.udc.org.bw/",
+      "verification_notes": "Official UDC website candidate. Must be validated before use."
+    },
+    {
+      "linked_before_source_id": "CURATED_TEMPORAL_SOURCE_BEFORE_003_RALLY_VIDEO",
+      "linked_claim_id": "UNSPECIFIED",
+      "manual_review_required": true,
+      "published_date": "unspecified",
+      "publisher": "Umbrella for Democratic Change",
+      "snapshot_id": "MANUAL_BEFORE_SOURCE_SNAPSHOT_000003",
+      "snapshot_text": "UNSPECIFIED",
+      "source_type": "RALLY_VIDEO",
+      "title": "UDC News and Media",
+      "topic": "Duma Boko before-election rally speech comparison evidence",
+      "url": "https://www.udc.org.bw/news-and-media/",
+      "verification_notes": "Official UDC media page candidate. Must be validated before use."
+    },
+    {
+      "linked_before_source_id": "CURATED_TEMPORAL_SOURCE_BEFORE_004_INTERVIEW",
+      "linked_claim_id": "UNSPECIFIED",
+      "manual_review_required": true,
+      "published_date": "unspecified",
+      "publisher": "Duma Boko",
+      "snapshot_id": "MANUAL_BEFORE_SOURCE_SNAPSHOT_000004",
+      "snapshot_text": "UNSPECIFIED",
+      "source_type": "INTERVIEW",
+      "title": "Duma Boko Official Website",
+      "topic": "Duma Boko before-election interview comparison evidence",
+      "url": "https://dumaboko.com/",
+      "verification_notes": "Candidate official Duma Boko site. Must be validated before use."
+    },
+    {
+      "linked_before_source_id": "CURATED_TEMPORAL_SOURCE_BEFORE_005_SOCIAL_MEDIA_POST",
+      "linked_claim_id": "UNSPECIFIED",
+      "manual_review_required": true,
+      "published_date": "UNSPECIFIED",
+      "publisher": "UNSPECIFIED",
+      "snapshot_id": "MANUAL_BEFORE_SOURCE_SNAPSHOT_000005",
+      "snapshot_text": "UNSPECIFIED",
+      "source_type": "SOCIAL_MEDIA_POST",
+      "title": "UNSPECIFIED",
+      "topic": "Duma Boko before-election social media comparison evidence",
+      "url": "UNSPECIFIED",
+      "verification_notes": "Manual placeholder for a before-election social media post source. Exact source URL, title, publisher, and date must be supplied before harvesting."
+    }
+  ],
+  "manual_review_required": true,
+  "production_ready": false,
+  "template_scope": "Manual human-supplied BEFORE source snapshot intake for temporal sources that cannot be live-harvested",
+  "template_version": "manual_before_source_snapshot_template_v1"
+}
