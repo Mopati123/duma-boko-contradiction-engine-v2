@@ -268,6 +268,10 @@ def _validate_localization_summary(summary_path: Path, segment_count: int) -> Di
         "contradictions_created",
         "embeddings_created",
         "sentiment_classifications_created",
+        "urls_fetched",
+        "live_web_access_performed",
+        "llm_calls",
+        "final_reports_created",
     ):
         if summary.get(counter_name) != 0:
             raise TemporalEvidencePacketRefusal(
@@ -313,9 +317,14 @@ def _schema_payload() -> Dict[str, Any]:
             "approved_evidence": 0,
             "claims_created": 0,
             "contradictions_created": 0,
+            "embeddings_created": 0,
+            "final_reports_created": 0,
+            "live_web_access_performed": 0,
+            "llm_calls": 0,
             "production_ready": False,
             "quotes_created": 0,
             "timestamps_created": 0,
+            "urls_fetched": 0,
         },
     }
 
@@ -544,6 +553,11 @@ def _build_report(
             "- Timestamps Created: 0",
             "- Claims Created: 0",
             "- Contradictions Created: 0",
+            "- Embeddings Created: 0",
+            "- URLs Fetched: 0",
+            "- Live Web Access Performed: 0",
+            "- LLM Calls: 0",
+            "- Final Reports Created: 0",
             "- Production Ready: False",
             "- Approved Evidence: 0",
             "",
@@ -609,6 +623,11 @@ def build_temporal_evidence_packet_generation(
         "timestamps_created": 0,
         "claims_created": 0,
         "contradictions_created": 0,
+        "embeddings_created": 0,
+        "urls_fetched": 0,
+        "live_web_access_performed": 0,
+        "llm_calls": 0,
+        "final_reports_created": 0,
         "production_ready": False,
         "approved_evidence": 0,
         "public_ready": False,
@@ -644,6 +663,11 @@ def build_temporal_evidence_packet_generation(
         "timestamps_created",
         "claims_created",
         "contradictions_created",
+        "embeddings_created",
+        "urls_fetched",
+        "live_web_access_performed",
+        "llm_calls",
+        "final_reports_created",
     ):
         if summary[counter_name] != 0:
             raise ValueError(f"{counter_name} must remain 0.")
