@@ -1,0 +1,67 @@
+{
+  "metadata_id": "DUMA_BOKO_FINAL_WORD_REPORT_CONTEXT_V1",
+  "output_format": "docx",
+  "report_type": "Promise-Delivery Evidence Report",
+  "case_scope": "Duma Boko promise-delivery contradiction analysis",
+  "subject_identity": {
+    "name": "Duma Boko",
+    "political_party": "Umbrella for Democratic Change",
+    "political_party_abbreviation": "UDC",
+    "position_title": "President of Botswana",
+    "role_at_before_time": "Botswana president elect / political leader / UDC leader",
+    "current_government_position": "President of Botswana",
+    "speaker_or_political_leader": "Duma Boko",
+    "location_or_jurisdiction": "Botswana"
+  },
+  "primary_promise": {
+    "evidence_id": "VID_JOBS_001",
+    "source_family": "YouTube/video seed plus UDC homepage manual evidence entry",
+    "original_video_title": "Duma Boko, Botswana's president elect, promises to 500 000 new jobs in 5 years. I dare not fail!",
+    "original_promise": "500 000 new jobs in 5 years",
+    "human_reviewed_quote_text": "Create 450,000 – 500,000 jobs",
+    "human_reviewed_excerpt_text": "Jobs & Economy: Create 450,000 – 500,000 jobs",
+    "key_phrase": "I dare not fail!",
+    "source_url": "https://www.udc.org.bw/",
+    "quote_location": "UDC homepage, Snapshot of Top Manifesto Commitments, Jobs & Economy",
+    "manual_review_status": "human_reviewed_candidate",
+    "human_review_required": true,
+    "production_ready": false
+  },
+  "word_report_required_sections": [
+    "Cover Page",
+    "Subject Identity",
+    "Executive Summary",
+    "Human Verdict",
+    "BEFORE Evidence",
+    "AFTER Evidence",
+    "Promise Delivery Comparison",
+    "Contradiction Geometry",
+    "Audit Lineage",
+    "Guardrails",
+    "Human Review Notes",
+    "Machine Audit Appendix"
+  ],
+  "word_report_tables": [
+    "Subject Identity Table",
+    "BEFORE Evidence Table",
+    "AFTER Evidence Table",
+    "Contradiction Geometry Table",
+    "Guardrails Table"
+  ],
+  "final_status_options": [
+    "NO_CONTRADICTION_FOUND",
+    "TEMPORAL_COMPARISON_CANDIDATE",
+    "CANDIDATE_CONTRADICTION_REQUIRES_REVIEW",
+    "STRONG_CONTRADICTION",
+    "INSUFFICIENT_EVIDENCE",
+    "REFUSED_UNSUPPORTED"
+  ],
+  "guardrails": {
+    "claims_invented": 0,
+    "claims_rewritten": 0,
+    "llm_generated_evidence": 0,
+    "contradictions_auto_approved": 0,
+    "human_review_required": true,
+    "production_ready": false
+  }
+}
