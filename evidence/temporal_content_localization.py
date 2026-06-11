@@ -36,6 +36,8 @@ UPSTREAM_SCHEMA_VERSION = "temporal_source_harvester_v2"
 MAX_FETCH_BYTES = 2_000_000
 MAX_SEGMENT_CHARS = 1000
 UNAVAILABLE = "UNAVAILABLE"
+MANUAL_BEFORE_CONTENT_TYPE = "MANUAL_BEFORE_SOURCE_SNAPSHOT"
+MANUAL_BEFORE_HARVEST_METHOD = "MANUAL_BEFORE_SOURCE_SNAPSHOT_NO_FETCH"
 
 DRY_RUN_STATUS = "TEMPORAL_CONTENT_LOCALIZATION_DRY_RUN_VALIDATED"
 CANDIDATE_STATUS = "TEMPORAL_CONTENT_LOCALIZATION_CANDIDATE"
@@ -229,6 +231,22 @@ def _refusal_root_material(refusal: Dict[str, Any]) -> Dict[str, Any]:
     return {field: refusal[field] for field in REFUSAL_FIELDS if field != "refusal_root"}
 
 
+def _is_manual_before_no_fetch_source(source: Dict[str, Any]) -> bool:
+    return (
+        source.get("time_direction") == "BEFORE"
+        and source.get("content_type") == MANUAL_BEFORE_CONTENT_TYPE
+        and source.get("harvest_method") == MANUAL_BEFORE_HARVEST_METHOD
+        and source.get("http_status") == 0
+    )
+
+
+def _has_manual_no_fetch_marker(source: Dict[str, Any]) -> bool:
+    return (
+        source.get("content_type") == MANUAL_BEFORE_CONTENT_TYPE
+        or source.get("harvest_method") == MANUAL_BEFORE_HARVEST_METHOD
+    )
+
+
 def _validate_harvested_source(source: Dict[str, Any]) -> None:
     if not isinstance(source, dict) or set(source.keys()) != set(HARVESTED_FIELDS):
         raise TemporalContentLocalizationRefusal(
@@ -254,7 +272,19 @@ def _validate_harvested_source(source: Dict[str, Any]) -> None:
             "REFUSED_MALFORMED_HARVESTED_SOURCE",
             "Harvested temporal source URL must be public HTTP(S).",
         )
-    if not isinstance(source["http_status"], int) or not (200 <= source["http_status"] < 400):
+    manual_before_no_fetch = _is_manual_before_no_fetch_source(source)
+    if manual_before_no_fetch:
+        if source["time_direction"] != "BEFORE":
+            raise TemporalContentLocalizationRefusal(
+                "REFUSED_MALFORMED_HARVESTED_SOURCE",
+                "Manual no-fetch source time_direction must remain BEFORE.",
+            )
+    elif _has_manual_no_fetch_marker(source):
+        raise TemporalContentLocalizationRefusal(
+            "REFUSED_MALFORMED_HARVESTED_SOURCE",
+            "Manual no-fetch harvested source must use BEFORE provenance and http_status 0.",
+        )
+    elif not isinstance(source["http_status"], int) or not (200 <= source["http_status"] < 400):
         raise TemporalContentLocalizationRefusal(
             "REFUSED_MALFORMED_HARVESTED_SOURCE",
             "Harvested temporal source http_status must be 200-399.",
@@ -317,6 +347,18 @@ def _validate_optional_summary(summary_path: Path, harvested_count: int) -> None
                 "REFUSED_UPSTREAM_GUARDRAIL_FAILURE",
                 f"Upstream harvester guardrail {counter_name} is not closed.",
             )
+    for counter_name in (
+        "urls_fetched",
+        "live_web_access_performed",
+        "llm_calls",
+        "embeddings_created",
+        "final_reports_created",
+    ):
+        if counter_name in summary and summary.get(counter_name) != 0:
+            raise TemporalContentLocalizationRefusal(
+                "REFUSED_UPSTREAM_GUARDRAIL_FAILURE",
+                f"Upstream harvester guardrail {counter_name} is not closed.",
+            )
     if not _closed_flags(summary):
         raise TemporalContentLocalizationRefusal(
             "REFUSED_UPSTREAM_GUARDRAIL_FAILURE",
@@ -339,15 +381,20 @@ def _schema_payload() -> Dict[str, Any]:
         "localization_methods": [
             "html_visible_text_chunks_v1",
             "pdf_stream_text_chunks_v1",
+            "manual_before_no_fetch_text_excerpt_chunks_v1",
         ],
         "guardrails": {
             "approved_evidence": 0,
             "claims_created": 0,
             "contradictions_created": 0,
             "embeddings_created": 0,
+            "final_reports_created": 0,
+            "live_web_access_performed": 0,
+            "llm_calls": 0,
             "production_ready": False,
             "quotes_created": 0,
             "timestamps_created": 0,
+            "urls_fetched": 0,
         },
     }
 
@@ -590,6 +637,32 @@ def _fetch_bytes(source: Dict[str, Any]) -> bytes:
         ) from exc
 
 
+def _manual_no_fetch_text(source: Dict[str, Any]) -> str:
+    if not _is_manual_before_no_fetch_source(source):
+        raise TemporalContentLocalizationRefusal(
+            "REFUSED_MALFORMED_HARVESTED_SOURCE",
+            "Manual no-fetch localization requires explicit BEFORE snapshot provenance.",
+        )
+    text = source["text_excerpt"]
+    content = text.encode("utf-8")
+    if len(content) != source["content_length"]:
+        raise TemporalContentLocalizationRefusal(
+            "REFUSED_CONTENT_HASH_MISMATCH",
+            f"Manual no-fetch content_length mismatch for {source['source_id']}.",
+        )
+    if _sha256_bytes(content) != source["content_sha256"]:
+        raise TemporalContentLocalizationRefusal(
+            "REFUSED_CONTENT_HASH_MISMATCH",
+            f"Manual no-fetch content SHA-256 does not match source {source['source_id']}.",
+        )
+    if not text.strip():
+        raise TemporalContentLocalizationRefusal(
+            "REFUSED_NO_LOCALIZABLE_TEXT",
+            "Manual no-fetch harvested source contains no localizable text.",
+        )
+    return text
+
+
 def _chunk_text(text: str) -> List[str]:
     paragraphs = [paragraph.strip() for paragraph in re.split(r"\n{1,}", text) if paragraph.strip()]
     chunks: List[str] = []
@@ -697,6 +770,16 @@ def validate_refusal(refusal: Dict[str, Any]) -> None:
 
 
 def _localize_source(source: Dict[str, Any]) -> List[Dict[str, Any]]:
+    if _is_manual_before_no_fetch_source(source):
+        text = _manual_no_fetch_text(source)
+        chunks = _chunk_text(text)
+        if not chunks:
+            raise TemporalContentLocalizationRefusal(
+                "REFUSED_NO_LOCALIZABLE_TEXT",
+                "Manual no-fetch text produced no deterministic segments.",
+            )
+        return [_make_segment(source, offset + 1, chunk) for offset, chunk in enumerate(chunks)]
+
     content = _fetch_bytes(source)
     if not content:
         raise TemporalContentLocalizationRefusal(
@@ -869,6 +952,10 @@ def build_temporal_content_localization(
         "contradictions_created": 0,
         "embeddings_created": 0,
         "sentiment_classifications_created": 0,
+        "urls_fetched": 0,
+        "live_web_access_performed": 0,
+        "llm_calls": 0,
+        "final_reports_created": 0,
         "production_ready": False,
         "approved_evidence": 0,
         "public_ready": False,
@@ -907,6 +994,10 @@ def build_temporal_content_localization(
         "contradictions_created",
         "embeddings_created",
         "sentiment_classifications_created",
+        "urls_fetched",
+        "live_web_access_performed",
+        "llm_calls",
+        "final_reports_created",
     ):
         if summary[counter_name] != 0:
             raise ValueError(f"{counter_name} must remain 0.")
